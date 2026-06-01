@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Outermost wrapper — centres the page horizontally
+   ============================================================ */
+.window {
+  @apply flex w-full justify-center;
+}
+
+/* ============================================================
+   Page grid: header / main / footer (footer row is auto so it
+   collapses gracefully when the footer element is absent)
+   ============================================================ */
+.page {
+  @apply w-full min-h-screen h-screen;
+  display: grid;
+  grid-template-areas:
+    "header"
+    "main"
+    "footer";
+  grid-template-rows: 4rem 1fr auto;
+  grid-template-columns: 100%;
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+.header {
+  @apply flex items-center gap-4 border-b bg-(--background) px-4 md:px-6;
+  grid-area: header;
+}
+
+/* Title section (icon + text) */
+.title-section {
+  @apply inline-flex items-center gap-2;
+}
+
+.title-section .title-icon {
+  @apply h-6 w-6 shrink-0;
+}
+
+.title-section .title-text {
+  @apply text-lg font-semibold text-(--foreground);
+}
+
+/* Medium-and-above horizontal nav */
+.nav-md {
+  @apply hidden md:flex flex-row items-center gap-5 lg:gap-6;
+
+  .nav-link {
+    @apply text-(--muted-foreground) transition-colors hover:text-(--foreground) px-0;
+  }
+}
+
+/* Small-screen slide-out nav content */
+.nav-sm {
+  @apply grid gap-6 text-lg font-medium p-4;
+
+  .nav-link {
+    @apply text-(--muted-foreground) hover:text-(--foreground) justify-start px-0 text-lg;
+  }
+}
+
+/* Right-aligned action cards area */
+.header-actions {
+  @apply ml-auto flex items-center gap-2 lg:gap-4;
+}
+
+/* ============================================================
+   Main — scrollable content area
+   ============================================================ */
+.main {
+  @apply bg-(--background) p-4 py-2 md:p-8 md:py-4;
+  grid-area: main;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* ============================================================
+   Footer (optional)
+   ============================================================ */
+.footer {
+  @apply bg-(--background) text-(--muted-foreground) px-4 py-2 md:px-8 md:py-4;
+  grid-area: footer;
+}
