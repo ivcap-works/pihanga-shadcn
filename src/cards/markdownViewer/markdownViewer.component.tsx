@@ -25,9 +25,7 @@ import type {MarkdownViewerProps} from "./markdownViewer.types";
  */
 const DEFAULT_COMPONENTS: Components = {
   // Pass `node` through as `_node` to keep it out of the DOM spread.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   pre: ({node: _node, children, ...rest}) => <pre {...rest}>{children}</pre>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   code: ({node: _node, children, ...rest}) => <code {...rest}>{children}</code>,
 };
 

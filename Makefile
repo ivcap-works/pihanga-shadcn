@@ -11,7 +11,7 @@ TAR_FILE=${ROOT_DIR}/${DOMAIN}-${GIT_SHORT}-$(shell echo ${GIT_BRANCH} | sed -e 
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install dev build build-preview gen-playground lint lint-fix type-check \
+.PHONY: help install dev build build-preview gen-playground check lint lint-fix type-check \
         test test-run test-ui test-coverage \
         clean src-dist tar tar-echo
 
@@ -42,6 +42,11 @@ gen-playground: ## (Re)generate src/playground/playground.examples.gen.ts
 	node scripts/gen-playground-registry.mjs
 
 ##@ Code Quality
+
+check: lint type-check test-run ## Run all checks: lint, type-check, and tests (CI)
+
+lint: ## Run ESLint
+	yarn lint
 
 lint-fix: ## Run ESLint with auto-fix
 	yarn lint:fix
