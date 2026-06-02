@@ -1,0 +1,209 @@
+/*
+ * jsonViewer.css — compact, code-editor style for react-json-view-lite
+ *
+ * Key design goals (matching the "second screenshot" style):
+ *   - Monospace font, light weight (no bold keys)
+ *   - Vertical guide lines via border-left on child containers
+ *   - Toggle icon is absolutely positioned so { and } align on the same column
+ *   - String values in green, numbers in blue, booleans in teal
+ *   - Adapts to light/dark via CSS variables
+ */
+
+/* ── Wrapper (positions the copy button relative to the viewer) ─────────────── */
+.jv-wrapper {
+  position: relative;
+}
+
+/* ── Copy-to-clipboard button ───────────────────────────────────────────────── */
+.jv-copy-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: hsl(var(--muted-foreground, 0 0% 55%));
+  cursor: pointer;
+  opacity: 0.35;
+  transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+/* Full opacity when the wrapper is hovered/focused-within */
+.jv-wrapper:hover .jv-copy-btn,
+.jv-wrapper:focus-within .jv-copy-btn {
+  opacity: 1;
+}
+
+.jv-copy-btn:hover {
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted, 0 0% 96%));
+  border-color: hsl(var(--border, 0 0% 88%));
+}
+
+/* "Done" state — green check mark */
+.jv-copy-btn--done {
+  opacity: 1;
+  color: #2e7d32;
+}
+
+.dark .jv-copy-btn--done {
+  color: #81c784;
+}
+
+/* ── Container ─────────────────────────────────────────────────────────────── */
+.jv-container {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  background: transparent;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--foreground);
+}
+
+/* ── Each row ───────────────────────────────────────────────────────────────── */
+/*
+ * position: relative + padding-left reserves a fixed gutter on the LEFT of
+ * every row (both the "key: {" opening row AND the bare "}" closing row).
+ * The toggle icon is then placed absolutely inside that gutter so it never
+ * displaces the brace characters — fixing the original misalignment.
+ */
+.jv-basic-child {
+  margin: 0;
+  padding: 0 0 0 1.1em;
+  position: relative;
+  display: block;
+}
+
+/* ── Key labels ─────────────────────────────────────────────────────────────── */
+.jv-label {
+  font-weight: 400;
+  color: var(--foreground);
+  margin-right: 0;
+}
+
+.jv-clickable-label {
+  font-weight: 400;
+  color: var(--foreground);
+  cursor: pointer;
+  margin-right: 0;
+}
+
+.jv-clickable-label:hover {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+/* ── Punctuation  { } [ ] : ,  ──────────────────────────────────────────────── */
+.jv-punctuation {
+  color: var(--foreground);
+  font-weight: 400;
+}
+
+/* ── Toggle icons — positioned in the left gutter ──────────────────────────── */
+.jv-expand-icon,
+.jv-collapse-icon {
+  position: absolute;
+  left: 0;
+  /*
+   * With `transform: translateY(-50%)`, `top` sets the CENTRE of the element.
+   * The visual centre of the first text line = line-height / 2 = 1.55 / 2 ≈ 0.775em.
+   */
+  top: 0.775em;
+  transform: translateY(-50%);
+  width: 1em;
+  font-size: 0.65em;
+  line-height: 1;
+  color: hsl(var(--muted-foreground, 0 0% 55%));
+  user-select: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jv-expand-icon::after {
+  content: "▶";
+}
+
+.jv-collapse-icon::after {
+  content: "▼";
+}
+
+/* ── Collapsed placeholder ──────────────────────────────────────────────────── */
+.jv-collapsed-content {
+  cursor: pointer;
+  color: hsl(var(--muted-foreground, 0 0% 55%));
+}
+
+.jv-collapsed-content::after {
+  content: " …";
+}
+
+/* ── Child-fields container — the vertical guide line lives here ────────────── */
+.jv-child-fields-container {
+  margin: 0;
+  padding: 0;
+  padding-left: 1.25em;
+  border-left: 1px solid hsl(var(--border, 0 0% 88%));
+  margin-left: 0.3em;
+}
+
+/* ── Value colours ──────────────────────────────────────────────────────────── */
+.jv-null {
+  color: #c0392b;
+}
+
+.jv-undefined {
+  color: #c0392b;
+}
+
+.jv-string {
+  color: #2e7d32;
+}
+
+/* green  — matches screenshot */
+.jv-number {
+  color: #1565c0;
+}
+
+/* blue */
+.jv-boolean {
+  color: #00796b;
+}
+
+/* teal */
+.jv-other {
+  color: var(--foreground);
+}
+
+/* ── Dark-mode overrides ───────────────────────────────────────────────────── */
+.dark .jv-string {
+  color: #81c784;
+}
+
+.dark .jv-number {
+  color: #64b5f6;
+}
+
+.dark .jv-boolean {
+  color: #4db6ac;
+}
+
+.dark .jv-null,
+.dark .jv-undefined {
+  color: #ef9a9a;
+}
+
+.dark .jv-child-fields-container {
+  border-left-color: hsl(var(--border, 0 0% 25%));
+}

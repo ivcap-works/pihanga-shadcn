@@ -1,7 +1,8 @@
 import {registerIcon} from "@/cards/icons";
 import {MoreHorizontalIcon, Settings, Heart} from "lucide-react";
 
-import type {PiButtonProps} from "./button.types";
+import {Button, onPiButtonClicked, type PiButtonProps} from "./index";
+import {definePlayground} from "@/playground/definePlayground";
 
 // Example icon registration (usually done once during app init)
 registerIcon("more", MoreHorizontalIcon);
@@ -148,3 +149,182 @@ export const examplePiButtonIconUsage: PiButtonProps[] = [
     opts: {variant: "secondary", beforeIcon: "heart", afterIcon: "more"},
   },
 ];
+
+// ============================================================================
+// Playground definition
+// ============================================================================
+
+export default definePlayground<PiButtonProps>({
+  cardId: "pi/button",
+  title: "Button",
+
+  introduction: `
+A versatile, Tailwind-styled button with support for multiple **variants**, **sizes**,
+icons, tooltips, and loading states.
+
+Set \`opts.variant\` to control the visual style, and \`opts.size\` to control dimensions.
+Use \`iconLabel\` for icon-only buttons, or \`opts.beforeIcon\` / \`opts.afterIcon\` to
+place icons alongside text labels.
+
+Tooltips accept either a plain string (\`tooltip\`) or any \`PiCardRef\` (\`tooltipCard\`)
+for rich custom tooltip content.
+  `.trim(),
+
+  preview: (props) => Button(props),
+
+  defaultProps: {
+    id: "preview",
+    label: "Click me",
+    opts: {
+      variant: "default",
+      size: "default",
+    },
+  },
+
+  facets: [
+    {
+      id: "default",
+      title: "Default",
+      description: "Primary filled button — the main call-to-action.",
+      props: {id: "default", label: "Save", opts: {variant: "default"}},
+    },
+    {
+      id: "secondary",
+      title: "Secondary",
+      description: "Secondary action — less emphasis than the primary.",
+      props: {id: "secondary", label: "Cancel", opts: {variant: "secondary"}},
+    },
+    {
+      id: "destructive",
+      title: "Destructive",
+      description:
+        "Red / error colour. Use for irreversible or dangerous actions.",
+      props: {
+        id: "destructive",
+        label: "Delete",
+        opts: {variant: "destructive"},
+      },
+    },
+    {
+      id: "outline",
+      title: "Outline",
+      description:
+        "Bordered, transparent fill — a softer alternative to default.",
+      props: {id: "outline", label: "Edit", opts: {variant: "outline"}},
+    },
+    {
+      id: "ghost",
+      title: "Ghost",
+      description: "No background — ideal for toolbars, sidebars, and menus.",
+      props: {id: "ghost", label: "More", opts: {variant: "ghost"}},
+    },
+    {
+      id: "icon",
+      title: "Icon button",
+      description:
+        "Square button sized for a single icon. Pair with `ariaLabel`.",
+      props: {
+        id: "icon",
+        iconLabel: "settings",
+        ariaLabel: "Settings",
+        tooltip: "Settings",
+        opts: {variant: "ghost", size: "icon"},
+      },
+    },
+    {
+      id: "with-tooltip",
+      title: "With tooltip",
+      description: "Hover text shown via the `tooltip` prop.",
+      props: {
+        id: "with-tooltip",
+        label: "Save",
+        tooltip: "Save your changes",
+        tooltipPlacement: "bottom",
+        opts: {variant: "default"},
+      },
+    },
+    {
+      id: "loading",
+      title: "Loading",
+      description:
+        "Shows a spinner and prevents interaction while an async operation is in progress.",
+      props: {
+        id: "loading",
+        label: "Saving…",
+        loading: true,
+        opts: {variant: "default"},
+      },
+    },
+    {
+      id: "disabled",
+      title: "Disabled",
+      description: "Prevents all interaction.",
+      props: {
+        id: "disabled",
+        label: "Unavailable",
+        disabled: true,
+        opts: {variant: "default"},
+      },
+    },
+  ],
+
+  controls: [
+    {prop: "label", type: "text", label: "Label", placeholder: "Button text…"},
+    {
+      prop: "opts.variant",
+      type: "token",
+      label: "Variant",
+      options: ["default", "secondary", "destructive", "outline", "ghost"],
+    },
+    {
+      prop: "opts.size",
+      type: "token",
+      label: "Size",
+      options: ["default", "xs", "md", "lg", "icon"],
+    },
+    {prop: "disabled", type: "boolean", label: "Disabled"},
+    {prop: "loading", type: "boolean", label: "Loading"},
+    {
+      prop: "tooltip",
+      type: "text",
+      label: "Tooltip",
+      placeholder: "Hover text…",
+    },
+    {
+      prop: "className",
+      type: "text",
+      label: "Extra classes",
+      placeholder: "e.g. rounded-full",
+    },
+  ],
+
+  registerEvents: (r, logEvent) => {
+    // Fires whenever the button is clicked in the live preview.
+    onPiButtonClicked(r, (state, ev) => {
+      logEvent(state, "onPiButtonClicked", {id: ev.id});
+    });
+  },
+
+  note: `
+Inside \`app.pihanga.ts\`, wire a button to dispatch an action:
+
+\`\`\`ts
+import {registerCard, register} from "@pihanga2/core";
+import {Button, onPiButtonClicked} from "@/cards/button";
+
+register((r) => {
+  onPiButtonClicked(r, (state, {id}) => {
+    if (id === "save") {
+      state.isSaving = true;
+    }
+  });
+});
+
+registerCard("myApp/saveButton", Button({
+  id:    "save",
+  label: "Save",
+  opts:  {variant: "default"},
+}));
+\`\`\`
+  `.trim(),
+});

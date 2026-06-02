@@ -1,5 +1,11 @@
 import {Button} from "@/cards/button";
-import {Dialog} from "./dialog.types";
+import {
+  Dialog,
+  onDialogOpened,
+  onDialogClosed,
+  onDialogOpenChanged,
+} from "./index";
+import {definePlayground} from "@/playground/definePlayground";
 
 /**
  * Simple dialog example with a button trigger.
@@ -21,36 +27,10 @@ export const simpleDialogExample = Dialog({
 
 /**
  * Dialog with controlled open state (programmatic control).
- *
- * To use this pattern, manage the `open` state externally and
- * listen to `onClosed` to update your state.
- *
- * Example in a reducer:
- * ```ts
- * const [dialogOpen, setDialogOpen] = useState(false);
- *
- * const myDialog = Dialog({
- *   id: "controlled-dialog",
- *   open: dialogOpen,
- *   trigger: myTriggerButton,
- *   content: myContentCard,
- *   title: "Controlled Dialog",
- * });
- *
- * // Register event handler:
- * onDialogClosed((ev) => {
- *   if (ev.id === "controlled-dialog") {
- *     setDialogOpen(false);
- *   }
- * });
- *
- * // Open programmatically:
- * setDialogOpen(true);
- * ```
  */
 export const controlledDialogExample = Dialog({
   id: "controlled-dialog",
-  open: false, // Externally managed
+  open: false,
   trigger: Button({
     label: "Controlled Dialog",
     opts: {variant: "outline"},
@@ -63,31 +43,10 @@ export const controlledDialogExample = Dialog({
 
 /**
  * Purely programmatic dialog (no trigger).
- *
- * This dialog has no trigger button and must be opened/closed
- * entirely via the `open` prop. Useful for dialogs triggered
- * by application logic rather than user clicks.
- *
- * Example usage:
- * ```ts
- * const [showDialog, setShowDialog] = useState(false);
- *
- * const programmaticDialog = Dialog({
- *   id: "programmatic-dialog",
- *   open: showDialog,
- *   // No trigger!
- *   content: myContentCard,
- *   title: "Programmatic Dialog",
- * });
- *
- * // Open from anywhere in your code:
- * setShowDialog(true);
- * ```
  */
 export const programmaticDialogExample = Dialog({
   id: "programmatic-dialog",
-  open: false, // Must be controlled externally
-  // No trigger - purely programmatic
+  open: false,
   content: Button({
     label: "This dialog was opened programmatically",
     opts: {variant: "secondary"},
@@ -175,7 +134,7 @@ export const noFooterExample = Dialog({
     label: "No footer here!",
   }),
   title: "No Footer",
-  footerCloseButtonText: null, // Explicitly hide footer
+  footerCloseButtonText: null,
 });
 
 /**
@@ -195,4 +154,191 @@ export const customFooterCardExample = Dialog({
     label: "Custom Footer Button",
     opts: {variant: "default"},
   }),
+});
+
+// ============================================================================
+// Playground definition
+// ============================================================================
+
+export default definePlayground<Record<string, unknown>>({
+  cardId: "pi/dialog",
+  title: "Dialog",
+
+  introduction: `
+A modal / drawer dialog backed by Radix UI's Dialog primitive.
+
+**Usage modes:**
+
+| Mode | How to open |
+|---|---|
+| Trigger | Pass a \`trigger\` card — dialog opens on interaction |
+| Controlled | Pass \`open\` prop + handle \`onClosed\` to manage from state |
+| Programmatic | No trigger — open/close purely via the \`open\` prop |
+
+Supports multiple size variants (\`xs\` through \`4xl\`), a responsive drawer
+variant on mobile (\`mobileVariant: "drawer"\`), and optional custom footer
+or close-button text.
+  `.trim(),
+
+  preview: () =>
+    Dialog({
+      id: "playground-dialog-preview",
+      trigger: Button({label: "Open Dialog", opts: {variant: "default"}}),
+      content: Button({label: "Dialog Content", opts: {variant: "ghost"}}),
+      title: "Example Dialog",
+      description: "Click the button above to open this dialog.",
+      size: "md",
+    }),
+
+  defaultProps: {
+    id: "preview",
+    title: "Confirm Action",
+    description: "Are you sure you want to continue?",
+    content: "playground/dialog-content",
+    size: "md",
+    dismissible: true,
+  },
+
+  facets: [
+    {
+      id: "with-trigger",
+      title: "With trigger",
+      description:
+        "Dialog opened by a trigger card (typically a Button). Most common usage.",
+      props: {
+        id: "with-trigger",
+        trigger: "myApp/open-button",
+        content: "myApp/dialog-content",
+        title: "Confirm",
+        description: "This action cannot be undone.",
+        size: "md",
+      },
+    },
+    {
+      id: "controlled",
+      title: "Controlled",
+      description:
+        "Visibility driven by `open` prop from state. Wire `onClosed` to reset the flag.",
+      props: {
+        id: "controlled",
+        open: false,
+        content: "myApp/dialog-content",
+        title: "Controlled Dialog",
+      },
+    },
+    {
+      id: "drawer",
+      title: "Drawer on mobile",
+      description: "Shows as a modal on desktop and a bottom drawer on mobile.",
+      props: {
+        id: "drawer",
+        trigger: "myApp/open-button",
+        content: "myApp/dialog-content",
+        title: "Responsive Dialog",
+        desktopVariant: "modal",
+        mobileVariant: "drawer",
+      },
+    },
+    {
+      id: "sizes",
+      title: "Full screen",
+      description: 'The `variant: "full"` dialog occupies the entire viewport.',
+      props: {
+        id: "full-screen",
+        trigger: "myApp/open-button",
+        content: "myApp/dialog-content",
+        title: "Full Screen",
+        variant: "full",
+      },
+    },
+    {
+      id: "non-dismissible",
+      title: "Non-dismissible",
+      description:
+        "Set `dismissible: false` to require the user to click the close button.",
+      props: {
+        id: "non-dismissible",
+        trigger: "myApp/open-button",
+        content: "myApp/dialog-content",
+        title: "Must close explicitly",
+        dismissible: false,
+      },
+    },
+  ],
+
+  controls: [
+    {prop: "title", type: "text", label: "Title", placeholder: "Dialog title…"},
+    {
+      prop: "description",
+      type: "text",
+      label: "Description",
+      placeholder: "Optional subtitle…",
+    },
+    {
+      prop: "size",
+      type: "token",
+      label: "Size",
+      options: ["xs", "sm", "md", "lg", "xl", "2xl"],
+    },
+    {
+      prop: "variant",
+      type: "token",
+      label: "Variant",
+      options: ["modal", "drawer", "full"],
+    },
+    {prop: "dismissible", type: "boolean", label: "Dismissible"},
+    {prop: "hideClose", type: "boolean", label: "Hide close button"},
+  ],
+
+  registerEvents: (r, logEvent) => {
+    // Fires when the dialog becomes visible.
+    onDialogOpened(r, (state, ev) => {
+      logEvent(state, "onDialogOpened", {id: ev.id});
+    });
+    // Fires when the dialog is dismissed (reason: 'user' or 'programmatic').
+    onDialogClosed(r, (state, ev) => {
+      logEvent(state, "onDialogClosed", {id: ev.id, reason: ev.reason});
+    });
+    // Fires on every open-state transition (combines open + close).
+    onDialogOpenChanged(r, (state, ev) => {
+      logEvent(state, "onDialogOpenChanged", {open: ev.open, id: ev.id});
+    });
+  },
+
+  note: `
+**Trigger-driven** dialog:
+
+\`\`\`ts
+import {registerCard, register} from "@pihanga2/core";
+import {Dialog, onDialogClosed} from "@/cards/dialog";
+import {Button} from "@/cards/button";
+
+register((r) => {
+  onDialogClosed(r, (state, {id}) => {
+    if (id === "confirm-delete") {
+      state.deleteDialogOpen = false;
+    }
+  });
+});
+
+registerCard("myApp/deleteDialog", Dialog({
+  id:          "confirm-delete",
+  trigger:     Button({label: "Delete", opts: {variant: "destructive"}}),
+  content:     "myApp/deleteConfirmContent",
+  title:       "Delete item?",
+  description: "This action cannot be undone.",
+  size:        "sm",
+}));
+\`\`\`
+
+**Programmatic** (controlled via state):
+
+\`\`\`ts
+registerCard("myApp/dialog", Dialog({
+  open:    memo((s: AppState) => s.dialogOpen),
+  content: "myApp/dialogContent",
+  title:   "Status",
+}));
+\`\`\`
+  `.trim(),
 });

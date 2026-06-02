@@ -61,3 +61,46 @@ export const SCREEN_SIZE_WIDTHS: Record<ScreenSize, number> = {
 export type SizeMap<T> = Partial<Record<ScreenSize, T | null>> & {
   default?: T | null;
 };
+
+// ---------------------------------------------------------------------------
+// Shadcn / Tailwind-native shared primitive types
+//
+// These types replace what was previously imported from `@pihanga2/cards` and
+// are expressed in terms of Shadcn's design system and Tailwind utility tokens.
+// ---------------------------------------------------------------------------
+
+/**
+ * Shadcn button / badge visual variant.
+ *
+ * Maps directly to the `variant` prop accepted by `@/components/ui/button`
+ * and `@/components/ui/badge`.
+ */
+export type VariantT =
+  | "default"
+  | "destructive"
+  | "outline"
+  | "secondary"
+  | "ghost"
+  | "link";
+
+/**
+ * Shadcn component size token.
+ *
+ * Maps directly to the `size` prop accepted by `@/components/ui/button`.
+ */
+export type SizeT = "default" | "sm" | "lg" | "icon";
+
+/**
+ * Tailwind colour token (e.g. `"red"`, `"emerald"`, `"sky"`) or an arbitrary
+ * CSS colour string.  Kept as `string` so consumers can pass any Tailwind
+ * palette key without being locked to a finite union.
+ */
+export type ColorT = string;
+
+/**
+ * A decorator displayed before or after a button / menu-item label.
+ *
+ * Expressed as a registered icon name (resolved at render time via the icon
+ * registry) or an arbitrary Tailwind-class string for inline SVG icons.
+ */
+export type DecoratorT = string;

@@ -46,7 +46,25 @@ src/pihanga/<cardName>/
   <card>.css              # optional local styles (imported by component)
   <card>.example.ts       # optional example props for demos/dev
   <card>.test.tsx         # optional unit tests
+  dependencies.json       # required – lists npm packages needed by this card
 ```
+
+Every card folder **must** include a `dependencies.json` file that declares the
+npm packages required by the card (beyond `@pihanga2/core` and React, which are
+always available).  The format mirrors the relevant sections of `package.json`:
+
+```json
+{
+  "dependencies": {
+    "some-package": "^1.2.3"
+  },
+  "devDependencies": {}
+}
+```
+
+Use an empty object (`{}`) for a section when the card has no packages in that
+category.  This file is the authoritative record of the card's external
+dependencies and must be kept in sync whenever imports change.
 
 Concrete examples:
 
@@ -362,7 +380,60 @@ Use this approach if your card module needs to register global handlers, plugin 
 
 ### Examples (`*.example.ts`)
 
-Examples are used to document supported props and provide ready-made demo configs.
+Examples are used to document supported props and provide ready-made demo configs
+**and** to capture live card events in the Playground's "Events" panel.
+
+Every `*.example.ts` should export a `definePlayground` default and include:
+
+1. **`facets`** — named usage scenarios (one per tab in the "Examples" section).
+2. **`registerEvents`** — event listeners that log every interaction to the
+   playground event viewer.
+
+#### The `registerEvents` field
+
+`registerEvents` is an optional field on `definePlayground`. When present, the
+Playground engine calls it once at boot-time, passing a scoped `logEvent`
+function. The function is a no-op for all cards *except* the one currently
+selected in the playground, so registering global handlers here is safe.
+
+```ts
+import {Stepper, onStepperStepClicked, type StepperProps} from "./index";
+import {definePlayground} from "@/playground/definePlayground";
+
+export default definePlayground<StepperProps>({
+  cardId: "shad/stepper",
+  title:  "Stepper",
+  // …
+
+  registerEvents: (r, logEvent) => {
+    // `r`        — PiRegister (same API as inside register((r) => …))
+    // `logEvent` — (state, eventLabel, data) => void
+    //              appends to state.playgroundEventLog when this card is active
+    onStepperStepClicked(r, (state, ev) => {
+      logEvent(state, "onStepperStepClicked", {
+        stepIndex: ev.stepIndex,
+        stepId:    ev.stepId,
+      });
+    });
+  },
+});
+```
+
+**Rules for `registerEvents`:**
+
+| Rule | Rationale |
+|---|---|
+| Call `logEvent` from every `onXxx` handler the card can emit | Demonstrates the full event surface in the UI |
+| Pass only serialisable `data` values (no `undefined`; use `null` or omit the key) | `data` is shown by `JsonViewer` — `undefined` values are silently dropped by JSON |
+| Do **not** mutate state beyond calling `logEvent` | Side-effects belong in the host app's reducers, not in examples |
+| List the most important fields, not every field | Keeps the event panel readable |
+
+When `registerEvents` is declared, the Playground automatically splits each
+facet tab's bottom row into two columns:
+- **Left**: `JsonViewer` for the facet's prop overrides.
+- **Right**: scrollable event log (newest first); shows "No events yet" until the user interacts.
+
+Previously:
 
 * `src/pihanga/button/button.example.ts`
   * demonstrates icon registration (`registerIcon(...)`) and typical button props
@@ -434,7 +505,11 @@ This file is a compact reference for the bare minimum:
 4. **Register and export** in `index.ts`
    * `export * from "./<yourCard>.types";`
    * `registerCardComponent({ name: CARD_ID, component: Component, events: ... })`
-5. **Optional**
+5. **Create `dependencies.json`** (required)
+   * List every npm package imported by the card (excluding `@pihanga2/core` and React)
+   * Use the same `dependencies` / `devDependencies` structure as `package.json`
+   * Use `{}` for any section that has no entries
+6. **Optional**
    * `*.example.ts` with example props
    * `*.test.tsx` (mock `<Card />` if needed)
    * `*.css` imported by the component

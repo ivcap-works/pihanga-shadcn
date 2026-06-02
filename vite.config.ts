@@ -9,6 +9,10 @@ export default defineConfig({
   resolve: {
     alias: [
       {find: "@/lib", replacement: path.resolve(__dirname, "./src/lib")},
+      {
+        find: "@/registry",
+        replacement: path.resolve(__dirname, "./src/components"),
+      },
       {find: "@", replacement: path.resolve(__dirname, "./src")},
     ],
     // Deduplicate React when using yarn-linked local packages (prevents

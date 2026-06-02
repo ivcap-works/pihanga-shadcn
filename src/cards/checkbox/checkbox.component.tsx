@@ -10,6 +10,7 @@ export const CheckboxComponent = (
     name,
     checked: propChecked = false,
     disabled,
+    label,
     cardName,
     onChanged,
   } = props;
@@ -42,15 +43,24 @@ export const CheckboxComponent = (
   const fieldId = injectedId ?? selfId;
 
   return (
-    <input
-      id={fieldId}
-      type="checkbox"
-      checked={checked}
-      onChange={handleChange}
-      disabled={disabled}
-      aria-invalid={invalid || undefined}
-      className="h-4 w-4 rounded border-input accent-primary disabled:cursor-not-allowed disabled:opacity-50"
-      data-pihanga={cardName}
-    />
+    <div data-pihanga={cardName} className="flex items-center gap-2">
+      <input
+        id={fieldId}
+        type="checkbox"
+        checked={checked}
+        onChange={handleChange}
+        disabled={disabled}
+        aria-invalid={invalid || undefined}
+        className="h-4 w-4 rounded border-input accent-primary disabled:cursor-not-allowed disabled:opacity-50"
+      />
+      {label && (
+        <label
+          htmlFor={fieldId}
+          className="text-sm leading-none cursor-pointer select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          {label}
+        </label>
+      )}
+    </div>
   );
 };

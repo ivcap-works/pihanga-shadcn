@@ -1,0 +1,100 @@
+/* ============================================================
+   pi-stepper — default visual styles
+   src/cards/shadcn/stepper/stepper.css
+
+   All visual properties live here so consumers can override
+   individual rules by targeting the same BEM class names in
+   a stylesheet loaded after this one (or by replacing this
+   file entirely).
+
+   Structural / layout Tailwind classes stay in the JSX and
+   are not repeated here.
+
+   Color tokens: the project uses Tailwind v4 with oklch values.
+   Variables like --primary, --border etc. are full oklch() color
+   values — use them directly with var(--primary), NOT with
+   hsl(var(--primary)) which would be invalid in this setup.
+   ============================================================ */
+
+/* ── CSS size variables (override per stepper or globally) ─── */
+.pi-stepper {
+  --pi-stepper-indicator-size-sm: 1.5rem;
+  /* 24 px */
+  --pi-stepper-indicator-size-md: 2rem;
+  /* 32 px */
+  --pi-stepper-indicator-size-lg: 2.5rem;
+  /* 40 px */
+  --pi-stepper-indicator-size: var(--pi-stepper-indicator-size-md);
+  --pi-stepper-connector-thickness: 2px;
+  --pi-stepper-connector-min-height: 1.5rem;
+  /* vertical mode */
+  --pi-stepper-label-max-width: 6rem;
+  /* horizontal mode */
+}
+
+/* ── Size modifiers ─────────────────────────────────────────── */
+.pi-stepper--sm {
+  --pi-stepper-indicator-size: var(--pi-stepper-indicator-size-sm);
+}
+
+.pi-stepper--md {
+  --pi-stepper-indicator-size: var(--pi-stepper-indicator-size-md);
+}
+
+.pi-stepper--lg {
+  --pi-stepper-indicator-size: var(--pi-stepper-indicator-size-lg);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Indicator (step icon / circle)
+
+   Tailwind classes in stepper.tsx provide WORKING defaults:
+     bg-primary / text-primary-foreground / ring-* / border-*
+   Override them here by raising specificity one level (e.g. add
+   the parent class) or by using !important if needed.
+   ────────────────────────────────────────────────────────────── */
+
+/* Base indicator — transitions only (no colors; Tailwind handles defaults) */
+.pi-stepper__indicator {
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    outline-color 200ms ease;
+}
+
+/* To override the active indicator colour, use e.g.:
+     .pi-stepper__indicator--active { background-color: var(--destructive); }
+   The var() tokens are direct oklch values in this project. */
+
+.pi-stepper__indicator--clickable {
+  cursor: pointer;
+}
+
+.pi-stepper__indicator--clickable:hover {
+  opacity: 0.8;
+}
+
+.pi-stepper__indicator--static {
+  cursor: default;
+}
+
+/* ── Connector (line between steps) ─────────────────────────── */
+.pi-stepper__connector {
+  transition: background-color 300ms ease;
+}
+
+/* Vertical connector segment */
+.pi-stepper__connector--vertical {
+  min-height: var(--pi-stepper-connector-min-height);
+}
+
+/* ── Label title ─────────────────────────────────────────────── */
+.pi-stepper__label-title {
+  transition: color 200ms ease;
+}
+
+/* ── Vertical step content slot ──────────────────────────────── */
+.pi-stepper__step-content {
+  /* no special styles needed — spacing set via Tailwind in JSX */
+}

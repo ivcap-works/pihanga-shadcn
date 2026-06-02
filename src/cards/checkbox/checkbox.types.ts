@@ -35,6 +35,12 @@ export type PiCheckboxProps = {
 
   /** When true, the checkbox is disabled and non-interactive. */
   disabled?: boolean;
+
+  /**
+   * Optional label text rendered next to the checkbox.
+   * The label is automatically associated with the input via `htmlFor`.
+   */
+  label?: string;
 };
 
 export type PiCheckboxChangedEvent = {

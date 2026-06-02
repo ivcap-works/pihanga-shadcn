@@ -1,3 +1,16 @@
 import type {ReduxState} from "@pihanga2/core";
+import type {PlaygroundState} from "@/playground/playground.state";
 
-export type AppState = ReduxState;
+export type AppState = ReduxState &
+  PlaygroundState & {
+    /** 0-based active step for the horizontal stepper demo. */
+    stepperActiveStep?: number;
+    /** Active tab id for the tabs demo. */
+    tabsDemoActiveTab?: string;
+
+    // ── ToggleGroup / Switch wiring demo (app.pihanga.ts) ────────────────────
+    /** Currently selected Badge variant driven by the ToggleGroup demo control. */
+    demoVariant?: string;
+    /** Whether notifications are enabled — driven by the Switch demo control. */
+    demoNotifications?: boolean;
+  };
