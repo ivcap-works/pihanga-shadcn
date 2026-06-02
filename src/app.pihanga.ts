@@ -161,6 +161,7 @@ export function appPiInit(): void {
     AppCard.Main,
     PageWithNavbar({
       title: "Pihanga Demo",
+      iconName: "mountain-snow",
       main: FlexGrid({
         cards: {
           list: AppCard.List,

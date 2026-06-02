@@ -4,6 +4,7 @@ import {start, DEFAULT_REDUX_STATE} from "@pihanga2/core";
 
 import type {AppState} from "@/app.state";
 import {RootComponent} from "@/app.root";
+import "@/app.icons"; // registers global icons (e.g. mountain-snow)
 // import {appPiInit} from "./app.pihanga";   ← restore to switch back to the demo app
 import {playgroundPiInit} from "./playground/playground.pihanga";
 

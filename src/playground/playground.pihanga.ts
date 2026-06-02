@@ -640,6 +640,7 @@ export function playgroundPiInit(): void {
     PlaygroundCard.Page,
     PageWithNavbar({
       title: "Pihanga Playground",
+      iconName: "mountain-snow",
       main: FlexGrid({
         cards: {
           list: PlaygroundCard.List,
