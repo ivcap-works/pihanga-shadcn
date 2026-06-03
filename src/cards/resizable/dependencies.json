@@ -1,7 +1,8 @@
 {
   "dependencies": {
+    "clsx": "^2.1.1",
     "lucide-react": "^0.513.0",
-    "react-json-view-lite": "^2.5.0"
+    "react-resizable-panels": "^2.0.0"
   },
   "devDependencies": {}
 }

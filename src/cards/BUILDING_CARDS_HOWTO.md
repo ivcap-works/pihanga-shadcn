@@ -11,7 +11,41 @@ At a high level:
 
 This document describes the components and code artifacts typically required to build a card by analysing `src/pihanga/`.
 
-> Note: ignore `src/pihanga/shadcn/` — it contains a parallel set of wrappers and doesn’t define the core patterns.
+> Note: ignore `src/pihanga/shadcn/` — it contains a parallel set of wrappers and doesn't define the core patterns.
+
+---
+
+## ⚠️ Critical rule: `src/components/` is a shadcn-only zone
+
+> **DO NOT add any custom code to `src/components/`.
+> ALL custom code belongs in the card's own directory (`src/cards/<cardName>/`).**
+
+`src/components/` — and especially `src/components/ui/` — is a **read-only, auto-managed directory**
+that contains only components fetched from the official shadcn/ui registry or the Plate registry
+via `npx shadcn@latest add <name>`.
+
+Violating this rule causes **two serious problems**:
+
+1. **Registry pollution** — `make gen-registry` scans `src/components/ui/` and emits a separate
+   `pihanga-ui-extras` registry entry for every non-standard file it finds there.  Custom files end
+   up bundled into that entry and shipped to every consumer who installs any Pihanga card — even
+   consumers who never use the feature that needed that file.
+
+2. **Upgrade conflicts** — running `npx shadcn@latest add <name>` may silently overwrite your
+   custom file, destroying work.
+
+### What to do instead
+
+| Need | Wrong place | Right place |
+|------|-------------|-------------|
+| A small helper component used only by one card | `src/components/ui/myHelper.tsx` ❌ | `src/cards/<cardName>/myHelper.tsx` ✅ |
+| A hook used only by one card | `src/components/hooks/myHook.ts` ❌ | `src/cards/<cardName>/myHook.ts` ✅ |
+| Shared types used across many cards | `src/components/ui/types.ts` ❌ | `src/cards/types.ts` ✅ |
+| Shared icon utilities | `src/components/ui/icons.ts` ❌ | `src/cards/icons.ts` ✅ |
+| A new shadcn primitive you need | — | `npx shadcn@latest add <name>` then commit ✅ |
+
+If a helper is used by **more than one card**, create a dedicated card for it
+(e.g. a `utils` or `primitives` card under `src/cards/`) and import it via the `@/cards/` alias.
 
 ---
 
@@ -51,7 +85,19 @@ src/pihanga/<cardName>/
 
 Every card folder **must** include a `dependencies.json` file that declares the
 npm packages required by the card (beyond `@pihanga2/core` and React, which are
-always available).  The format mirrors the relevant sections of `package.json`:
+always available).
+
+**Purpose:** `dependencies.json` serves two roles:
+
+1. **Documentation** — it is the single authoritative record of what a consumer
+   needs to `npm install` in order to use the card as a standalone module.
+   Without it, the required packages are buried in import statements scattered
+   across component files.
+2. **Tooling** — build scripts (e.g. the playground registry generator) can
+   parse these files to automatically derive install instructions, generate
+   package manifests, or validate that every imported package is declared.
+
+The format mirrors the relevant sections of `package.json`:
 
 ```json
 {
@@ -62,9 +108,41 @@ always available).  The format mirrors the relevant sections of `package.json`:
 }
 ```
 
-Use an empty object (`{}`) for a section when the card has no packages in that
-category.  This file is the authoritative record of the card's external
-dependencies and must be kept in sync whenever imports change.
+**Rules:**
+
+* List every npm package that is **directly imported** by any `.ts` / `.tsx`
+  file in the card folder — including local helper files such as
+  `dropdown-menu.ui.tsx` that live inside the card directory.
+* **Exclude** `@pihanga2/core`, `react`, and `react-dom` — these are always
+  provided by the host application.
+* **Exclude** path-aliased local files (`@/components/ui/*`, `@/lib/*`, etc.)
+  unless the alias resolves to a separate npm package.
+* Use an empty object (`{}`) for a section when the card has no packages in
+  that category.  Even cards with no external dependencies **must** have the
+  file (with both sections set to `{}`), so tooling can confirm the card was
+  intentionally analysed.
+* Version strings must match the installed version in the root `package.json`
+  and must be kept in sync whenever imports change.
+
+**Generating / updating  automatically:**
+
+Run the bundled script to (re-)generate all cards in one pass:
+
+```sh
+yarn gen-card-deps            # update all cards
+yarn gen-card-deps --dry-run  # preview changes without writing
+yarn gen-card-deps --card select  # single card only
+```
+
+The script traces both **direct** npm imports and **transitive** imports via
+the local shadcn wrapper files (, ).
+Any package already in a `dependencies.json` that is not detected by the
+scanner is preserved with a warning, so manually-added entries (e.g.
+CSS-only packages, dynamic requires) are not lost.
+
+> **Note:** if the script reports `UNKNOWN - add to root package.json` for a
+> package, the import is real but the package is missing from the root
+> `package.json`.  Add it there first, then re-run the script.
 
 Concrete examples:
 
@@ -380,43 +458,203 @@ Use this approach if your card module needs to register global handlers, plugin 
 
 ### Examples (`*.example.ts`)
 
-Examples are used to document supported props and provide ready-made demo configs
-**and** to capture live card events in the Playground's "Events" panel.
+The example file serves **two equally important purposes**:
 
-Every `*.example.ts` should export a `definePlayground` default and include:
+1. **Documentation** — it is the primary human-readable description of what the card is,
+   when to use it, what variants it supports, and how to wire it into a real app.
+2. **Playground integration** — it drives the interactive card explorer: live preview,
+   facet tabs, prop controls, and event log.
 
-1. **`facets`** — named usage scenarios (one per tab in the "Examples" section).
-2. **`registerEvents`** — event listeners that log every interaction to the
-   playground event viewer.
+A card without a `*.example.ts` file does **not appear** in the playground. Strongly
+prefer creating one for every new card.
 
-#### The `registerEvents` field
-
-`registerEvents` is an optional field on `definePlayground`. When present, the
-Playground engine calls it once at boot-time, passing a scoped `logEvent`
-function. The function is a no-op for all cards *except* the one currently
-selected in the playground, so registering global handlers here is safe.
+#### Full `definePlayground` schema
 
 ```ts
-import {Stepper, onStepperStepClicked, type StepperProps} from "./index";
-import {definePlayground} from "@/playground/definePlayground";
+export default definePlayground<MyCardProps>({
+  // ── Required ──────────────────────────────────────────────────────────────
+  cardId:       "shad/my-card",   // must match the card's CARD_ID constant
+  title:        "My Card",        // human-readable name shown in the sidebar
+  introduction: `…`,              // prose description — see below (REQUIRED)
 
-export default definePlayground<StepperProps>({
-  cardId: "shad/stepper",
-  title:  "Stepper",
-  // …
+  // ── Strongly recommended ──────────────────────────────────────────────────
+  preview:      (props) => MyCard(props),   // factory for the live preview
+  defaultProps: { label: "Hello" },         // JSON-serialisable defaults for the live preview
+  facets: [ … ],                            // named usage scenarios — see below
+  controls: [ … ],                          // interactive prop controls — see below
+  note:    `…`,                             // usage code for app.pihanga.ts — see below
 
-  registerEvents: (r, logEvent) => {
-    // `r`        — PiRegister (same API as inside register((r) => …))
-    // `logEvent` — (state, eventLabel, data) => void
-    //              appends to state.playgroundEventLog when this card is active
-    onStepperStepClicked(r, (state, ev) => {
-      logEvent(state, "onStepperStepClicked", {
-        stepIndex: ev.stepIndex,
-        stepId:    ev.stepId,
-      });
-    });
-  },
+  // ── Optional ──────────────────────────────────────────────────────────────
+  registerEvents: (r, logEvent) => { … },   // event logging — see below
 });
+```
+
+---
+
+#### `introduction` (required)
+
+`introduction` is the **card's primary documentation**. It is enforced as required
+by `definePlayground` — the function throws at module load if it is absent.
+
+Write it as plain markdown. It should answer:
+
+- **What is this card?** One-sentence summary.
+- **When should I use it?** Typical use-cases or scenarios.
+- **What are its key capabilities?** Notable features, variants, or behaviours.
+- **Any important constraints or gotchas?** e.g., "must be inside a `pi/form` card",
+  "requires icon registration", "uses Tailwind v4 only".
+
+```ts
+introduction: `
+A versatile, Tailwind-styled button with support for multiple **variants**, **sizes**,
+icons, tooltips, and loading states.
+
+Set \`opts.variant\` to control the visual style, and \`opts.size\` to control dimensions.
+Use \`iconLabel\` for icon-only buttons, or \`opts.beforeIcon\` / \`opts.afterIcon\` to
+place icons alongside text labels.
+
+Tooltips accept either a plain string (\`tooltip\`) or any \`PiCardRef\` (\`tooltipCard\`)
+for rich custom tooltip content.
+`.trim(),
+```
+
+Keep `introduction` data-only — no `memo()` calls, no function references.
+
+---
+
+#### `preview` and `defaultProps`
+
+`preview` is a factory function that returns the card declaration rendered in the
+live preview pane. `defaultProps` provides the initial JSON-serialisable prop values.
+
+```ts
+preview:      (props) => Button(props),
+defaultProps: { id: "preview", label: "Click me", opts: { variant: "default" } },
+```
+
+`defaultProps` is validated at dev time — if it contains non-serialisable values
+(e.g. a `memo()` wrapper), `definePlayground` throws immediately.
+
+---
+
+#### `facets`
+
+Facets are named usage scenarios shown as tabs in the playground. Each facet must
+have:
+
+| Field | Required | Purpose |
+|---|---|---|
+| `id` | ✅ | Unique slug (URL-safe) |
+| `title` | ✅ | Tab label |
+| `description` | ✅ | One-sentence explanation of *when* to use this variant — shown below the tab title |
+| `props` | ✅ | JSON-serialisable props merged over `defaultProps` for this scenario |
+
+```ts
+facets: [
+  {
+    id:          "default",
+    title:       "Default",
+    description: "Primary colour, filled. Use for the most prominent or active state.",
+    props:       { label: "New", variant: "default" },
+  },
+  {
+    id:          "destructive",
+    title:       "Destructive",
+    description: "Red / error colour. Use for failed, blocked, or dangerous states.",
+    props:       { label: "Error", variant: "destructive" },
+  },
+],
+```
+
+Aim for 3–6 facets. Cover the most common real-world scenarios rather than
+enumerating every prop combination.
+
+---
+
+#### `controls`
+
+Controls render an interactive prop editor in the playground sidebar. Supported
+control types:
+
+| `type` | Renders | Use for |
+|---|---|---|
+| `"text"` | Text input | String props; supports `placeholder` |
+| `"boolean"` | Toggle switch | Boolean props |
+| `"token"` | Segmented button group | Enum/union props; requires `options` array |
+| `"number"` | Number input | Numeric props |
+
+```ts
+controls: [
+  { prop: "label",       type: "text",    label: "Label",   placeholder: "Button text…" },
+  { prop: "opts.variant",type: "token",   label: "Variant", options: ["default", "secondary", "ghost"] },
+  { prop: "opts.size",   type: "token",   label: "Size",    options: ["default", "sm", "lg", "icon"] },
+  { prop: "disabled",    type: "boolean", label: "Disabled" },
+  { prop: "loading",     type: "boolean", label: "Loading"  },
+],
+```
+
+Use dot notation for nested props (`"opts.variant"`). Match the `prop` path exactly
+to the card's Props type.
+
+---
+
+#### `note`
+
+`note` is a markdown string (rendered below the live preview) containing **copy-paste
+usage snippets** showing how to wire the card in a real `app.pihanga.ts`. Include at
+least one `registerCard(...)` example; add more snippets for common patterns (e.g.
+state-driven props, event handlers).
+
+```ts
+note: `
+Inside \`app.pihanga.ts\`, wire a button to dispatch an action:
+
+\`\`\`ts
+import {registerCard, register} from "@pihanga2/core";
+import {Button, onPiButtonClicked} from "@/cards/button";
+
+register((r) => {
+  onPiButtonClicked(r, (state, {id}) => {
+    if (id === "save") state.isSaving = true;
+  });
+});
+
+registerCard("myApp/saveButton", Button({
+  id:    "save",
+  label: "Save",
+  opts:  { variant: "default" },
+}));
+\`\`\`
+`.trim(),
+```
+
+Rules for `note`:
+- Use triple-backtick TypeScript blocks — they are syntax-highlighted.
+- Show realistic prop values, not `"TODO"` placeholders.
+- If the card has form integration, show both the form-bound and standalone patterns.
+- Keep it concise: 1–3 snippets covering the most important use-cases.
+
+---
+
+#### `registerEvents`
+
+`registerEvents` is an optional field. When present, the Playground engine calls it
+once at boot-time, passing a scoped `logEvent` function. The function is a no-op for
+all cards *except* the one currently selected, so registering global handlers here
+is safe.
+
+```ts
+registerEvents: (r, logEvent) => {
+  // `r`        — PiRegister (same API as inside register((r) => …))
+  // `logEvent` — (state, eventLabel, data) => void
+  //              appends to state.playgroundEventLog when this card is active
+  onStepperStepClicked(r, (state, ev) => {
+    logEvent(state, "onStepperStepClicked", {
+      stepIndex: ev.stepIndex,
+      stepId:    ev.stepId,
+    });
+  });
+},
 ```
 
 **Rules for `registerEvents`:**
@@ -433,12 +671,69 @@ facet tab's bottom row into two columns:
 - **Left**: `JsonViewer` for the facet's prop overrides.
 - **Right**: scrollable event log (newest first); shows "No events yet" until the user interacts.
 
-Previously:
+---
 
-* `src/pihanga/button/button.example.ts`
-  * demonstrates icon registration (`registerIcon(...)`) and typical button props
-* `src/pihanga/dropDownMenu/drop-down.example.ts`
-  * demonstrates labels, separators, checkboxes, radio groups, submenus
+#### Complete example file skeleton
+
+```ts
+/**
+ * Playground definition for the `shad/my-card` card.
+ */
+import {definePlayground} from "@/playground/definePlayground";
+import {MyCard, onMyCardAction, type MyCardProps} from "./index";
+
+export default definePlayground<MyCardProps>({
+  cardId: "shad/my-card",
+  title:  "My Card",
+
+  introduction: `
+One-sentence summary of what this card does.
+
+When to use it, what it supports, any important constraints.
+  `.trim(),
+
+  preview:      (props) => MyCard(props),
+  defaultProps: { label: "Hello" },
+
+  facets: [
+    {
+      id:          "basic",
+      title:       "Basic",
+      description: "The most common usage — plain label with default styling.",
+      props:       { label: "Hello" },
+    },
+    {
+      id:          "variant-b",
+      title:       "Variant B",
+      description: "When to prefer this variant over the default.",
+      props:       { label: "World", variant: "secondary" },
+    },
+  ],
+
+  controls: [
+    { prop: "label",   type: "text",    label: "Label",   placeholder: "Card text…" },
+    { prop: "variant", type: "token",   label: "Variant", options: ["default", "secondary"] },
+    { prop: "disabled",type: "boolean", label: "Disabled" },
+  ],
+
+  registerEvents: (r, logEvent) => {
+    onMyCardAction(r, (state, ev) => {
+      logEvent(state, "onMyCardAction", { id: ev.id });
+    });
+  },
+
+  note: `
+\`\`\`ts
+import {registerCard} from "@pihanga2/core";
+import {MyCard} from "@/cards/myCard";
+
+registerCard("myApp/widget", MyCard({
+  label: "Hello",
+}));
+\`\`\`
+  `.trim(),
+});
+```
 
 ### Tests (`*.test.tsx`)
 
@@ -509,8 +804,16 @@ This file is a compact reference for the bare minimum:
    * List every npm package imported by the card (excluding `@pihanga2/core` and React)
    * Use the same `dependencies` / `devDependencies` structure as `package.json`
    * Use `{}` for any section that has no entries
-6. **Optional**
-   * `*.example.ts` with example props
+6. **Create `*.example.ts`** (strongly recommended — cards without one are invisible in the playground)
+   * Required fields: `cardId`, `title`, `introduction`
+   * `introduction` — prose description of what the card is, when to use it, key capabilities
+   * `preview` + `defaultProps` — live preview factory and initial prop values
+   * `facets` — 3–6 named usage scenarios, each with a `description`
+   * `controls` — interactive prop editor entries
+   * `note` — copy-paste `registerCard(...)` snippets for `app.pihanga.ts`
+   * `registerEvents` — if the card emits actions, log every one via `logEvent`
+   * See the "Examples" section above for full schema and skeleton
+7. **Optional**
    * `*.test.tsx` (mock `<Card />` if needed)
    * `*.css` imported by the component
 

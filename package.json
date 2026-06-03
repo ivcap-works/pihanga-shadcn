@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "gen-playground": "node scripts/gen-playground-registry.mjs",
+    "gen-card-deps": "node scripts/gen-card-dependencies.mjs",
+    "gen-registry": "node scripts/gen-registry.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

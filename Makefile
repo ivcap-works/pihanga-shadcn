@@ -11,7 +11,7 @@ TAR_FILE=${ROOT_DIR}/${DOMAIN}-${GIT_SHORT}-$(shell echo ${GIT_BRANCH} | sed -e 
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install dev build build-preview gen-playground check lint lint-fix type-check \
+.PHONY: help install dev build build-preview gen-playground gen-registry check lint lint-fix type-check \
         test test-run test-ui test-coverage \
         clean src-dist tar tar-echo
 
@@ -40,6 +40,9 @@ build-preview: build ## Build then preview production bundle
 
 gen-playground: ## (Re)generate src/playground/playground.examples.gen.ts
 	node scripts/gen-playground-registry.mjs
+
+gen-registry: ## Generate shadcn registry JSON files in public/r/ (Option D distribution)
+	node scripts/gen-registry.mjs
 
 ##@ Code Quality
 

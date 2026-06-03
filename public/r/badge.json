@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "badge",
+  "type": "registry:component",
+  "description": "Pihanga badge card component",
+  "dependencies": [
+    "@radix-ui/react-slot@^1.2.4",
+    "class-variance-authority@^0.7.1"
+  ],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "badge",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-lib-utils.json"
+  ],
+  "files": [
+    {
+      "path": "cards/badge/badge.component.tsx",
+      "content": "import * as React from \"react\";\nimport {type PiCardProps} from \"@pihanga2/core\";\nimport {Badge} from \"@/components/ui/badge\";\nimport {cn} from \"@/lib/utils\";\nimport type {BadgeCardProps} from \"./badge.types\";\n\n/**\n * `shad/badge` card component.\n *\n * Renders a shadcn `<Badge>` element with a `label` and an optional `variant`.\n * The variant vocabulary is intentionally identical to the `BadgeColumn.variants`\n * map used by the `shad/data-table` card, so both can be driven from the same\n * source-of-truth value:\n *\n *   \"default\" | \"secondary\" | \"destructive\" | \"outline\"\n */\nexport const BadgeComponent = (\n  props: PiCardProps<BadgeCardProps>,\n): React.ReactNode => {\n  const {label, variant = \"secondary\", className, cardName} = props;\n\n  return (\n    <Badge\n      variant={variant}\n      className={cn(className)}\n      data-pihanga={cardName}\n    >\n      {label}\n    </Badge>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/badge/badge.component.tsx"
+    },
+    {
+      "path": "cards/badge/badge.types.ts",
+      "content": "import {createCardDeclaration} from \"@pihanga2/core\";\n\nexport const BADGE_CARD = \"shad/badge\";\n\n/**\n * Badge visual style variants — mirrors the shadcn `Badge` `variant` prop and\n * the `variants` map used in the dataTable `BadgeColumn` type, so the same\n * string values work in both contexts.\n *\n * | Value           | Appearance                               |\n * |-----------------|------------------------------------------|\n * | `\"default\"`     | Primary colour, filled                   |\n * | `\"secondary\"`   | Muted/secondary colour, filled (default) |\n * | `\"destructive\"` | Red / error colour, filled               |\n * | `\"outline\"`     | Transparent background, border only      |\n */\nexport type BadgeVariant = \"default\" | \"secondary\" | \"destructive\" | \"outline\";\n\nexport type BadgeCardProps = {\n  /** Text content rendered inside the badge */\n  label: string;\n\n  /**\n   * Visual style variant.  Matches the shadcn Badge variants and the\n   * `BadgeColumn.variants` map in `dataTable.types.ts`.\n   * @default \"secondary\"\n   */\n  variant?: BadgeVariant;\n\n  /** Additional Tailwind classes applied to the `<Badge>` element */\n  className?: string;\n};\n\n/**\n * Factory function for declaring a `shad/badge` card instance.\n *\n * ```ts\n * import {registerCard} from \"@pihanga2/core\";\n * import {ShadBadge} from \"@/cards/badge\";\n *\n * registerCard(\"myApp/status\", ShadBadge({label: \"Active\", variant: \"default\"}));\n * ```\n */\nexport const ShadBadge = createCardDeclaration<BadgeCardProps>(BADGE_CARD);\n",
+      "type": "registry:component",
+      "target": "src/cards/badge/badge.types.ts"
+    },
+    {
+      "path": "cards/badge/index.ts",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {BadgeComponent} from \"./badge.component\";\nimport {BADGE_CARD} from \"./badge.types\";\n\nexport * from \"./badge.types\";\n\nregisterCardComponent({\n  name: BADGE_CARD,\n  component: BadgeComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/badge/index.ts"
+    }
+  ]
+}

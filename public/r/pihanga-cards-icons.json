@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "pihanga-cards-icons",
+  "type": "registry:component",
+  "description": "Pihanga icon registry — registerIcon / getIcon helpers",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "cards/icons.ts",
+      "content": "import React from \"react\";\n\ntype G = {\n  name2icon: {[name: string]: React.ElementType};\n};\n\ndeclare global {\n  interface Window {\n    _PihangaIcons: G;\n  }\n}\n\nwindow._PihangaIcons = window._PihangaIcons || {\n  name2icon: {},\n};\n\nconst name2icon = window._PihangaIcons.name2icon;\n\n\n\nexport function registerIcon(name: string, el: React.ElementType): string {\n  if (name2icon[name] !== undefined) {\n    throw new Error(`icon '${name}' already registered`);\n  }\n  name2icon[name] = el;\n  return name;\n}\n\nexport function getIconElement(name: string): React.ElementType | undefined {\n  return name2icon[name];\n}\n\n// can't figure out what the proper return type is, SVvgIconT does\n// NOT work with <IconButton>\n// eslint-disable-next-line @typescript-eslint/no-explicit-any\nexport function getIcon(name: string, props?: any): React.ReactNode {\n  const icon = name2icon[name];\n  if (!icon) return null;\n  const el = React.createElement(icon, props);\n  return el;\n}\n",
+      "type": "registry:component",
+      "target": "src/cards/icons.ts"
+    }
+  ]
+}

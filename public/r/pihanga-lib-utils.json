@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "pihanga-lib-utils",
+  "type": "registry:lib",
+  "description": "Tailwind CSS utility helper — the cn() function",
+  "dependencies": [
+    "clsx@^2.1.1",
+    "tailwind-merge@^3.3.0"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "lib/utils.ts",
+      "content": "import {clsx, type ClassValue} from \"clsx\";\nimport {twMerge} from \"tailwind-merge\";\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs));\n}\n",
+      "type": "registry:lib"
+    }
+  ]
+}

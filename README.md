@@ -120,3 +120,39 @@ If a new card needs a shadcn/ui primitive that isn't already in `src/components/
 npx shadcn@latest add button
 npx shadcn@latest add card
 ```
+
+## Distributing Cards (shadcn Registry)
+
+Pihanga cards are distributed as a **shadcn-compatible registry** hosted on GitHub Pages.
+Consumers can install individual cards (and their dependencies) with one command:
+
+```bash
+# Ensure shadcn is initialised in the target project first
+npx shadcn@latest init
+
+# Then install any card by name
+npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button
+npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/dataTable
+```
+
+The CLI will automatically fetch the card source files, install all required npm packages,
+and pull in any shadcn/ui primitives the card depends on.
+
+### Regenerating the registry
+
+The registry files live in `public/r/` and are generated from the source cards:
+
+```bash
+make gen-registry          # regenerate public/r/ from src/cards/
+make gen-registry --dry-run  # preview without writing (via node directly)
+node scripts/gen-registry.mjs --dry-run
+node scripts/gen-registry.mjs --base-url http://localhost:5173  # local testing
+```
+
+Run this whenever you add a new card, rename a file, or change a card's dependencies.
+The CI workflow (`.github/workflows/deploy-registry.yml`) also runs it automatically
+on every push to `main` and publishes the result to GitHub Pages.
+
+> **Note:** `public/r/` is committed to git so the registry also works immediately via
+> raw GitHub content URLs (no GitHub Pages deployment required):
+> `https://raw.githubusercontent.com/ivcap-works/pihanga-shadcn/main/public/r/button.json`

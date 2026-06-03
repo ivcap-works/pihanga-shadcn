@@ -1,0 +1,42 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "graphin",
+  "type": "registry:component",
+  "description": "Pihanga graphin card component",
+  "dependencies": [
+    "@antv/g@^6.3.1",
+    "@antv/g6@^5.1.1",
+    "@antv/graphin@^3.0.5",
+    "clsx@^2.1.1",
+    "lodash@^4.18.1"
+  ],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json"
+  ],
+  "files": [
+    {
+      "path": "cards/graphin/graphin.component.tsx",
+      "content": "import React from \"react\";\nimport {PiCardProps} from \"@pihanga2/core\";\nimport {Graphin} from \"@antv/graphin\";\n\nimport {\n  NodeEvent,\n  type GraphOptions,\n  type Graph,\n} from \"@antv/g6\";\n\nimport {GraphinProps} from \"./graphin.types\";\nimport clsx from \"clsx\";\nimport {cloneDeep, merge} from \"lodash\";\nimport {TooltipComponent} from \"./tooltip.component\";\n\nexport const GraphinComponent = (\n  props: PiCardProps<GraphinProps>,\n): React.ReactNode => {\n  const {cardName, data, options, tooltip, style, className, _cls} = props;\n\n  const handleReady = (graph: Graph) => {\n    console.log(\"Graph ready:\", graph);\n\n    // Add event handlers\n    graph.on(NodeEvent.CLICK, (evt) => {\n      console.log(\"Node clicked:\", evt);\n    });\n\n    graph.on(\"edge:click\", (evt) => {\n      console.log(\"Edge clicked:\", evt);\n    });\n  };\n\n  // console.log(\"AREA\", area)\n  const _style = {\n    // display: \"grid\",\n    // gridGap: template.gap || \"10px\",\n    // height,\n    // margin,\n    // width: \"100%\",\n\n    display: \"flex\",\n    width: \"100%\",\n    ...style?.root,\n  };\n\n  const defOptions: GraphOptions = {\n    data,\n    autoResize: true,\n    node: {\n      style: {\n        labelText: (d) => {\n          return (d.data?.displayName || d.id) as string;\n        },\n        lod: {\n          0: {labelFontSize: 10}, // Zoomed out: smaller font\n          1: {labelFontSize: 12}, // Normal: standard font\n          2: {labelFontSize: 6}, // Zoomed in: reduce font size so it doesn't overwhelm\n        },\n        // labelFontSize: 12, // This is your \"Base\" size\n        // labelWordWrap: true,\n        // labelWordWrapWidth: 100, // Limits the horizontal growth\n      },\n      // palette: {\n      //   type: \"group\",\n      //   field: \"cluster\",\n      // },\n    },\n    // layout: {\n    //   type: \"force\", // The layout engine type\n    //   preventOverlap: true, // Parameters specific to the 'force' engine\n    //   nodeSize: 30,\n    //   linkDistance: 100,\n    // },\n    layout: {\n      type: \"force-atlas2\",\n      preventOverlap: true,\n      kr: 20,\n      // center: [250, 250],\n    },\n    behaviors: [\n      \"drag-canvas\",\n      \"drag-element\",\n      // \"zoom-canvas\",\n      {\n        type: \"auto-adapt-label\",\n        enableAnimation: true,\n        throttle: 100,\n        padding: 0,\n      },\n      {\n        type: \"zoom-canvas\",\n        id: \"zoom-canvas-1\",\n        // trigger: {\n        //   zoomIn: [\"Control\", \"+\"], // Zoom in shortcut\n        //   zoomOut: [\"Control\", \"-\"], // Zoom out shortcut\n        //   reset: [\"Control\", \"0\"], // Reset zoom ratio shortcut\n        // },\n        // trigger: [\"Control\"],\n        fixSelectedItems: {fixLabel: true},\n      },\n    ],\n    animation: true,\n  };\n\n  const mergedOptions = merge(cloneDeep(defOptions), options);\n  return (\n    <div\n      style={_style}\n      className={clsx(_cls(\"root\"), className)}\n      data-pihanga={cardName}\n    >\n      <Graphin\n        options={mergedOptions}\n        onReady={handleReady}\n        style={{width: \"inherit\"}}\n      >\n        {tooltip && (\n          <TooltipComponent contentCards={tooltip} parentCard={cardName} />\n        )}\n      </Graphin>\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/graphin/graphin.component.tsx"
+    },
+    {
+      "path": "cards/graphin/graphin.types.ts",
+      "content": "import {createCardDeclaration, PiCardDef} from \"@pihanga2/core\";\nimport {GraphData, GraphOptions} from \"@antv/g6\";\n\nexport const GRAPHIN_CARD = \"graphin\";\nexport const Graphin = createCardDeclaration<GraphinProps>(GRAPHIN_CARD);\n\nexport type GraphinProps = {\n  data: GraphData;\n  options?: Partial<Omit<GraphOptions, \"data\">>;\n  tooltip?: GraphinTooltip;\n  style?: {\n    root?: React.CSSProperties;\n    item?: React.CSSProperties;\n  };\n  className?: string;\n};\n\nexport type GraphinTooltip = {\n  node?: PiCardDef;\n  edge?: PiCardDef;\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/graphin/graphin.types.ts"
+    },
+    {
+      "path": "cards/graphin/index.ts",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {GraphinComponent} from \"./graphin.component\";\nimport {GRAPHIN_CARD} from \"./graphin.types\";\n\nexport * from \"./graphin.types\";\nexport type {TooltipContext} from \"./tooltip.component\";\n\nregisterCardComponent({\n  name: GRAPHIN_CARD,\n  component: GraphinComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/graphin/index.ts"
+    },
+    {
+      "path": "cards/graphin/tooltip.component.tsx",
+      "content": "import {useState, useEffect} from \"react\";\nimport {useGraphin} from \"@antv/graphin\";\nimport type {IPointerEvent} from \"@antv/g6\";\nimport type {DisplayObject} from \"@antv/g\";\nimport {Target} from \"@antv/g6/lib/types\";\nimport {GraphinTooltip} from \"@/cards/graphin/graphin.types\";\nimport {Card} from \"@pihanga2/core\";\n\nexport type TooltipContext<T = Record<string, unknown>> = {\n  isEdge?: boolean;\n  elementID?: string;\n  elementData?: T;\n};\n\ntype tooltipState = TooltipContext & {\n  visible: boolean;\n  x: number;\n  y: number;\n};\n\nexport function TooltipComponent(props: {\n  contentCards: GraphinTooltip;\n  parentCard: string;\n}): React.ReactNode {\n  const {contentCards, parentCard} = props;\n  const {graph, isReady} = useGraphin();\n  const [tooltip, setTooltip] = useState<tooltipState>({\n    visible: false,\n    x: 0,\n    y: 0,\n  });\n\n  useEffect(() => {\n    if (!isReady || !graph) return;\n\n    // Try different event name formats\n    const handleNodePointerEnter = (\n      evt: IPointerEvent<DisplayObject & Target>,\n    ) => {\n      const nodeId = evt.target.id;\n      const nodeData = graph.getNodeData(nodeId);\n\n      setTooltip({\n        visible: true,\n        x: evt.canvas.x || evt.x,\n        y: evt.canvas.y || evt.y,\n        isEdge: true,\n        elementID: nodeId,\n        elementData: nodeData.data,\n      });\n    };\n\n    const handleNodePointerLeave = () => {\n      console.log(\"Pointer leave event\");\n      setTooltip({\n        visible: false,\n        x: 0,\n        y: 0,\n        isEdge: undefined,\n        elementID: undefined,\n        elementData: undefined,\n      });\n    };\n\n    // Listen to G6 events\n    console.log(\">>> tooltip effect\", graph);\n    graph.on(\"node:pointerenter\", handleNodePointerEnter);\n    graph.on(\"node:pointerleave\", handleNodePointerLeave);\n\n    return () => {\n      graph.off(\"node:pointerenter\", handleNodePointerEnter);\n      graph.off(\"node:pointerleave\", handleNodePointerLeave);\n    };\n  }, [graph, isReady]);\n\n  if (!contentCards.node) return null;\n  if (!tooltip.visible) return null;\n\n  return (\n    <div\n      style={{\n        position: \"absolute\",\n        left: tooltip.x + 10,\n        top: tooltip.y + 10,\n        background: \"white\",\n        padding: \"12px\",\n        borderRadius: \"4px\",\n        boxShadow: \"0 2px 8px rgba(0,0,0,0.15)\",\n        pointerEvents: \"none\",\n        zIndex: 1000,\n      }}\n    >\n      {/* <h4 style={{margin: \"0 0 8px 0\"}}>{tooltip.elementID}</h4> */}\n      <Card cardName={contentCards.node} parentCard={parentCard} {...tooltip} />\n    </div>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "src/cards/graphin/tooltip.component.tsx"
+    }
+  ]
+}

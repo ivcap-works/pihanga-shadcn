@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@pihanga2/cards": "^0.3.15",
+    "clsx": "^2.1.1"
+  },
+  "devDependencies": {}
+}

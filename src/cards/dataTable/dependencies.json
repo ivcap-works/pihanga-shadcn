@@ -1,7 +1,8 @@
 {
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
     "class-variance-authority": "^0.7.1",
-    "radix-ui": "^1.4.3"
+    "lucide-react": "^0.513.0"
   },
   "devDependencies": {}
 }
