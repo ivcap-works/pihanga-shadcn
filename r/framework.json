@@ -1,0 +1,28 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "framework",
+  "type": "registry:component",
+  "description": "Pihanga framework card component",
+  "dependencies": [
+    "@radix-ui/react-tooltip@^1.2.8"
+  ],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-theme-provider.json",
+    "tooltip"
+  ],
+  "files": [
+    {
+      "path": "cards/framework/framework.component.tsx",
+      "content": "import * as React from \"react\";\nimport {StrictMode} from \"react\";\nimport {ThemeProvider} from \"@/components/theme-provider/theme-provider.component\";\n\nimport {Card, type PiCardProps, type WindowProps} from \"@pihanga2/core\";\nimport {TooltipProvider} from \"@/components/ui/tooltip\";\n\nexport const Component = (props: PiCardProps<WindowProps>): React.ReactNode => {\n  const {page, theme = \"dark\", cardName} = props;\n\n  return (\n    <StrictMode>\n      <ThemeProvider defaultTheme={theme} storageKey=\"shadcn-ui-theme\">\n        <TooltipProvider>\n          <Card cardName={page} parentCard={cardName} />\n        </TooltipProvider>\n      </ThemeProvider>\n    </StrictMode>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/framework/framework.component.tsx"
+    },
+    {
+      "path": "cards/framework/index.ts",
+      "content": "import {\n  type WindowProps,\n  createCardDeclaration,\n  registerCardComponent,\n} from \"@pihanga2/core\";\n\nimport {Component} from \"./framework.component\";\n\nconst CARD_TYPE = \"shad/framework\";\nexport const SdFramework = createCardDeclaration<WindowProps>(CARD_TYPE);\n\nregisterCardComponent({\n  name: CARD_TYPE,\n  component: Component,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/framework/index.ts"
+    }
+  ]
+}

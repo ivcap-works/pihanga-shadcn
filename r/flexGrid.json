@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "flexGrid",
+  "type": "registry:component",
+  "description": "Pihanga flexGrid card component",
+  "dependencies": [
+    "clsx@^2.1.1"
+  ],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json"
+  ],
+  "files": [
+    {
+      "path": "cards/flexGrid/flexGrid.component.tsx",
+      "content": "import React from \"react\";\nimport {Card, PiCardProps, PiCardRef} from \"@pihanga2/core\";\nimport {FlexGridProps} from \"./flexGrid.types\";\nimport clsx from \"clsx\";\n\nexport const FlexGridComponent = (\n  props: PiCardProps<FlexGridProps>,\n): React.ReactNode => {\n  const {\n    cardName,\n    cards = {},\n    template,\n    height = \"auto\", //'100vh',\n    margin = 0,\n    overflow = \"hidden\", // 'scroll',\n    style,\n    className,\n    _cls,\n  } = props;\n\n  // console.log(\"AREA\", area)\n  const _style = {\n    display: \"grid\",\n    gridGap: template.gap || \"10px\",\n    height,\n    margin,\n    width: \"100%\",\n    ...style?.root,\n  };\n\n  if (template.area) {\n    const areaRows = template.area.map((rn) => `\"${rn.join(\" \")}\"`);\n    _style.gridTemplateAreas = areaRows.join(\" \");\n  }\n  if (template.rows) {\n    _style.gridTemplateRows = template.rows.join(\" \");\n  }\n  if (template.columns) {\n    _style.gridTemplateColumns = template.columns.join(\" \");\n  }\n\n  function renderGridCard(v: [string, PiCardRef]): React.ReactElement {\n    const [name, gridCard] = v;\n    const _style = {\n      overflow,\n      ...style?.item,\n    };\n    if (template.area) {\n      _style.gridArea = name;\n    }\n    return (\n      <div style={_style} data-pihanga-grid={name} key={name}>\n        <Card cardName={gridCard} parentCard={cardName} />\n      </div>\n    );\n  }\n\n  return (\n    <div\n      style={_style}\n      className={clsx(_cls(\"root\"), className)}\n      data-pihanga={cardName}\n    >\n      {Object.entries(cards).map(renderGridCard)}\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/flexGrid/flexGrid.component.tsx"
+    },
+    {
+      "path": "cards/flexGrid/flexGrid.types.ts",
+      "content": "import { createCardDeclaration, PiCardRef } from \"@pihanga2/core\"\n\nexport const FLEX_GRID_CARD = \"flex_grid\"\nexport const FlexGrid = createCardDeclaration<FlexGridProps>(FLEX_GRID_CARD)\n\nexport type FlexGridProps = {\n  cards: { [name: string]: PiCardRef }\n  template: TemplateT\n  height?: string\n  margin?: string\n  overflow?: string\n\n  style?: {\n    root?: React.CSSProperties\n    item?: React.CSSProperties\n  }\n  className?: string\n}\n\n// body {\n//   display: grid;\n//   grid-template-areas:\n//     \"header header header\"\n//     \"nav article ads\"\n//     \"footer footer footer\";\n//   grid-template-rows: 60px 1fr 60px;\n//   grid-template-columns: 20% 1fr 15%;\n//   grid-gap: 10px;\n//   height: 100vh;\n//   margin: 0;\n//   }\n\n// https://css-tricks.com/snippets/css/complete-guide-grid/\nexport type TemplateT = {\n  area?: string[][] // name of card dict\n  rows?: string[] // grid-template-rows (e.g [\"min-content\", \"1fr\",  \"min-content\"])\n  columns?: string[] // grid-template-cols (e.g. [\"1fr\", \"50px\", \"1fr\", \"1fr\"])\n  gap?: string\n}\n",
+      "type": "registry:component",
+      "target": "src/cards/flexGrid/flexGrid.types.ts"
+    },
+    {
+      "path": "cards/flexGrid/index.ts",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {FlexGridComponent} from \"./flexGrid.component\";\nimport {FLEX_GRID_CARD} from \"./flexGrid.types\";\n\nexport * from \"./flexGrid.types\";\n\nregisterCardComponent({\n  name: FLEX_GRID_CARD,\n  component: FlexGridComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/flexGrid/index.ts"
+    }
+  ]
+}

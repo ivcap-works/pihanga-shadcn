@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "box",
+  "type": "registry:component",
+  "description": "Pihanga box card component",
+  "dependencies": [
+    "@pihanga2/cards@^0.3.15"
+  ],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json"
+  ],
+  "files": [
+    {
+      "path": "cards/box/box.component.tsx",
+      "content": "import * as React from \"react\";\n\nimport {Card, type PiCardProps} from \"@pihanga2/core\";\nimport type {BoxProps} from \"@pihanga2/cards\";\n\nexport const BoxComponent = (props: PiCardProps<BoxProps>): React.ReactNode => {\n  const {content, className, style, cardName} = props;\n\n  let sy: Record<string, string | number> = {};\n  if (props.height) sy.height = `${props.height}px`;\n  if (props.width) sy.height = `${props.width}px`;\n\n  if (props.marginTop) sy[\"margin-top\"] = `${props.marginTop}px`;\n  if (props.marginBottom) sy[\"margin-bottom\"] = `${props.marginBottom}px`;\n  if (props.marginLeft) sy[\"margin-ledt\"] = `${props.marginLeft}px`;\n  if (props.marginRight) sy[\"margin-right\"] = `${props.marginRight}px`;\n\n  if (props.paddingTop) sy[\"padding-top\"] = `${props.paddingTop}px`;\n  if (props.paddingBottom) sy[\"padding-bottom\"] = `${props.paddingBottom}px`;\n  if (props.paddingLeft) sy[\"padding-ledt\"] = `${props.paddingLeft}px`;\n  if (props.paddingRight) sy[\"padding-right\"] = `${props.paddingRight}px`;\n\n  sy = {\n    ...(style?.shad as Record<string, string | number> | undefined),\n  };\n\n  function renderContent() {\n    if (!content) return null;\n    return content.map((cn, i) => (\n      <Card cardName={cn} parentCard={cardName} key={i} />\n    ));\n  }\n\n  return (\n    <div className={className} style={sy} data-pihanga={cardName}>\n      {renderContent()}\n      {props.children}\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/box/box.component.tsx"
+    },
+    {
+      "path": "cards/box/index.ts",
+      "content": "import {createCardDeclaration, registerCardComponent} from \"@pihanga2/core\";\n\nimport {BoxComponent} from \"./box.component\";\nimport type {BoxProps} from \"@pihanga2/cards\";\n\nexport const BOX_CARD = \"shad/box\";\nexport const Box = createCardDeclaration<BoxProps>(BOX_CARD);\n\nregisterCardComponent({\n  name: BOX_CARD,\n  component: BoxComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/box/index.ts"
+    }
+  ]
+}
