@@ -4,21 +4,23 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: "pages-${{ github.ref }}"
+  cancel-in-progress: true
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  build:
+  build-and-deploy:
+    name: Build & Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,26 +35,51 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      # Determine the base URL for registry item cross-references.
+      #   Tag push  → https://ivcap-works.github.io/pihanga-shadcn/<tag>
+      #   Branch    → https://ivcap-works.github.io/pihanga-shadcn
+      - name: Resolve registry base URL
+        id: registry_url
+        run: |
+          PAGES_BASE="https://ivcap-works.github.io/pihanga-shadcn"
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+            echo "base_url=${PAGES_BASE}/${TAG}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base_url=${PAGES_BASE}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate registry JSON (public/r/)
+        run: node scripts/gen-registry.mjs --base-url "${{ steps.registry_url.outputs.base_url }}"
+
+      # For tag deploys: also regenerate with the un-versioned URL so the
+      # "latest" path at /r/ continues to work after the versioned copy replaces it.
+      - name: Save un-versioned registry copy (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          mkdir -p public/latest-r
+          node scripts/gen-registry.mjs --base-url "https://ivcap-works.github.io/pihanga-shadcn"
+          cp public/r/*.json public/latest-r/
+
       - name: Build
         run: |
           yarn tsc -b
           yarn vite build --base=/pihanga-shadcn/
+        env:
+          NODE_ENV: production
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      # Copy the versioned registry into dist/<tag>/r/ for pinned consumer URLs
+      - name: Copy versioned registry into dist (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          mkdir -p "dist/${TAG}/r"
+          cp public/r/*.json "dist/${TAG}/r/"
+          cp public/latest-r/*.json dist/r/
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
