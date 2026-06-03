@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-DOMAIN=pihanaga-shadcn
+DOMAIN=pihanga-shadcn
 
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
