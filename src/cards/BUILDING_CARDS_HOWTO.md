@@ -53,7 +53,7 @@ If a helper is used by **more than one card**, create a dedicated card for it
 
 Cards are assembled into pages by registering **card instances** (declarations) against a card name.
 
-Example: `src/pages/frame/frame.pihanga.ts`
+Example: `src/app.pihanga.ts`
 
 * `registerFramework(...)` registers the top-level “app shell” card.
 * `registerCard(cardName, CardDeclaration({...}))` registers concrete card instances.

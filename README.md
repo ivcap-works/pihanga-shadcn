@@ -4,6 +4,16 @@ A collection of **Pihanga cards** built on top of the [shadcn/ui](https://ui.sha
 
 [Pihanga](https://github.com/ivcap-works/pihanga) is a declarative, card-based UI framework for React. Each *card* is an independently registered UI unit with typed props, events, and Redux-backed state management. This repository provides a ready-to-use library of shadcn/ui-styled Pihanga cards together with a live **Playground** app for browsing and experimenting with them.
 
+## Table of Contents
+
+- [Stack](#stack)
+- [Available Cards](#available-cards)
+- [Quick Start](#quick-start)
+- [Project Structure](#project-structure)
+- [Building a New Card](#building-a-new-card)
+- [Adding shadcn/ui Primitives](#adding-shadcnui-primitives)
+- [Distributing Cards (shadcn Registry)](#distributing-cards-shadcn-registry)
+
 ## Stack
 
 - **Card Framework**: [@pihanga2/core](https://github.com/ivcap-works/pihanga) — declarative card system with Redux state management
