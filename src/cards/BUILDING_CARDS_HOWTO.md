@@ -821,6 +821,5 @@ This file is a compact reference for the bare minimum:
 
 ## Related entry points
 
-* `src/pages/frame/frame.pihanga.ts` – concrete example of wiring cards into the app.
-* Other page compositions (examples): `src/pages/refactor/refactor.pihanga.ts`, `src/pages/knowledgeGraph/kg.pihanga.ts`.
-* `src/pihanga/index.ts` – historical init entrypoint (currently commented out).
+* `src/playground/playground.pihanga.ts` – concrete example of wiring cards into the app.
+* `src/app.pihanga.ts` - concrete example on top-level frame/page setup

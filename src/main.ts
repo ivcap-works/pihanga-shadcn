@@ -5,13 +5,11 @@ import {start, DEFAULT_REDUX_STATE} from "@pihanga2/core";
 import type {AppState} from "@/app.state";
 import {RootComponent} from "@/app.root";
 import "@/app.icons"; // registers global icons (e.g. mountain-snow)
-// import {appPiInit} from "./app.pihanga";   ← restore to switch back to the demo app
-import {playgroundPiInit} from "./playground/playground.pihanga";
+import {appPiInit} from "./app.pihanga";
 
-// Switch between the demo app and the playground by swapping which init is used.
-// Only one registerFramework() call should be active at a time.
-const inits = [playgroundPiInit];
-// const inits = [appPiInit];
+// appPiInit boots the two-page app (Introduction + Playground).
+// It calls playgroundPiInit() internally, so only one registerFramework() is active.
+const inits = [appPiInit];
 
 // if (import.meta.env.DEV) {
 //   const { debugInit } = await import("./app.debug")

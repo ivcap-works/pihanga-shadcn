@@ -50,6 +50,142 @@ pre:has(code.hljs) {
   }
 }
 
+/* ── Typography — headings, paragraphs, lists, etc. ────────────────────────── */
+
+/* Headings: size, weight, and spacing matching GitHub's rendered markdown. */
+.md-prose h1 {
+  font-size: 2em;
+  font-weight: 600;
+  line-height: 1.25;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #d0d7de;
+  margin: 1.5rem 0 1rem;
+}
+
+.md-prose h2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.25;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #d0d7de;
+  margin: 1.5rem 0 1rem;
+}
+
+.md-prose h3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 1.25rem 0 0.75rem;
+}
+
+.md-prose h4 {
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 1rem 0 0.5rem;
+}
+
+.md-prose h5,
+.md-prose h6 {
+  font-size: 0.875em;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 1rem 0 0.5rem;
+}
+
+/* Paragraphs */
+.md-prose p {
+  margin: 0 0 1rem;
+  line-height: 1.75;
+}
+
+/* Unordered and ordered lists */
+.md-prose ul,
+.md-prose ol {
+  padding-left: 2em;
+  margin: 0 0 1rem;
+  line-height: 1.75;
+}
+
+.md-prose ul {
+  list-style-type: disc;
+}
+
+.md-prose ol {
+  list-style-type: decimal;
+}
+
+.md-prose li {
+  margin: 0.25em 0;
+}
+
+.md-prose li>p {
+  margin: 0;
+}
+
+/* Nested lists */
+.md-prose ul ul,
+.md-prose ul ol,
+.md-prose ol ul,
+.md-prose ol ol {
+  margin-bottom: 0;
+}
+
+/* Blockquotes */
+.md-prose blockquote {
+  border-left: 4px solid #d0d7de;
+  padding: 0 1em;
+  color: #656d76;
+  margin: 0 0 1rem;
+}
+
+.md-prose blockquote>p {
+  margin: 0;
+}
+
+/* Horizontal rules */
+.md-prose hr {
+  border: 0;
+  border-top: 1px solid #d0d7de;
+  margin: 1.5rem 0;
+}
+
+/* Links */
+.md-prose a {
+  color: #0969da;
+  text-decoration: none;
+}
+
+.md-prose a:hover {
+  text-decoration: underline;
+}
+
+/* Strong / emphasis */
+.md-prose strong {
+  font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+
+  .md-prose h1,
+  .md-prose h2 {
+    border-bottom-color: #30363d;
+  }
+
+  .md-prose hr {
+    border-top-color: #30363d;
+  }
+
+  .md-prose blockquote {
+    border-left-color: #30363d;
+    color: #8b949e;
+  }
+
+  .md-prose a {
+    color: #58a6ff;
+  }
+}
+
 /* ── Tables (GitHub-like) ───────────────────────────────────────────────────── */
 
 /* Scoped to .md-prose so these rules never bleed into app-level tables. */

@@ -46,11 +46,8 @@
  *        Dispatches onPlaygroundPropChanged → patches state.playgroundCurrentProps.
  */
 
-import {memo, register, registerCard, registerFramework} from "@pihanga2/core";
+import {memo, register, registerCard} from "@pihanga2/core";
 import type {PiCardRef} from "@pihanga2/core";
-import {SdFramework} from "@/cards/framework";
-import {PageWithNavbar} from "@/cards/pageWithNavbar";
-import {FlexGrid} from "@/cards/flexGrid";
 import {List, onListItemClicked} from "@/cards/list";
 import {Stack} from "@/cards/stack";
 import {Typography} from "@/cards/typography";
@@ -558,14 +555,6 @@ function makeEventLogger(cardId: string) {
 // ============================================================================
 
 export function playgroundPiInit(): void {
-  // ── Framework root ─────────────────────────────────────────────────────────
-  registerFramework(
-    SdFramework({
-      page: PlaygroundCard.Page,
-      theme: "light",
-    }),
-  );
-
   // ── Event handlers ─────────────────────────────────────────────────────────
   register((r) => {
     // Store the clicked card's `cardId` in state and reset facet + currentProps.
@@ -634,27 +623,6 @@ export function playgroundPiInit(): void {
       }
     }
   });
-
-  // ── Page ───────────────────────────────────────────────────────────────────
-  registerCard(
-    PlaygroundCard.Page,
-    PageWithNavbar({
-      title: "Pihanga Playground",
-      iconName: "mountain-snow",
-      main: FlexGrid({
-        cards: {
-          list: PlaygroundCard.List,
-          detail: PlaygroundCard.Detail,
-        },
-        template: {
-          area: [["list", "detail"]],
-          columns: ["260px", "1fr"],
-          gap: "16px",
-        },
-        overflow: "auto",
-      }),
-    }),
-  );
 
   // ── Left panel — card index ─────────────────────────────────────────────────
   // Items are derived from the static PLAYGROUND_EXAMPLES list.

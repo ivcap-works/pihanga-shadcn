@@ -187,3 +187,221 @@ npx shadcn@latest add \
   graph visualisation is explicitly required.
 - After running `npx shadcn@latest add`, no further manual `npm install` steps
   are needed — the shadcn CLI handles all dependency installation.
+
+---
+
+## Bootstrapping a pihanga app (init pattern)
+
+All app configuration lives in an `*init*` function (conventionally `appPiInit`)
+that is called by `start()` in `src/main.ts`.  The function calls three core APIs:
+
+| API | Purpose |
+|-----|---------|
+| `registerFramework(card)` | Sets the single root framework card. Call **once**. |
+| `registerCard(id, card)` | Registers a named card so other cards can reference it by id. |
+| `register(r => { … })` | Registers global event handlers / reducers. |
+
+```ts
+// src/main.ts
+import {start, DEFAULT_REDUX_STATE} from "@pihanga2/core";
+import {appPiInit} from "./app.pihanga";
+
+start({...DEFAULT_REDUX_STATE}, [appPiInit], {
+  rootComponent: RootComponent,
+});
+```
+
+```ts
+// src/app.pihanga.ts
+import {registerFramework, registerCard, register} from "@pihanga2/core";
+import {SdFramework} from "./cards/framework";
+
+export function appPiInit(): void {
+  registerFramework(SdFramework({page: "app/main", theme: "light"}));
+  registerCard("app/main", /* … card def … */);
+}
+```
+
+---
+
+## `memo()` — reactive state-driven props
+
+`memo(selector, mapper)` makes any card prop reactive.  The selector extracts a
+slice of state; the mapper converts that slice into the final prop value.
+Pihanga re-renders only when the selector's return value changes (shallow equal).
+
+```ts
+import {memo} from "@pihanga2/core";
+import type {AppState} from "@/app.state";
+
+// Switch the active card dynamically based on state.currentPage
+main: memo(
+  (s: AppState) => s.currentPage ?? "home",
+  (page) => `app/page/${page}`,
+),
+```
+
+`memo` can also produce arrays, objects, or any serialisable value:
+
+```ts
+items: memo(
+  (s: AppState) => s.selectedId,
+  (selectedId) => myList.map(item => ({...item, isSelected: item.id === selectedId})),
+),
+```
+
+---
+
+## Multi-page navigation with `PageWithNavbar`
+
+The standard two-page (or N-page) pattern:
+
+1. Add `navLinks` to `PageWithNavbar`.
+2. Register an `onPageWithNavbarNavigateTo` handler that stores the clicked id
+   in state.
+3. Pass a `memo`-driven string to `main` so the rendered card changes with state.
+
+```ts
+import {
+  PageWithNavbar,
+  onPageWithNavbarNavigateTo,
+} from "@/cards/pageWithNavbar";
+import {memo, register, registerCard, registerFramework} from "@pihanga2/core";
+import {SdFramework} from "@/cards/framework";
+import type {AppState} from "@/app.state";
+
+export function appPiInit(): void {
+  registerFramework(SdFramework({page: "app/main", theme: "light"}));
+
+  register((r) => {
+    onPageWithNavbarNavigateTo(r, (state: AppState, {id}) => {
+      state.currentPage = id;           // store active page in state
+    });
+  });
+
+  registerCard("app/main", PageWithNavbar({
+    title: "My App",
+    navLinks: [
+      {id: "home",     title: "Home"},
+      {id: "settings", title: "Settings"},
+    ],
+    main: memo(
+      (s: AppState) => s.currentPage ?? "home",
+      (page) => `app/page/${page}`,     // resolves to "app/page/home" etc.
+    ),
+  }));
+
+  registerCard("app/page/home",     /* … */);
+  registerCard("app/page/settings", /* … */);
+}
+```
+
+Add `currentPage?: string` to your `AppState` type:
+
+```ts
+// src/app.state.ts
+export type AppState = ReduxState & {
+  currentPage?: string;
+  // … other fields
+};
+```
+
+---
+
+## `MarkdownViewer` — inline source vs. fetched path
+
+The `markdownViewer` card accepts either an inline string or a URL:
+
+```ts
+// Inline markdown string
+MarkdownViewer({source: "# Hello\nSome **markdown**."})
+
+// Fetch from a URL (file must be accessible via HTTP)
+MarkdownViewer({path: "/AGENT.md"})
+```
+
+When using `path`, the file must be reachable from the browser at that URL.
+The recommended approach for project-root files (e.g. `AGENT.md`) is a small
+**inline Vite plugin** in `vite.config.ts` — this avoids a stale copy in
+`public/` and keeps a single source of truth:
+
+```ts
+// vite.config.ts
+import {readFileSync} from "fs";
+import type {Plugin} from "vite";
+
+function rootFilePlugin(filenames: string[]): Plugin {
+  return {
+    name: "root-file-serve",
+    // Dev: serve the file directly from the project root
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const name = filenames.find((f) => req.url === `/${f}`);
+        if (name) {
+          res.setHeader("Content-Type", "text/plain; charset=utf-8");
+          res.end(readFileSync(path.resolve(__dirname, name), "utf-8"));
+          return;
+        }
+        next();
+      });
+    },
+    // Build: emit the file into dist/ via Rollup
+    generateBundle() {
+      for (const name of filenames) {
+        this.emitFile({
+          type: "asset",
+          fileName: name,
+          source: readFileSync(path.resolve(__dirname, name), "utf-8"),
+        });
+      }
+    },
+  };
+}
+
+export default defineConfig({
+  plugins: [react(), tailwindcss(), rootFilePlugin(["AGENT.md"])],
+  // …
+});
+```
+
+Do **not** copy the file to `public/` manually — the plugin handles both dev
+and production in one place.
+
+---
+
+## `registerFramework` — only one active at a time
+
+Only one `registerFramework()` call may be active in a given app boot.  If you
+compose multiple init functions (e.g. `appPiInit` calls `playgroundPiInit`),
+ensure that only **one** of them calls `registerFramework`.
+
+Remove or guard any `registerFramework` call in sub-inits before composing them:
+
+```ts
+// ❌ Both call registerFramework — second one silently wins (or errors)
+const inits = [appPiInit, playgroundPiInit];
+
+// ✅ appPiInit calls playgroundPiInit() internally after removing its
+//    registerFramework call from playgroundPiInit.
+export function appPiInit(): void {
+  playgroundPiInit();               // no longer calls registerFramework
+  registerFramework(SdFramework({page: "app/main", theme: "light"}));
+  // …
+}
+```
+
+---
+
+## Known gaps identified during AI agent evaluation (2026-04)
+
+The following patterns were **not** documented in the original AGENT.md but were
+required to complete a multi-page app task.  They have been added above.
+
+| Gap | Section now added |
+|-----|-------------------|
+| App bootstrap pattern (`registerFramework` / `start`) | *Bootstrapping a pihanga app* |
+| `memo()` for reactive state-driven props | *`memo()` — reactive state-driven props* |
+| Multi-page navigation with `PageWithNavbar` + `onPageWithNavbarNavigateTo` | *Multi-page navigation with `PageWithNavbar`* |
+| `MarkdownViewer` `path` prop requires HTTP access / `public/` | *`MarkdownViewer` — inline source vs. fetched path* |
+| `registerFramework` uniqueness constraint when composing inits | *`registerFramework` — only one active at a time* |
+| `AppState` must be extended for new state fields | *Multi-page navigation* (see `currentPage` example) |
