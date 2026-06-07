@@ -6,6 +6,7 @@ import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import rehypeHighlight from "rehype-highlight";
+import rehypeMermaid from "rehype-mermaid";
 import "./katex.css";
 import "highlight.js/styles/github.css";
 import "./markdownViewer.code.css";
@@ -37,7 +38,7 @@ export const MarkdownViewerComponent = (
     path,
     maxBodyLength = -1,
     remarkPlugins = [remarkMath, remarkGfm],
-    rehypePlugins = [rehypeKatex, rehypeHighlight],
+    rehypePlugins = [rehypeKatex, rehypeHighlight, rehypeMermaid],
     remarkRehypeOptions,
     components,
     className,

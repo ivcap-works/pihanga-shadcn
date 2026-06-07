@@ -7,7 +7,7 @@ import {defineConfig, type Plugin} from "vitest/config";
 // ---------------------------------------------------------------------------
 // Inline plugin: serve project-root files in dev + emit them during build.
 //
-// Usage: add rootFilePlugin(["AGENTS.md", "other.txt"]) to the plugins array.
+// Usage: add rootFilePlugin(["USER_GUIDE.md", "other.txt"]) to the plugins array.
 //
 // - Dev server: intercepts GET /<filename> and reads the file from the
 //   project root (avoiding a stale copy in public/).
@@ -43,7 +43,7 @@ function rootFilePlugin(filenames: string[]): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), rootFilePlugin(["AGENTS.md"])],
+  plugins: [react(), tailwindcss(), rootFilePlugin(["USER_GUIDE.md"])],
   resolve: {
     alias: [
       {find: "@/lib", replacement: path.resolve(__dirname, "./src/lib")},
