@@ -10,7 +10,7 @@
  *   │  nav: [Introduction] [Playground]                    │
  *   │  ┌────────────────────────────────────────────────┐  │
  *   │  │  Introduction                                  │  │
- *   │  │  MarkdownViewer  ← /AGENTS.md                 │  │
+ *   │  │  MarkdownViewer  ← /USER_GUIDE.md                 │  │
  *   │  │                                                │  │
  *   │  │  ── or (when nav = "playground") ──            │  │
  *   │  │                                                │  │
@@ -25,7 +25,7 @@
  * The active page id is stored in `state.currentPage` and `main` resolves the card
  * name dynamically via `memo`.
  *
- * Note: AGENTS.md must be available at /AGENTS.md for the MarkdownViewer to fetch it.
+ * Note: USER_GUIDE.md must be available at /USER_GUIDE.md for the MarkdownViewer to fetch it.
  * The rootFilePlugin in vite.config.ts handles this automatically in dev and build.
  */
 
@@ -100,12 +100,18 @@ export function appPiInit(): void {
   );
 
   // ── Introduction page ──────────────────────────────────────────────────────
-  // MarkdownViewer fetches AGENTS.md via HTTP — served by rootFilePlugin in
+  // MarkdownViewer fetches USER_GUIDE.md via HTTP — served by rootFilePlugin in
   // vite.config.ts (dev) and emitted to dist/ during production build.
+  //
+  // We prefix with import.meta.env.BASE_URL so that:
+  //   dev   → /USER_GUIDE.md          (BASE_URL = "/")
+  //   prod  → /pihanga-shadcn/USER_GUIDE.md  (BASE_URL = "/pihanga-shadcn/")
+  // Without this, the absolute path "/USER_GUIDE.md" bypasses the GitHub Pages
+  // sub-path and fetches GitHub's 404 HTML, which then appears as raw text.
   registerCard(
     AppCard.IntroductionPage,
     MarkdownViewer({
-      path: "/AGENTS.md",
+      path: `${import.meta.env.BASE_URL}USER_GUIDE.md`,
       className: "p-4 max-w-4xl mx-auto",
     }),
   );
