@@ -241,3 +241,30 @@ pre:has(code.hljs) {
   padding: 0.15em 0.4em;
   white-space: nowrap;
 }
+
+/* ── Mermaid diagrams ───────────────────────────────────────────────────────── */
+
+/* Reset font size so the page's typography CSS cannot make text larger than
+   what Mermaid measured when it calculated node heights. */
+.mermaid-diagram svg,
+.mermaid-diagram foreignObject div,
+.mermaid-diagram foreignObject p,
+.mermaid-diagram foreignObject span {
+  font-size: 14px !important;
+}
+
+/* White background on edge labels with padding so descenders (g, p, y …)
+   aren't clipped. Belt-and-suspenders alongside themeVariables + inline SVG override. */
+.mermaid-diagram .edgeLabel,
+.mermaid-diagram .edgeLabel span,
+.mermaid-diagram .edgeLabel div,
+.mermaid-diagram .edgeLabel p {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  padding: 2px 4px !important;
+  line-height: 1.4 !important;
+}
+
+.mermaid-diagram .edgeLabel rect {
+  fill: #ffffff !important;
+}

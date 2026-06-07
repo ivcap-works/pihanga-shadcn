@@ -484,11 +484,6 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.11.tgz#a269e055e40e2f45873bae9d1a2fdccbd314ea3f"
   integrity sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==
 
-"@fortawesome/fontawesome-free@^6.0.0":
-  version "6.7.2"
-  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-6.7.2.tgz#8249de9b7e22fcb3ceb5e66090c30a1d5492b81a"
-  integrity sha512-JUOtgFW6k9u4Y+xeIaEiLr3+cjoUPiAuLXoyKOJSia6Duzb7pq+A76P9ZdPDoAoxHdHzq6gE9/jKBGXlZT8FbA==
-
 "@googlemaps/js-api-loader@1.16.8":
   version "1.16.8"
   resolved "https://registry.yarnpkg.com/@googlemaps/js-api-loader/-/js-api-loader-1.16.8.tgz#1595a2af80ca07e551fc961d921a2437d1cb3643"
@@ -4317,16 +4312,7 @@ mdn-data@2.27.1:
   resolved "https://registry.yarnpkg.com/mdn-data/-/mdn-data-2.27.1.tgz#e37b9c50880b75366c4d40ac63d9bbcacdb61f0e"
   integrity sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==
 
-mermaid-isomorphic@^3.0.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/mermaid-isomorphic/-/mermaid-isomorphic-3.1.0.tgz#b68ffe3beb2e604af0ca90ef4abfa24e4f9b504c"
-  integrity sha512-mzrvfEVjnJIkJlEqxp3eMuR1wS0TeLCH1VK5E/T5yzWaBwI3JqjJuw70yUIThSCDJ5bRs6O3rgfp00oBAbvSeQ==
-  dependencies:
-    "@fortawesome/fontawesome-free" "^6.0.0"
-    katex "^0.16.0"
-    mermaid "^11.0.0"
-
-mermaid@^11.0.0, mermaid@^11.15.0:
+mermaid@^11.15.0:
   version "11.15.0"
   resolved "https://registry.yarnpkg.com/mermaid/-/mermaid-11.15.0.tgz#b485c13ea5e1e74f3328c4bb00427bda87fa1c1e"
   integrity sha512-pTMbcf3rWdtLiYGpmoTjHEpeY8seiy6sR+9nD7LOs8KfUbHE4lOUAprTRqRAcWSQ6MQpdX+YEsxShtGsINtPtw==
@@ -4643,11 +4629,6 @@ min-indent@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/min-indent/-/min-indent-1.0.1.tgz#a63f681673b30571fbe8bc25686ae746eefa9869"
   integrity sha512-I9jwMn07Sy/IwOj3zVkVik2JTvgpaykDZEigL6Rx6N9LbMywwUSMtxET+7lVoDLLd3O3IXwJwvuuns8UB/HeAg==
-
-mini-svg-data-uri@^1.0.0:
-  version "1.4.4"
-  resolved "https://registry.yarnpkg.com/mini-svg-data-uri/-/mini-svg-data-uri-1.4.4.tgz#8ab0aabcdf8c29ad5693ca595af19dd2ead09939"
-  integrity sha512-r9deDe9p5FJUPZAk3A59wGH7Ii9YrjjWw0jmw/liSbHl2CHiyXj6FcDXDu2K3TjVAXqiJdaw3xxwlZZr9E6nHg==
 
 minimatch@^10.2.2:
   version "10.2.5"
@@ -5184,21 +5165,6 @@ rehype-katex@^7.0.0:
     hast-util-from-html-isomorphic "^2.0.0"
     hast-util-to-text "^4.0.0"
     katex "^0.16.0"
-    unist-util-visit-parents "^6.0.0"
-    vfile "^6.0.0"
-
-rehype-mermaid@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/rehype-mermaid/-/rehype-mermaid-3.0.0.tgz#e7e39dcfc2700dcd0c4f0bcf30840ff2180115aa"
-  integrity sha512-fxrD5E4Fa1WXUjmjNDvLOMT4XB1WaxcfycFIWiYU0yEMQhcTDElc9aDFnbDFRLxG1Cfo1I3mfD5kg4sjlWaB+Q==
-  dependencies:
-    "@types/hast" "^3.0.0"
-    hast-util-from-html-isomorphic "^2.0.0"
-    hast-util-to-text "^4.0.0"
-    mermaid-isomorphic "^3.0.0"
-    mini-svg-data-uri "^1.0.0"
-    space-separated-tokens "^2.0.0"
-    unified "^11.0.0"
     unist-util-visit-parents "^6.0.0"
     vfile "^6.0.0"
 

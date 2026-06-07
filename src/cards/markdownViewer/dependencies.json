@@ -3,7 +3,6 @@
     "react-markdown": "UNKNOWN - add to root package.json",
     "rehype-highlight": "^7.0.2",
     "rehype-katex": "UNKNOWN - add to root package.json",
-    "rehype-mermaid": "^3.0.0",
     "mermaid": "^11.15.0",
     "remark-gfm": "UNKNOWN - add to root package.json",
     "remark-math": "UNKNOWN - add to root package.json",
