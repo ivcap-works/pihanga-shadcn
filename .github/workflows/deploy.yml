@@ -68,6 +68,13 @@ jobs:
         env:
           NODE_ENV: production
 
+      # USER_GUIDE.md lives in the repo root (for visibility) and must be
+      # served at /pihanga-shadcn/USER_GUIDE.md on GitHub Pages.
+      # The Vite rootFilePlugin emits it in local builds; this step is the
+      # authoritative source for CI so the file is always present in dist/.
+      - name: Copy USER_GUIDE.md into dist
+        run: cp USER_GUIDE.md dist/USER_GUIDE.md
+
       # Copy the versioned registry into dist/<tag>/r/ for pinned consumer URLs
       - name: Copy versioned registry into dist (tag builds only)
         if: startsWith(github.ref, 'refs/tags/')
