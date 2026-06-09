@@ -416,11 +416,25 @@ registerCard("myApp/tabs", SdTabs({
 }));
 ```
 
-### `pi/input` — the labeled standalone text input (not `pi/text-input`)
+### `pi/input` — the labeled, **controlled** standalone text input
+
+`@pihanga2/cards`' built-in `Input` is **uncontrolled** — it has no `value`
+prop and no `type` prop, so it cannot bind to Redux state or mask text as a
+password field.  **`pi/input`** in this library is the fully-controlled
+replacement:
+
+| Feature | `@pihanga2/cards` Input | `pi/input` (this library) |
+|---|---|---|
+| `value` prop (Redux binding) | ✗ | ✓ |
+| `type` prop (`password`, `email`, …) | ✗ | ✓ |
+| `onChanged` (per-keystroke) | ✗ | ✓ |
+| `onCommitted` (blur / Enter) | ✗ | ✓ |
+| `label` + `description` | ✗ | ✓ |
+| Works inside `pi/form` / `pi/field` | ✗ | ✓ |
 
 The card you want for a freestanding labeled input (e.g. a JWT token field, a
 search box, a settings field) is **`pi/input`** — *not* `pi/text-input`, which
-does not exist.
+does not exist.  You do **not** need to write your own local card.
 
 ```ts
 import {PiInput, onPiInputChanged} from "@/cards/input";
@@ -434,9 +448,9 @@ register((r) => {
 
 registerCard("myApp/jwtField", PiInput({
   label:       "JWT token",
-  value:       memo((s: AppState) => s.jwtToken),
+  value:       memo((s: AppState) => s.jwtToken),   // ← bound to Redux state
   placeholder: "Paste your bearer token here…",
-  type:        "password",
+  type:        "password",                           // ← masks as ••••
   className:   "flex-1",
 }));
 ```
@@ -513,3 +527,19 @@ were absent from the available-cards table.  The following fixes were applied:
 | `pi/text-input` card missing | Card exists as **`pi/input`** (`PiInput` export) | Added `pi/input` guidance to *Card API quick reference* |
 | `pi/tabs` card missing | Card exists as **`shad/tabs`** (`SdTabs` export); `value` not `activeTab`; `contentCard` not `content`; `title` not `label` | Added tabs guidance to *Card API quick reference* |
 | Dialog invisible on dark theme | `bg-background` made modal panel near-black on dark themes | Fixed `dialog.tsx`: `bg-card text-card-foreground border border-border shadow-xl` |
+
+### 2026-06 developer report — app team wrote a local `pi/text-input` card
+
+A developer building an app on top of this library wrote and kept their own
+local `pi/text-input` card, reasoning that `@pihanga2/cards`' Input is
+uncontrolled (no `value` prop, no `type` prop) and therefore unsuitable for
+Redux binding or password masking.
+
+**Reality:** `pi/input` in *this* library (`pihanga-shadcn`) is already a fully
+controlled replacement.  It has `value`, `type`, `onChanged`, `onCommitted`,
+label, description, and `pi/form` integration.  The developer did not need a
+local card.
+
+| Root cause | Fix applied |
+|---|---|
+| `pi/input` section did not explicitly contrast itself with `@pihanga2/cards`' uncontrolled `Input` | Added feature-comparison table and "you do **not** need to write your own local card" callout to *Card API quick reference → `pi/input`* |
