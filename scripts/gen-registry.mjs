@@ -91,7 +91,9 @@ const OFFICIAL_SHADCN_UI = new Map([
   ["calendar", "calendar"],
   ["card", "card"],
   ["context-menu", "context-menu"],
-  ["dialog", "dialog"],
+  // "dialog" is intentionally excluded — pihanga-shadcn ships a customised
+  // dialog.tsx that adds DialogBody, size/dismissible/hideClose/fixed props,
+  // etc.  It is bundled in pihanga-ui-extras instead.
   ["drawer", "drawer"],
   ["dropdown-menu", "dropdown-menu"],
   ["input", "input"],
@@ -116,6 +118,8 @@ const OFFICIAL_SHADCN_UI = new Map([
  * the `pihanga-ui-extras` registry entry.
  *
  * button.tsx    — adds LinkButton export (not in standard shadcn button)
+ * dialog.tsx    — extends shadcn dialog with DialogBody, size/dismissible/
+ *                 hideClose/fixed props; NOT the standard shadcn dialog
  * *-variants.ts — Pihanga-specific variant tables
  * field.tsx     — custom Pihanga field primitive
  * spinner.tsx   — not in shadcn
@@ -126,6 +130,7 @@ const PIHANGA_CUSTOM_UI = new Set([
   "button.tsx",
   "button-variants.ts",
   "badge-variants.ts",
+  "dialog.tsx",
   "editor-static-variants.ts",
   "field.tsx",
   "spinner.tsx",
@@ -492,7 +497,7 @@ function genUIExtras() {
     type: "registry:ui",
     description:
       "Pihanga-custom UI primitives not available in the official shadcn/ui registry " +
-      "(button with LinkButton, spinner, field, stepper, toolbar, variant tables).",
+      "(button with LinkButton, customised dialog with DialogBody, spinner, field, stepper, toolbar, variant tables).",
     dependencies: npmDeps,
     registryDependencies: regDeps,
     files,

@@ -48,6 +48,10 @@
       "type": "registry:component"
     },
     {
+      "name": "conditional",
+      "type": "registry:component"
+    },
+    {
       "name": "dataTable",
       "type": "registry:component"
     },
@@ -93,6 +97,10 @@
     },
     {
       "name": "loadingOverlay",
+      "type": "registry:component"
+    },
+    {
+      "name": "loadingSkeleton",
       "type": "registry:component"
     },
     {

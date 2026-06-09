@@ -94,7 +94,7 @@ function DialogContent({
           dismissible === false ? (e) => e.preventDefault() : undefined
         }
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-1/2 left-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-lg",
+          "bg-card text-card-foreground border border-border data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-1/2 left-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl",
           sizeClasses[size],
           variant === "full" && "max-w-full h-full rounded-none",
           fixed && "flex flex-col max-h-[90vh]",

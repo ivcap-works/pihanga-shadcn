@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "conditional",
+  "type": "registry:component",
+  "description": "Pihanga conditional card component",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json"
+  ],
+  "files": [
+    {
+      "path": "cards/conditional/conditional.component.tsx",
+      "content": "import * as React from \"react\";\nimport {Card, type PiCardProps} from \"@pihanga2/core\";\nimport type {ConditionalProps} from \"./conditional.types\";\n\n/**\n * ConditionalComponent\n *\n * Transparent pass-through: renders the `content` card when `show` is `true`,\n * returns `null` otherwise.  No extra DOM wrapper is added — the mounted\n * card's own root element is the only node in the tree.\n */\nexport const ConditionalComponent = (\n  props: PiCardProps<ConditionalProps>,\n): React.ReactNode => {\n  const {cardName, show, content} = props;\n  if (!show) return null;\n  return <Card cardName={content} parentCard={cardName} />;\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/conditional/conditional.component.tsx"
+    },
+    {
+      "path": "cards/conditional/conditional.types.ts",
+      "content": "import {createCardDeclaration} from \"@pihanga2/core\";\nimport type {PiCardRef} from \"@pihanga2/core\";\n\n// ── Card id ───────────────────────────────────────────────────────────────────\n\nexport const CONDITIONAL_CARD = \"shad/conditional\";\n\n// ── Card declaration factory ──────────────────────────────────────────────────\n\nexport const Conditional =\n  createCardDeclaration<ConditionalProps>(CONDITIONAL_CARD);\n\n// ── Props ─────────────────────────────────────────────────────────────────────\n\n/**\n * Props for the `shad/conditional` card.\n *\n * Renders `content` only when `show` is `true`; renders nothing otherwise.\n * This is a transparent pass-through — no extra DOM wrapper is added.\n *\n * In a real app, drive `show` from a `memo()` selector so the card\n * reactively mounts/unmounts as state changes:\n *\n * ```ts\n * import {memo, registerCard} from \"@pihanga2/core\";\n * import {Conditional} from \"@/cards/conditional\";\n *\n * registerCard(\"myApp/hint\", Conditional({\n *   show:    memo((s: AppState) => s.items.length === 0 && !s.isLoading),\n *   content: \"myApp/emptyStateHint\",\n * }));\n * ```\n */\nexport type ConditionalProps = {\n  /** Render `content` only when this is `true`.  Drive with `memo()` for\n   *  reactive mount/unmount behaviour. */\n  show: boolean;\n\n  /** The card to render when `show` is `true`. */\n  content: PiCardRef;\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/conditional/conditional.types.ts"
+    },
+    {
+      "path": "cards/conditional/index.ts",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\nimport {ConditionalComponent} from \"./conditional.component\";\nimport {CONDITIONAL_CARD} from \"./conditional.types\";\n\nexport * from \"./conditional.types\";\n\n// No events — this card is purely structural.\nregisterCardComponent({\n  name: CONDITIONAL_CARD,\n  component: ConditionalComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/conditional/index.ts"
+    }
+  ]
+}

@@ -74,6 +74,7 @@ npx shadcn@latest add \
 | box | `/r/box` |
 | button | `/r/button` |
 | checkbox | `/r/checkbox` |
+| **conditional** | `/r/conditional` |
 | dataTable | `/r/dataTable` |
 | dialog | `/r/dialog` |
 | dropDownMenu | `/r/dropDownMenu` |
@@ -86,6 +87,7 @@ npx shadcn@latest add \
 | jsonViewer | `/r/jsonViewer` |
 | list | `/r/list` |
 | loadingOverlay | `/r/loadingOverlay` |
+| **loadingSkeleton** | `/r/loadingSkeleton` |
 | markdownViewer | `/r/markdownViewer` |
 | menu | `/r/menu` |
 | modeToggle | `/r/modeToggle` |
@@ -374,7 +376,117 @@ export function appPiInit(): void {
 
 ---
 
-## Known gaps identified during AI agent evaluation (2026-04)
+## Card API quick reference — common naming gotchas
+
+Several cards have prop or export names that differ from what you might intuit.
+This table is a quick-lookup to avoid "card not found" or type-error surprises.
+
+### `shad/tabs` — import `SdTabs`, not `Tabs`
+
+```ts
+// ✅ Correct
+import {SdTabs, onTabsTabChanged} from "@/cards/tabs";
+import type {TabsProps} from "@/cards/tabs";
+
+registerCard("myApp/tabs", SdTabs({
+  value:       memo((s: AppState) => s.activeTab),   // ← "value", NOT "activeTab"
+  tabs: [
+    {id: "a", title: "Panel A", contentCard: "myApp/panelA"},  // ← "title" + "contentCard"
+    {id: "b", title: "Panel B", contentCard: "myApp/panelB"},
+  ],
+}));
+```
+
+| What you might write | Actual prop / export |
+|---|---|
+| `Tabs({…})` | `SdTabs({…})` |
+| `activeTab: …` | `value: …` |
+| `tab.label` | `tab.title` |
+| `tab.content` | `tab.contentCard` |
+
+The `shad/tabs` card also supports `selfManaged: true` for cases where you do
+**not** want to store the active tab in Redux — the component manages its own
+state internally, but still dispatches `onTabChanged` so reducers can observe.
+
+```ts
+// Self-managed — no reducer needed:
+registerCard("myApp/tabs", SdTabs({
+  selfManaged: true,
+  tabs: [{id: "a", title: "A", contentCard: "myApp/panelA"}],
+}));
+```
+
+### `pi/input` — the labeled standalone text input (not `pi/text-input`)
+
+The card you want for a freestanding labeled input (e.g. a JWT token field, a
+search box, a settings field) is **`pi/input`** — *not* `pi/text-input`, which
+does not exist.
+
+```ts
+import {PiInput, onPiInputChanged} from "@/cards/input";
+import type {AppState} from "@/app.state";
+
+register((r) => {
+  onPiInputChanged(r, (state: AppState, {value}) => {
+    state.jwtToken = value;
+  });
+});
+
+registerCard("myApp/jwtField", PiInput({
+  label:       "JWT token",
+  value:       memo((s: AppState) => s.jwtToken),
+  placeholder: "Paste your bearer token here…",
+  type:        "password",
+  className:   "flex-1",
+}));
+```
+
+`pi/input` also fires `onCommitted` (blur / Enter) for cases where you only
+want to react once per editing session rather than on every keystroke.
+
+> **`pi/text-field`** (`TextField`) is a *different* card — it is designed to
+> live *inside* a `pi/field` + `pi/form` composition and reads its value from
+> form context.  Use `pi/input` for standalone labeled inputs.
+
+### `shad/loading-skeleton` — prefer named presets over raw Tailwind
+
+The card has built-in named presets so you rarely need raw Tailwind classes:
+
+```ts
+import {LoadingSkeleton} from "@/cards/loadingSkeleton";
+
+registerCard("myApp/area", LoadingSkeleton({
+  loading:  memo((s: AppState) => s.dataLoading),
+  rows:     4,
+  rowSize:  "lg",     // ← xs | sm | md (default) | lg | xl
+  spacing:  "lg",     // ← sm | md (default) | lg
+  content:  "myApp/dataList",
+}));
+```
+
+Raw `rowClassName` / `className` overrides are available as escape hatches for
+custom layouts, but the presets handle the common cases without any Tailwind
+knowledge.
+
+### `shad/conditional` — mount/unmount a card based on state
+
+```ts
+import {Conditional} from "@/cards/conditional";
+
+registerCard("myApp/hint", Conditional({
+  show:    memo((s: AppState) => s.items.length === 0 && !s.isLoading),
+  content: "myApp/emptyStateHint",
+}));
+```
+
+This is a transparent pass-through — no extra DOM wrapper is added.  Prefer
+it over `className: (s) => s.x ? "" : "hidden"` workarounds.
+
+---
+
+## Known gaps identified during AI agent evaluations
+
+### 2026-04 evaluation — multi-page app task
 
 The following patterns were **not** documented in the original AGENT.md but were
 required to complete a multi-page app task.  They have been added above.
@@ -387,3 +499,17 @@ required to complete a multi-page app task.  They have been added above.
 | `MarkdownViewer` `path` prop requires HTTP access / `public/` | *`MarkdownViewer` — inline source vs. fetched path* |
 | `registerFramework` uniqueness constraint when composing inits | *`registerFramework` — only one active at a time* |
 | `AppState` must be extended for new state fields | *Multi-page navigation* (see `currentPage` example) |
+
+### 2026-06 evaluation — card-composition data-fetch app (`@pihanga/ivcap`)
+
+An agent built a pure-card-composition data-fetch app and reported several cards
+as "missing".  Post-mortem: the cards existed but had non-obvious API names or
+were absent from the available-cards table.  The following fixes were applied:
+
+| Reported gap | Reality | Fix applied |
+|---|---|---|
+| `shad/loading-skeleton` not found | Card exists; uses `rowSize`/`spacing` presets, not raw `rowClassName` | Added to available-cards table; added to *Card API quick reference* |
+| `shad/conditional` not found | Card exists and is straightforward | Added to available-cards table; added to *Card API quick reference* |
+| `pi/text-input` card missing | Card exists as **`pi/input`** (`PiInput` export) | Added `pi/input` guidance to *Card API quick reference* |
+| `pi/tabs` card missing | Card exists as **`shad/tabs`** (`SdTabs` export); `value` not `activeTab`; `contentCard` not `content`; `title` not `label` | Added tabs guidance to *Card API quick reference* |
+| Dialog invisible on dark theme | `bg-background` made modal panel near-black on dark themes | Fixed `dialog.tsx`: `bg-card text-card-foreground border border-border shadow-xl` |
