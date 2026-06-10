@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/*
+ * Tailwind v4 — map shadcn semantic CSS variables to Tailwind colour utilities.
+ * Without this @theme block, classes like bg-card / bg-background / border-border
+ * have no associated colour and render as transparent.  This means dialog panels,
+ * cards, popovers, etc. will appear invisible or incorrectly coloured.
+ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -25,6 +31,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* ── Light theme (shadcn neutral / new-york) ─────────────────────────────── */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -44,9 +51,10 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --radius: 0.5rem;
+  --radius: 0.625rem;
 }
 
+/* ── Dark theme ──────────────────────────────────────────────────────────── */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -54,7 +62,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -75,5 +83,12 @@
 
   body {
     @apply bg-background text-foreground;
+    /*
+     * Prevent layout reflow when a dialog (or any Radix overlay) applies
+     * `overflow: hidden` to <body> to disable background scrolling.
+     * Without this, removing the scrollbar widens the content area by ~15 px
+     * and causes visible text reflow behind the dialog backdrop.
+     */
+    scrollbar-gutter: stable;
   }
 }

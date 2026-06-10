@@ -5,9 +5,76 @@
 > If you need to *create* a new card type, switch to
 > [`AGENT.building-cards.md`](./AGENT.building-cards.md).
 
+> 💬 **Encountered a bug, a missing card, or an agent-unfriendly doc section?**
+> Please open an issue at **https://github.com/ivcap-works/pihanga-shadcn/issues**
+> — card suggestions and AI agent experience reports are especially welcome.
+
 ---
 
-## Prerequisites (one-time project setup)
+> ### ⚠️ Check before you code — always search for an existing card first
+>
+> Before writing a new card component, **thoroughly check whether a suitable
+> card already exists** in both the registry (34 cards) and the npm package
+> (30 cards).  Use the [Available cards](#available-cards) table below, and
+> look carefully at non-obvious names — for example, the controlled text input
+> is `pi/input` (`PiInput`), not `pi/text-input`; the graph visualiser is
+> `shad/graphin`; layout cards include `pi/flex-grid`, `pi/stack`, and
+> `pi/resizable`.
+>
+> **Why this matters:** writing a new component is quick, but a locally-owned
+> card creates an ongoing maintenance burden — it must be kept in sync with
+> shadcn/ui and Radix UI updates, it won't appear in the playground
+> automatically, and it won't benefit from upstream bug fixes.
+>
+> **If no suitable card exists:**
+> - Confirm the need is genuine and not already covered by composing existing
+>   cards (`Conditional`, `FlexGrid`, `Stack`, `Box`).
+> - Unless the card would expose confidential business logic, please
+>   **open an issue** at
+>   `https://github.com/ivcap-works/pihanga-shadcn/issues` describing what you
+>   need.  This helps the maintainers prioritise new cards and prevents the
+>   same gap from being worked around independently by multiple teams.
+> - Only proceed to implement a local card after the above checks.
+
+---
+
+## Table of Contents
+
+- [Distribution channels — choose one](#distribution-channels--choose-one)
+- [Channel 1 — shadcn registry prerequisites](#channel-1--shadcn-registry-prerequisites)
+- [Channel 2 — npm package `@pihanga2/shadcn`](#channel-2--npm-package-pihanga2shadcn)
+  - [Migrating a card from npm to a local copy](#migrating-a-card-from-npm-to-a-local-customised-copy)
+- [Adding individual cards](#adding-individual-cards)
+- [Notes for AI agents](#notes-for-ai-agents)
+- [Using cards in your app](#using-cards-in-your-app)
+- [Version pinning](#version-pinning)
+- [Bootstrapping a pihanga app (init pattern)](#bootstrapping-a-pihanga-app-init-pattern)
+- [`memo()` — reactive state-driven props](#memo--reactive-state-driven-props)
+- [Multi-page navigation with `PageWithNavbar`](#multi-page-navigation-with-pagewithnavbar)
+- [`MarkdownViewer` — inline source vs. fetched path](#markdownviewer--inline-source-vs-fetched-path)
+- [`registerFramework` — only one active at a time](#registerframework--only-one-active-at-a-time)
+- [Card API quick reference — common naming gotchas](#card-api-quick-reference--common-naming-gotchas)
+- [Known gaps identified during AI agent evaluations](#known-gaps-identified-during-ai-agent-evaluations)
+
+---
+
+## Distribution channels — choose one
+
+| | Registry | npm package |
+|---|---|---|
+| **Install** | `npx shadcn@latest add <url>` | `npm install @pihanga2/shadcn` |
+| **Cards available** | All 34 | 30 core (no graphin / jsonViewer / markdownViewer / resizable) |
+| **Requires `shadcn init`** | Yes | No |
+| **Files land in your project** | Yes — editable source | No — compiled bundle |
+| **Tailwind** | Consumer's own Tailwind config | Add `@source` pointing at `node_modules/@pihanga2/shadcn/dist-lib` |
+
+Use the **registry** for projects already on shadcn/ui or when you want to
+customise card source.  Use the **npm package** for monorepos, CI, or anywhere
+a clean `npm install` workflow is preferred.
+
+---
+
+## Channel 1 — shadcn registry prerequisites
 
 ### 1 — Initialise shadcn (creates `components.json` and `@/` alias)
 
@@ -48,12 +115,245 @@ If cards end up elsewhere, add an explicit alias:
 "@/cards/*": ["./src/cards/*"]
 ```
 
+### 3 — Configure `src/index.css` (Tailwind v4 + shadcn theme)
+
+> **⚠️ This is a Tailwind CSS project.**  `index.html` must NOT contain any
+> `<link rel="stylesheet">` tags for external CSS frameworks (Bootstrap, Bulma,
+> etc.) or manual font CDN links, and no `<style>` blocks.  Tailwind generates
+> all styles at build time from utility classes in your source files.  Adding
+> foreign stylesheets will conflict with Tailwind's generated output and break
+> the shadcn colour variables.
+
+Tailwind v4 no longer auto-discovers shadcn's semantic CSS variables.  Without
+an explicit `@theme inline` block, classes like `bg-card`, `bg-background`, and
+`border-border` have no associated colour and render as **transparent** — causing
+dialog panels, popovers, and cards to appear invisible.
+
+In addition, Radix UI overlays (Dialog, Sheet, etc.) apply `overflow: hidden` to
+`<body>` when open, which removes the scrollbar and widens the content area by
+~15 px, causing **visible text reflow** behind the dialog backdrop.
+
+The complete reference `src/index.css` is maintained in the pihanga-shadcn
+repository.  **Copy it directly** from:
+```
+https://raw.githubusercontent.com/ivcap-works/pihanga-shadcn/main/src/index.css
+```
+or from `src/index.css` in a local clone.  The full content is reproduced below
+for reference / offline use:
+
+The required `src/index.css`:
+
+```css
+@import "tailwindcss";
+
+/*
+ * Tailwind v4 — map shadcn semantic CSS variables to Tailwind colour utilities.
+ * Without this @theme block, classes like bg-card / bg-background / border-border
+ * have no associated colour and render as transparent.  This means dialog panels,
+ * cards, popovers, etc. will appear invisible or incorrectly coloured.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* ── Light theme (shadcn neutral / new-york) ─────────────────────────────── */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+}
+
+/* ── Dark theme ──────────────────────────────────────────────────────────── */
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    /*
+     * Prevent layout reflow when a dialog (or any Radix overlay) applies
+     * `overflow: hidden` to <body> to disable background scrolling.
+     * Without this, removing the scrollbar widens the content area by ~15 px
+     * and causes visible text reflow behind the dialog backdrop.
+     */
+    scrollbar-gutter: stable;
+  }
+}
+```
+
+> **Why `@theme inline`?**  Tailwind v4 separates design tokens from utility
+> generation.  shadcn stores its colours as CSS custom properties (`--card`,
+> `--background`, …) but Tailwind v4 will not generate colour utilities from
+> raw CSS variables unless they are declared inside an `@theme` block.  Without
+> it the generated CSS contains no colour definitions for those utility classes.
+
+> **Why `scrollbar-gutter: stable`?**  When a Radix dialog opens, the library
+> `@radix-ui/react-remove-scroll` sets `overflow: hidden` on `<body>` to
+> prevent background scrolling.  This hides the scrollbar and adds ~15 px of
+> width back to the page — causing text to reflow.  `scrollbar-gutter: stable`
+> reserves a permanent gutter for the scrollbar so its appearance/disappearance
+> never changes the usable width.
+
+---
+
+## Channel 2 — npm package `@pihanga2/shadcn`
+
+No shadcn CLI or `components.json` required.
+
+```sh
+npm install @pihanga2/shadcn
+# or: yarn add @pihanga2/shadcn  /  pnpm add @pihanga2/shadcn
+```
+
+Activate cards in the app entry point:
+
+```ts
+// Activate all 30 core cards at once (side-effecting import)
+import "@pihanga2/shadcn";
+
+// OR activate only what you need (tree-shakeable):
+import "@pihanga2/shadcn/cards/button";
+import "@pihanga2/shadcn/cards/form";
+import "@pihanga2/shadcn/cards/framework";
+```
+
+Each import calls `registerCardComponent(...)` — no further activation needed.
+Then use `registerCard(...)` in your init function exactly as with the registry.
+
+**Cards NOT in the npm package** (registry-only due to heavy deps):
+`graphin`, `jsonViewer`, `markdownViewer`, `resizable`.
+
+**Tailwind:** add `@source` to your CSS so Tailwind can scan the package:
+```css
+/* src/index.css — Tailwind v4 */
+@import "tailwindcss";
+@source "../../node_modules/@pihanga2/shadcn/dist-lib";
+```
+
+### Migrating a card from npm to a local customised copy
+
+When you need to modify a card that came from the npm package (custom styling,
+extra props, different behaviour), follow this three-step pattern:
+
+**Step 1 — Switch from the all-at-once import to per-card imports**
+
+```ts
+// Before — no control over individual cards:
+import "@pihanga2/shadcn";
+
+// After — omit the card you want to customise:
+import "@pihanga2/shadcn/cards/badge";
+import "@pihanga2/shadcn/cards/form";
+// import "@pihanga2/shadcn/cards/button";   ← omit
+import "@pihanga2/shadcn/cards/dialog";
+// … rest of your cards
+```
+
+**Step 2 — Install the card from the registry (copies source into your project)**
+
+```sh
+npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button
+# → creates src/cards/button/ and installs its npm deps
+```
+
+**Step 3 — Import your local copy**
+
+```ts
+import "./cards/button";   // registers with the SAME card ID as the npm version
+```
+
+The local `index.ts` calls `registerCardComponent({name: "shad/button", …})` —
+the **same card ID** as the npm build — so all existing `registerCard()` calls
+in your app continue to work with zero changes.
+
+> **No import-order tricks required.**  There is exactly one registration as
+> long as you omitted the npm sub-path import (step 1) and added the local
+> import (step 3).
+
+**Alternative — keep both and rename the local card**
+
+If you want the npm version and your custom version to coexist side-by-side,
+give the local card a distinct ID:
+
+```ts
+// src/cards/button/button.types.ts
+// Before: export const BUTTON_CARD = "shad/button";
+export const BUTTON_CARD = "myapp/custom-button";   // ← unique ID
+```
+
+Update every `registerCard` call that should use your version.  Calls that
+reference `"shad/button"` still resolve to the npm build; calls referencing
+`"myapp/custom-button"` resolve to your local copy.  No ambiguity, no
+import-order dependency.
+
 ---
 
 ## Adding individual cards
 
-After the one-time setup above, add any card with a single command.
-`@pihanga2/core` and all card-specific npm packages are installed automatically.
+### Registry channel
+
+After the one-time setup (Channel 1 prerequisites above), add any card with a
+single command. `@pihanga2/core` and all card-specific npm packages are
+installed automatically.
 
 ```sh
 # Add a single card
@@ -66,92 +366,117 @@ npx shadcn@latest add \
   https://ivcap-works.github.io/pihanga-shadcn/r/dataTable
 ```
 
+### npm channel
+
+```ts
+import "@pihanga2/shadcn/cards/button";   // activates shad/button
+import "@pihanga2/shadcn/cards/form";     // activates pi/form
+```
+
+Or activate everything at once: `import "@pihanga2/shadcn"`.
+
 ### Available cards
 
-| Card | URL fragment |
-|------|-------------|
-| badge | `/r/badge` |
-| box | `/r/box` |
-| button | `/r/button` |
-| checkbox | `/r/checkbox` |
-| **conditional** | `/r/conditional` |
-| dataTable | `/r/dataTable` |
-| dialog | `/r/dialog` |
-| dropDownMenu | `/r/dropDownMenu` |
-| field | `/r/field` |
-| flexGrid | `/r/flexGrid` |
-| form | `/r/form` |
-| framework | `/r/framework` |
-| graphin | `/r/graphin` |
-| input | `/r/input` |
-| jsonViewer | `/r/jsonViewer` |
-| list | `/r/list` |
-| loadingOverlay | `/r/loadingOverlay` |
-| **loadingSkeleton** | `/r/loadingSkeleton` |
-| markdownViewer | `/r/markdownViewer` |
-| menu | `/r/menu` |
-| modeToggle | `/r/modeToggle` |
-| navbarSearch | `/r/navbarSearch` |
-| pageWithNavbar | `/r/pageWithNavbar` |
-| pasteTarget | `/r/pasteTarget` |
-| resizable | `/r/resizable` |
-| select | `/r/select` |
-| stack | `/r/stack` |
-| stepper | `/r/stepper` |
-| switch | `/r/switch` |
-| tabs | `/r/tabs` |
-| textField | `/r/textField` |
-| toast | `/r/toast` |
-| toggleGroup | `/r/toggleGroup` |
-| typography | `/r/typography` |
+| Card | Registry URL | In npm pkg | Notes |
+|------|-------------|---|---|
+| badge | `/r/badge` | ✅ | |
+| box | `/r/box` | ✅ | |
+| button | `/r/button` | ✅ | |
+| checkbox | `/r/checkbox` | ✅ | |
+| conditional | `/r/conditional` | ✅ | |
+| dataTable | `/r/dataTable` | ✅ | |
+| dialog | `/r/dialog` | ✅ | |
+| dropDownMenu | `/r/dropDownMenu` | ✅ | |
+| field | `/r/field` | ✅ | |
+| flexGrid | `/r/flexGrid` | ✅ | |
+| form | `/r/form` | ✅ | |
+| framework | `/r/framework` | ✅ | App root |
+| graphin | `/r/graphin` | ✗ | ⚠️ Heavy AntV deps |
+| input | `/r/input` | ✅ | |
+| jsonViewer | `/r/jsonViewer` | ✗ | optional viewer |
+| list | `/r/list` | ✅ | |
+| loadingOverlay | `/r/loadingOverlay` | ✅ | |
+| loadingSkeleton | `/r/loadingSkeleton` | ✅ | |
+| markdownViewer | `/r/markdownViewer` | ✗ | ⚠️ Heavy markdown deps |
+| menu | `/r/menu` | ✅ | |
+| modeToggle | `/r/modeToggle` | ✅ | |
+| navbarSearch | `/r/navbarSearch` | ✅ | |
+| pageWithNavbar | `/r/pageWithNavbar` | ✅ | |
+| pasteTarget | `/r/pasteTarget` | ✅ | |
+| resizable | `/r/resizable` | ✗ | optional layout |
+| select | `/r/select` | ✅ | |
+| stack | `/r/stack` | ✅ | |
+| stepper | `/r/stepper` | ✅ | |
+| switch | `/r/switch` | ✅ | |
+| tabs | `/r/tabs` | ✅ | |
+| textField | `/r/textField` | ✅ | |
+| toast | `/r/toast` | ✅ | |
+| toggleGroup | `/r/toggleGroup` | ✅ | |
+| typography | `/r/typography` | ✅ | |
 
-Full registry index:
-```
-https://ivcap-works.github.io/pihanga-shadcn/r/registry.json
-```
+Full registry index: `https://ivcap-works.github.io/pihanga-shadcn/r/registry.json`
 
 ---
 
 ## Notes for AI agents
 
-- The registry automatically installs all required npm packages (including
-  `@pihanga2/core`) when you run `npx shadcn@latest add <url>`.
-- Cards are copied to `src/cards/<card-name>/` in the consumer's project.
+**Registry channel:**
+- `npx shadcn@latest add <url>` automatically installs `@pihanga2/core` and all
+  card-specific npm packages — no separate `npm install` needed.
+- Cards land at `src/cards/<card-name>/` in the consumer's project.
 - The `framework` card is the Pihanga app root — add it first for new apps.
-- The `graphin` card has heavy AntV dependencies (~5 MB); only install it if
-  graph visualisation is explicitly required.
-- After running `npx shadcn@latest add`, no further manual `npm install` steps
-  are needed — the shadcn CLI handles all dependency installation.
+- `graphin` has heavy AntV dependencies (~5 MB) — only add if graph
+  visualisation is explicitly required.
+
+**npm channel:**
+- `npm install @pihanga2/shadcn` is a single command — no `shadcn init` needed.
+- Activate cards with `import "@pihanga2/shadcn"` (all) or per-card sub-paths.
+- `graphin`, `jsonViewer`, `markdownViewer`, `resizable` are not in the npm
+  package — use the registry for those.
+- Point Tailwind at `node_modules/@pihanga2/shadcn/dist-lib` to scan classes.
+
+**Both channels:**
+- After activation, app-wiring APIs (`registerCard`, `registerFramework`,
+  `register`, `memo`) are identical.
+- `@pihanga2/core` must be importable — it is installed automatically by either
+  channel (`peerDependency` for npm; auto-installed by shadcn CLI for registry).
 
 ---
 
 ## Using cards in your app
 
-After installation, each card is registered automatically when its `index.ts`
-is imported.  Bootstrap Pihanga in your app entry point:
+After installation, each card is registered automatically when imported.
+Bootstrap Pihanga in your app entry point:
 
 ```ts
-// src/main.ts (or src/main.tsx)
-import "@pihanga2/core";                  // Pihanga runtime (installed by registry)
-
-// Import the cards you want to activate
-import "./cards/button";
-import "./cards/form";
-// etc.
+// ── Registry channel (cards copied to src/cards/) ────────────────────────
+// src/main.ts
+import "@pihanga2/core";
+import "./cards/button";          // activates shad/button
+import "./cards/form";            // activates pi/form
 ```
 
-Then declare a card in your Pihanga state definition:
+```ts
+// ── npm channel ───────────────────────────────────────────────────────────
+// src/main.ts
+import "@pihanga2/shadcn";        // all 30 core cards at once
+// OR selectively:
+import "@pihanga2/shadcn/cards/button";
+import "@pihanga2/shadcn/cards/form";
+```
+
+Then wire up cards identically regardless of channel:
 
 ```ts
-import { Button } from "./cards/button";
+// src/app.pihanga.ts
+import {Button} from "@/cards/button";   // registry: local path
+// import {Button} from "@pihanga2/shadcn/cards/button";  // npm: package path
 
-// Somewhere in your app initialisation:
-Button({
-  id: "save",
+registerCard("myApp/save", Button({
+  id:    "save",
   label: "Save",
-  opts: { variant: "default" },
-  onClicked: (ev) => console.log("clicked", ev.id),
-});
+  opts:  {variant: "default"},
+}));
 ```
 
 ---
@@ -543,3 +868,16 @@ local card.
 | Root cause | Fix applied |
 |---|---|
 | `pi/input` section did not explicitly contrast itself with `@pihanga2/cards`' uncontrolled `Input` | Added feature-comparison table and "you do **not** need to write your own local card" callout to *Card API quick reference → `pi/input`* |
+
+### 2026-06 developer report — CSS setup pitfalls with Tailwind v4 + Dialog
+
+Two CSS issues were observed when integrating the library into a Tailwind v4
+project that was bootstrapped without the reference `index.css`:
+
+| Symptom | Root cause | Fix |
+|---|---|---|
+| Dialog panel, cards, popovers appear **invisible** (no background colour) | Tailwind v4 does not auto-generate colour utilities from raw CSS variables — the `@theme inline` block bridging `--card` → `--color-card` etc. was absent | Add the full `@theme inline` block to `src/index.css` (see *Prerequisites → Configure `src/index.css`*) |
+| Page content **reflows** (text re-wraps) when a dialog opens | Radix UI's `@radix-ui/react-remove-scroll` applies `overflow: hidden` to `<body>` on dialog open, removing the scrollbar and widening the layout by ~15 px | Add `scrollbar-gutter: stable` to `body` in `src/index.css` (see *Prerequisites → Configure `src/index.css`*) |
+
+Both fixes are now included in the reference `src/index.css` template in
+*Prerequisites step 3*.

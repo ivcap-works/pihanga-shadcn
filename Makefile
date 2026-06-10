@@ -11,7 +11,9 @@ TAR_FILE=${ROOT_DIR}/${DOMAIN}-${GIT_SHORT}-$(shell echo ${GIT_BRANCH} | sed -e 
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install dev build build-preview gen-playground gen-registry check lint lint-fix type-check \
+.PHONY: help install dev build build-preview gen-playground gen-registry \
+        build-core build-core-dry publish \
+        check lint lint-fix type-check \
         test test-run test-ui test-coverage \
         clean src-dist tar tar-echo
 
@@ -43,6 +45,15 @@ gen-playground: ## (Re)generate src/playground/playground.examples.gen.ts
 
 gen-registry: ## Generate shadcn registry JSON files in public/r/ (Option D distribution)
 	node scripts/gen-registry.mjs
+
+build-core: install ## Build @pihanga2/shadcn npm package into dist-lib/
+	node scripts/build-core.mjs
+
+build-core-dry: ## Preview @pihanga2/shadcn build without writing files (dry-run)
+	node scripts/build-core.mjs --dry-run
+
+publish: build-core ## Build and publish @pihanga2/shadcn to npm
+	cd ${ROOT_DIR}/dist-lib && npm publish --access public
 
 ##@ Code Quality
 
@@ -91,5 +102,5 @@ tar-echo: ## Print the deployment tarball filename
 
 ##@ Cleanup
 
-clean: ## Remove build artefacts (dist, coverage)
-	rm -rf ${ROOT_DIR}/dist ${ROOT_DIR}/coverage
+clean: ## Remove build artefacts (dist, dist-lib, coverage)
+	rm -rf ${ROOT_DIR}/dist ${ROOT_DIR}/dist-lib ${ROOT_DIR}/coverage
