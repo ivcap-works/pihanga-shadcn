@@ -74,6 +74,11 @@ const MermaidDiagram: React.FC<{code: string}> = ({code}) => {
         }
       })
       .catch((err) => {
+        // Clean up any error element that Mermaid v10/v11 may have injected
+        // directly into document.body (it does this as a side-effect before
+        // rejecting the promise, leaving a visible "bomb" icon on the page).
+        const errEl = document.getElementById(`d${id}`);
+        if (errEl) errEl.remove();
         if (!cancelled) setSvg(`<pre style="color:red">${String(err)}</pre>`);
       });
     return () => {

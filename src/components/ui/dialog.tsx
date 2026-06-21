@@ -15,9 +15,30 @@ const sizeClasses: Record<string, string> = {
   "4xl": "max-w-4xl",
 };
 
+/** Returns true when the viewport is narrower than `breakpoint` pixels. */
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = React.useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < breakpoint : false,
+  );
+
+  React.useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    setIsMobile(mq.matches);
+    return () => mq.removeEventListener("change", handler);
+  }, [breakpoint]);
+
+  return isMobile;
+}
+
+type DialogVariant = "modal" | "drawer" | "full";
+
 type DialogProps = React.ComponentProps<typeof DialogPrimitive.Root> & {
-  desktopVariant?: "modal" | "drawer" | "full";
-  mobileVariant?: "modal" | "drawer" | "full";
+  /** Desktop-specific variant override (ignored at this layer — consumed by DialogContent). */
+  desktopVariant?: DialogVariant;
+  /** Mobile-specific variant override (ignored at this layer — consumed by DialogContent). */
+  mobileVariant?: DialogVariant;
 };
 
 function Dialog({
@@ -66,7 +87,23 @@ type DialogContentProps = React.ComponentProps<
   typeof DialogPrimitive.Content
 > & {
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
-  variant?: "modal" | "full";
+  /**
+   * Base variant applied when no responsive override matches.
+   * - `modal`  — centred overlay (default)
+   * - `drawer` — bottom sheet that slides up
+   * - `full`   — full-viewport overlay
+   */
+  variant?: DialogVariant;
+  /**
+   * Override variant for desktop viewports (≥ 768 px).
+   * Takes precedence over `variant` on desktop.
+   */
+  desktopVariant?: DialogVariant;
+  /**
+   * Override variant for mobile viewports (< 768 px).
+   * Takes precedence over `variant` on mobile.
+   */
+  mobileVariant?: DialogVariant;
   dismissible?: boolean;
   hideClose?: boolean;
   fixed?: boolean;
@@ -77,16 +114,28 @@ function DialogContent({
   children,
   size = "md",
   variant,
+  desktopVariant,
+  mobileVariant,
   dismissible = true,
   hideClose = false,
   fixed,
   ...props
 }: DialogContentProps) {
+  const isMobile = useIsMobile();
+
+  // Resolve the effective variant: responsive override beats base variant.
+  const effectiveVariant: DialogVariant =
+    (isMobile ? mobileVariant : desktopVariant) ?? variant ?? "modal";
+
+  const isDrawer = effectiveVariant === "drawer";
+  const isFull = effectiveVariant === "full";
+
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        data-variant={effectiveVariant}
         onInteractOutside={
           dismissible === false ? (e) => e.preventDefault() : undefined
         }
@@ -94,14 +143,54 @@ function DialogContent({
           dismissible === false ? (e) => e.preventDefault() : undefined
         }
         className={cn(
-          "bg-card text-card-foreground border border-border data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-1/2 left-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-xl",
-          sizeClasses[size],
-          variant === "full" && "max-w-full h-full rounded-none",
-          fixed && "flex flex-col max-h-[90vh]",
+          // ── Base ──────────────────────────────────────────────────────────
+          "bg-card text-card-foreground border border-border",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          "fixed z-50 w-full shadow-xl",
+
+          // ── Modal (default) ───────────────────────────────────────────────
+          !isDrawer &&
+            !isFull &&
+            cn(
+              "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+              "rounded-lg",
+              "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+              sizeClasses[size],
+            ),
+
+          // ── Full-screen ───────────────────────────────────────────────────
+          isFull &&
+            cn(
+              "inset-0 translate-x-0 translate-y-0",
+              "max-w-none h-full rounded-none",
+              "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+            ),
+
+          // ── Drawer (bottom sheet) ─────────────────────────────────────────
+          isDrawer &&
+            cn(
+              "bottom-0 left-0 right-0 top-auto",
+              "translate-x-0 translate-y-0",
+              "max-w-none rounded-t-xl rounded-b-none",
+              "data-[state=closed]:slide-out-to-bottom",
+              "data-[state=open]:slide-in-from-bottom",
+            ),
+
+          // ── Fixed layout (scrollable body, sticky header/footer) ──────────
+          fixed && "flex flex-col",
+          fixed && !isDrawer && "max-h-[90vh]",
+          fixed && isDrawer && "max-h-[85vh]",
+
           className,
         )}
         {...props}
       >
+        {/* Drawer handle */}
+        {isDrawer && (
+          <div className="mx-auto mt-4 mb-1 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/30" />
+        )}
+
         {!hideClose && (
           <DialogPrimitive.Close className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
             <X className="h-4 w-4" />

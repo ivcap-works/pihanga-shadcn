@@ -1,5 +1,5 @@
 import * as React from "react";
-import type {StackProps} from "@pihanga2/cards";
+import type {StackProps} from "./stack.types";
 
 import {Card, type PiCardProps} from "@pihanga2/core";
 import clsx from "clsx";
@@ -21,7 +21,7 @@ export const Component = (props: PiCardProps<StackProps>): React.ReactNode => {
     style,
     cardName,
   } = props;
-  const sd: SelectSD = style?.shad || {};
+  const sd: SelectSD = (style as {shad?: SelectSD} | undefined)?.shad || {};
 
   const cn = [className, sd.root, "flex"];
   if (direction) {

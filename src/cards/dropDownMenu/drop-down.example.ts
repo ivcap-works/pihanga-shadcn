@@ -105,17 +105,20 @@ A dropdown menu backed by Radix UI's DropdownMenu primitive.
 The \`trigger\` prop accepts any \`PiCardRef\` — typically a \`Button\` card.
   `.trim(),
 
-  preview: () =>
-    DropDownMenu({
+  // `props` is the merged (defaultProps + facet.props) object.
+  // We always substitute a real Button for the placeholder trigger strings
+  // used in facet definitions (e.g. "myApp/menu-button") so the preview
+  // renders correctly without requiring those cards to be registered.
+  preview: (props) => {
+    const p = props as unknown as DropDownMenuProps;
+    return DropDownMenu({
       trigger: Button({label: "Open Menu"}),
-      menuAlign: "start",
-      items: [
-        {type: "item", id: "new", label: "New", shortcut: "⌘N"},
-        {type: "item", id: "open", label: "Open…", shortcut: "⌘O"},
-        {type: "separator"},
-        {type: "item", id: "settings", label: "Settings"},
-      ],
-    }),
+      menuAlign: p.menuAlign ?? "start",
+      menuLabel: p.menuLabel,
+      checkboxCloseDelayMs: p.checkboxCloseDelayMs,
+      items: p.items ?? [],
+    });
+  },
 
   defaultProps: {
     trigger: "myApp/menu-trigger",

@@ -224,7 +224,7 @@ export function DropdownMenuRadioItem({
       {...props}
     >
       {!hideIcon && (
-        <span className="absolute right-2 flex size-3.5 items-center justify-center">
+        <span className="absolute left-2 flex size-3.5 items-center justify-center">
           <DropdownMenuPrimitive.ItemIndicator>
             <CheckIcon />
           </DropdownMenuPrimitive.ItemIndicator>

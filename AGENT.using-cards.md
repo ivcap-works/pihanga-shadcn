@@ -44,6 +44,12 @@
 - [Channel 1 — shadcn registry prerequisites](#channel-1--shadcn-registry-prerequisites)
 - [Channel 2 — npm package `@pihanga2/shadcn`](#channel-2--npm-package-pihanga2shadcn)
   - [Migrating a card from npm to a local copy](#migrating-a-card-from-npm-to-a-local-customised-copy)
+- [Vite configuration (both channels)](#vite-configuration-both-channels)
+  - [Required Vite aliases](#required-vite-aliases)
+  - [Required `src/components/lib/utils.ts`](#required-srccomponentslibutils-ts)
+  - [`@pihanga2/cards` — deprecated, do not use](#pihanga2cards--deprecated-do-not-use)
+  - [Type-only import gotcha](#type-only-import-gotcha--picardref-store-etc)
+  - [Transitive card dependencies](#transitive-card-dependencies)
 - [Adding individual cards](#adding-individual-cards)
 - [Notes for AI agents](#notes-for-ai-agents)
 - [Using cards in your app](#using-cards-in-your-app)
@@ -344,6 +350,138 @@ Update every `registerCard` call that should use your version.  Calls that
 reference `"shad/button"` still resolve to the npm build; calls referencing
 `"myapp/custom-button"` resolve to your local copy.  No ambiguity, no
 import-order dependency.
+
+---
+
+## Vite configuration (both channels)
+
+When building a **Vite + React + TypeScript** app from scratch (i.e. without
+using `shadcn init` or copying the playground project), the following setup is
+required regardless of whether you use the registry or the npm channel.
+
+### Required Vite aliases
+
+pihanga-shadcn cards reference each other and shadcn UI primitives via these
+path aliases.  Without the `@/registry` alias in particular, `button.component.tsx`
+(and other cards) will fail at Vite dev time with a cryptic
+`"Failed to resolve import '@/registry/ui/button'"` error.
+
+```ts
+// vite.config.ts — required for both channels
+import path from "path";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import {defineConfig} from "vite";
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: [
+      // @/lib  →  src/lib  (shared utilities used by cards)
+      {find: "@/lib", replacement: path.resolve(__dirname, "./src/lib")},
+      // @/registry  →  src/components  (shadcn UI primitives — cards import via
+      //   "@/registry/ui/button" etc.; this alias bridges them to the local copies)
+      {find: "@/registry", replacement: path.resolve(__dirname, "./src/components")},
+      // @/components  →  src/components  (needed for cross-component imports)
+      {find: "@/components", replacement: path.resolve(__dirname, "./src/components")},
+      // @/cards  →  src/cards  (explicit card-to-card imports)
+      {find: "@/cards", replacement: path.resolve(__dirname, "./src/cards")},
+      // @  →  src  (catch-all for everything else)
+      {find: "@", replacement: path.resolve(__dirname, "./src")},
+    ],
+  },
+});
+```
+
+### Required `src/components/lib/utils.ts`
+
+All shadcn UI components (`button.tsx`, `tooltip.tsx`, `sheet.tsx`, `badge.tsx`,
+etc.) import the `cn()` helper from `@/components/lib/utils` — **not** from
+`@/lib/utils`.  Create this file:
+
+```ts
+// src/components/lib/utils.ts
+import {clsx, type ClassValue} from "clsx";
+import {twMerge} from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
+}
+```
+
+Note that `@/lib/utils.ts` can also exist for app-level utilities; they are two
+separate files at two separate paths.
+
+### `@pihanga2/cards` — deprecated, do not use
+
+> ⚠️ **`@pihanga2/cards` is deprecated and should no longer be used.**
+>
+> All types previously imported from that package (`BoxProps`, `StackProps`, etc.)
+> have been migrated into each card's own local `*.types.ts` file within this
+> library (`src/cards/box/box.types.ts`, `src/cards/stack/stack.types.ts`, …).
+>
+> **Do not install `@pihanga2/cards` and do not add `import … from "@pihanga2/cards"`
+> anywhere in this codebase or in consumer projects.**
+
+### Type-only import gotcha — `PiCardRef`, `Store`, etc.
+
+> ⚠️ **This is the most common runtime crash when bootstrapping from scratch.**
+
+Several symbols exported by `@pihanga2/core` and `@reduxjs/toolkit` are
+**TypeScript types with no runtime JS value** — they live only in `.d.ts` files.
+If you import them without the `type` keyword, Vite/esbuild compiles them without
+error, but the **browser crashes** at runtime with:
+
+```
+SyntaxError: The requested module '@pihanga2_core.js' does not
+             provide an export named 'PiCardRef'
+```
+
+**Always use `import type` for these symbols:**
+
+```ts
+// ❌ Crashes at runtime — esbuild does not enforce verbatimModuleSyntax
+import {PiCardRef} from "@pihanga2/core";
+import {Store} from "@reduxjs/toolkit";
+
+// ✅ Correct — type imports are erased before the browser sees the bundle
+import type {PiCardRef} from "@pihanga2/core";
+import type {Store} from "@reduxjs/toolkit";
+
+// ✅ Also correct — inline type modifier
+import {type PiCardRef, createCardDeclaration} from "@pihanga2/core";
+```
+
+Common type-only symbols in `@pihanga2/core`: `PiCardRef`, `ReduxState`,
+`WindowProps`, `PiCardDef`, `PiMapProps`.
+
+Common type-only symbols in `@reduxjs/toolkit`: `Store`.
+
+### Transitive card dependencies
+
+Some cards import internal helpers from *other* cards.  When you add a card to
+`src/cards/` you must also add all its transitive dependencies — even if you
+never reference those cards in `app.pihanga.ts`.
+
+| Card you add | Also requires (import in `main.ts`) |
+|---|---|
+| `button` | `dropDownMenu` (imports `dropdown-context`) |
+| `pageWithNavbar` | `modeToggle`, `navbarSearch`, `toast` |
+
+Example `main.ts` import block when using `pageWithNavbar` and `button`:
+
+```ts
+// src/main.ts
+import "@/cards/framework";
+import "@/cards/pageWithNavbar";
+import "@/cards/modeToggle";      // required by pageWithNavbar
+import "@/cards/navbarSearch";    // required by pageWithNavbar
+import "@/cards/toast";           // required by pageWithNavbar
+import "@/cards/button";
+import "@/cards/dropDownMenu";    // required by button
+import "@/cards/stack";
+import "@/cards/typography";
+```
 
 ---
 
@@ -743,19 +881,19 @@ registerCard("myApp/tabs", SdTabs({
 
 ### `pi/input` — the labeled, **controlled** standalone text input
 
-`@pihanga2/cards`' built-in `Input` is **uncontrolled** — it has no `value`
-prop and no `type` prop, so it cannot bind to Redux state or mask text as a
-password field.  **`pi/input`** in this library is the fully-controlled
-replacement:
+**`pi/input`** in this library is a fully-controlled labeled text input that
+can bind to Redux state, mask passwords, and fire per-keystroke or commit events.
+It supersedes the uncontrolled `Input` from the deprecated `@pihanga2/cards`
+package, which had no `value` prop and no `type` prop.
 
-| Feature | `@pihanga2/cards` Input | `pi/input` (this library) |
-|---|---|---|
-| `value` prop (Redux binding) | ✗ | ✓ |
-| `type` prop (`password`, `email`, …) | ✗ | ✓ |
-| `onChanged` (per-keystroke) | ✗ | ✓ |
-| `onCommitted` (blur / Enter) | ✗ | ✓ |
-| `label` + `description` | ✗ | ✓ |
-| Works inside `pi/form` / `pi/field` | ✗ | ✓ |
+| Feature | `pi/input` (this library) |
+|---|---|
+| `value` prop (Redux binding) | ✓ |
+| `type` prop (`password`, `email`, …) | ✓ |
+| `onChanged` (per-keystroke) | ✓ |
+| `onCommitted` (blur / Enter) | ✓ |
+| `label` + `description` | ✓ |
+| Works inside `pi/form` / `pi/field` | ✓ |
 
 The card you want for a freestanding labeled input (e.g. a JWT token field, a
 search box, a settings field) is **`pi/input`** — *not* `pi/text-input`, which
@@ -856,9 +994,9 @@ were absent from the available-cards table.  The following fixes were applied:
 ### 2026-06 developer report — app team wrote a local `pi/text-input` card
 
 A developer building an app on top of this library wrote and kept their own
-local `pi/text-input` card, reasoning that `@pihanga2/cards`' Input is
-uncontrolled (no `value` prop, no `type` prop) and therefore unsuitable for
-Redux binding or password masking.
+local `pi/text-input` card, reasoning that the deprecated `@pihanga2/cards`
+Input is uncontrolled (no `value` prop, no `type` prop) and therefore
+unsuitable for Redux binding or password masking.
 
 **Reality:** `pi/input` in *this* library (`pihanga-shadcn`) is already a fully
 controlled replacement.  It has `value`, `type`, `onChanged`, `onCommitted`,
@@ -881,3 +1019,20 @@ project that was bootstrapped without the reference `index.css`:
 
 Both fixes are now included in the reference `src/index.css` template in
 *Prerequisites step 3*.
+
+### 2026-06 agent evaluation — ViteJS app from scratch (BuhlOS-2)
+
+An agent built a new ViteJS + React + TypeScript app from scratch using
+`yarn create vite` and then manually copied pihanga-shadcn cards.  The
+following blockers were hit that were not covered by any existing doc section.
+All fixes have been added to the new *[Vite configuration (both channels)](#vite-configuration-both-channels)* section.
+
+| Blocker | Root cause | Fix |
+|---|---|---|
+| `"Failed to resolve import '@/registry/ui/button'"` | The `@/registry` → `src/components` Vite alias was not documented | Added required `vite.config.ts` alias table |
+| `"Failed to resolve import '@/components/lib/utils'"` | shadcn UI components import `cn()` from `@/components/lib/utils`, not `@/lib/utils`; the file must exist at both paths | Added `src/components/lib/utils.ts` creation step |
+| `SyntaxError: does not provide an export named 'PiCardRef'` | Card source files (button.types.ts, toast.types.ts, typography.types.ts) imported `PiCardRef` without the `type` keyword; esbuild doesn't enforce `verbatimModuleSyntax` | Added **Type-only import gotcha** section with before/after examples |
+| `SyntaxError: does not provide an export named 'Store'` | `app.root.tsx` imported `Store` from `@reduxjs/toolkit` as a value | Covered by same type-only import section |
+| Vite `"Failed to resolve import '@/cards/dropDownMenu/dropdown-context'"` | `button` card has a transitive dependency on `dropDownMenu` that isn't obvious | Added **Transitive card dependencies** table |
+| `pageWithNavbar` missing internal helpers at runtime | `pageWithNavbar` has transitive dependencies on `modeToggle`, `navbarSearch`, and `toast` | Added to transitive dependencies table |
+| `@pihanga2/cards` not in package.json | `shad/stack` previously imported `StackProps` from `@pihanga2/cards` | **`@pihanga2/cards` is now deprecated.** `BoxProps` and `StackProps` are defined locally in `box.types.ts` / `stack.types.ts`. Do **not** install `@pihanga2/cards`. |

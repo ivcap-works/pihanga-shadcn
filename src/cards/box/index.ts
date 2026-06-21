@@ -1,10 +1,9 @@
-import {createCardDeclaration, registerCardComponent} from "@pihanga2/core";
+import {registerCardComponent} from "@pihanga2/core";
 
 import {BoxComponent} from "./box.component";
-import type {BoxProps} from "@pihanga2/cards";
+import {BOX_CARD} from "./box.types";
 
-export const BOX_CARD = "shad/box";
-export const Box = createCardDeclaration<BoxProps>(BOX_CARD);
+export * from "./box.types";
 
 registerCardComponent({
   name: BOX_CARD,

@@ -1,4 +1,3 @@
- 
 import {
   createCardDeclaration,
   createOnAction,
@@ -17,21 +16,21 @@ export const PASTE_TARGET_ACTION = registerActions(PASTE_TARGET_CARD, [
 ]);
 
 export const onContentPasted = createOnAction<CloseEvent>(
-  PASTE_TARGET_ACTION.PASTED_CONTENT
+  PASTE_TARGET_ACTION.PASTED_CONTENT,
 );
 
 export const onPasteError = createOnAction<PasteTargetErrorEvent>(
-  PASTE_TARGET_ACTION.ERROR
+  PASTE_TARGET_ACTION.ERROR,
 );
 
 export const DEF_HEIGHT = "120px";
 export const DEF_SUCCESS_COLOR = "lightgreen";
-export const DEF_ERROR_COLOR = "lightred";
+export const DEF_ERROR_COLOR = "lightcoral";
 export const DEF_EVENT_DURATION_SECONDS = 1;
 export const DEF_OVERLAY_OPACITY = 0.5;
 
 export const DEF_PASTE_FIRST_REMINDER =
-  "(Before pasting, click this this box to get the focus)";
+  "(Before pasting, click this box to get the focus)";
 
 export type PasteTargetProps = {
   fileTypes?: string[];

@@ -144,17 +144,14 @@ export const DialogComponent = (
   );
 
   return (
-    <DialogRoot
-      open={open}
-      onOpenChange={handleOpenChange}
-      desktopVariant={desktopVariant}
-      mobileVariant={mobileVariant}
-    >
+    <DialogRoot open={open} onOpenChange={handleOpenChange}>
       {trigger && <DialogTrigger asChild>{renderTrigger()}</DialogTrigger>}
       <DialogContent
         data-pihanga={cardName}
         size={size}
-        variant={variant === "drawer" ? undefined : variant}
+        variant={variant}
+        desktopVariant={desktopVariant}
+        mobileVariant={mobileVariant}
         dismissible={dismissible}
         hideClose={hideClose}
         fixed={hasFixedLayout}

@@ -37,6 +37,7 @@ export const PasteTargetComponent = (
     description,
     pasteFirstReminder = DEF_PASTE_FIRST_REMINDER,
     withUpload,
+    fileTypes,
 
     height = DEF_HEIGHT,
 
@@ -54,6 +55,7 @@ export const PasteTargetComponent = (
   const [overlayBackground, setOverlayBackground] = useState<string>("gray");
   const timerRef = React.useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState<boolean>(false);
 
   const overlayStyle: React.CSSProperties = {
@@ -115,12 +117,22 @@ export const PasteTargetComponent = (
       <textarea
         onPaste={handlePaste}
         onFocus={() => {
-          console.log("...focused");
           setIsFocused(true);
         }}
         onBlur={() => setIsFocused(false)}
-        style={overlayStyle}
-        // 🔑 CRUCIAL: Auto-focus the element so it's ready to receive the paste event.
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 10,
+          resize: "none",
+          background: "transparent",
+          cursor: isFocused ? "copy" : "pointer",
+          ...overlayStyle,
+        }}
+        // 🔑 CRUCIAL: Focus the element before pasting so it receives the paste event.
         // autoFocus
         readOnly
         ref={textareaRef}
@@ -128,31 +140,81 @@ export const PasteTargetComponent = (
     );
   }
 
+  /** Map friendly file-type labels to accept= strings for the hidden input. */
+  function buildAccept(): string | undefined {
+    if (!fileTypes?.length) return undefined;
+    return fileTypes
+      .map((t) => {
+        const ext = t.toLowerCase();
+        if (ext === "jpg" || ext === "jpeg") return ".jpg,.jpeg";
+        return `.${ext}`;
+      })
+      .join(",");
+  }
+
+  function flashOverlay(color: string) {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setOverlayBackground(color);
+    setOverlayOpacity(eventOpacity);
+    const id = setTimeout(() => {
+      setOverlayOpacity(0);
+      timerRef.current = null;
+    }, eventDurationSeconds * 1000);
+    timerRef.current = id as unknown as number;
+  }
+
+  function handleFileChange(ev: React.ChangeEvent<HTMLInputElement>) {
+    const file = ev.target.files?.[0];
+    // Reset input so the same file can be re-selected later.
+    ev.target.value = "";
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = (e.target?.result as string) ?? "";
+      onPastedContent({items: [{mimeType: file.type, content}]});
+      flashOverlay(successColor);
+    };
+    reader.onerror = () => {
+      flashOverlay(errorColor);
+    };
+    reader.readAsDataURL(file);
+  }
+
   function onUpload(ev: React.MouseEvent<HTMLButtonElement>) {
-    console.log("Clicked!!!");
     ev.stopPropagation();
     ev.preventDefault();
+    fileInputRef.current?.click();
   }
 
   function renderTitle() {
+    const uploadBtn = !isFocused && withUpload && (
+      <Button
+        onClick={onUpload}
+        style={{position: "relative", zIndex: 30, pointerEvents: "auto"}}
+      >
+        Upload
+      </Button>
+    );
+
     if (title) {
-      return <h2 className="paste-target-msg-title">{title}</h2>;
+      return (
+        <div className="paste-target-msg-title">
+          <h2>{title}</h2>
+          {uploadBtn}
+        </div>
+      );
     } else {
       return (
         <div className="paste-target-msg-title">
           Paste
-          {!isFocused && withUpload && (
+          {uploadBtn && (
             <>
               &nbsp;or&nbsp;
-              <Button
-                onClick={onUpload}
-                style={{position: "relative", zIndex: 30}}
-              >
-                Upload
-              </Button>
+              {uploadBtn}
             </>
           )}
-          &nbsp;Specification here
+          &nbsp;here
         </div>
       );
     }
@@ -164,9 +226,28 @@ export const PasteTargetComponent = (
     <div
       className={clsx(cn, isFocused && "pihanga-paste-target-focused")}
       data-pihanga={cardName}
-      style={{position: "relative", height}}
+      style={{position: "relative", height, width: "100%"}}
     >
-      <div className="paste-target-label">
+      <div
+        className="paste-target-label"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          textAlign: "center",
+          // zIndex must be above textarea (10) so the Upload button is clickable.
+          // pointer-events: none lets click/focus pass through to the textarea,
+          // EXCEPT on children that override with pointer-events: auto (the button).
+          pointerEvents: "none",
+          zIndex: 20,
+        }}
+      >
         {renderTitle()}
         {description && (
           <span className="paste-target-msg-desc">{description}</span>
@@ -174,6 +255,16 @@ export const PasteTargetComponent = (
         <div className="paste-target-focus-reminder">{pasteFirstReminder}</div>
       </div>
       {renderPasteHandler()}
+      {/* Hidden file input — triggered programmatically by the Upload button */}
+      {withUpload && (
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept={buildAccept()}
+          onChange={handleFileChange}
+          style={{display: "none"}}
+        />
+      )}
     </div>
   );
 };

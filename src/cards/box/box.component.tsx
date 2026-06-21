@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import {Card, type PiCardProps} from "@pihanga2/core";
-import type {BoxProps} from "@pihanga2/cards";
+import type {BoxProps} from "./box.types";
 
 export const BoxComponent = (props: PiCardProps<BoxProps>): React.ReactNode => {
   const {content, className, style, cardName} = props;
@@ -21,7 +21,7 @@ export const BoxComponent = (props: PiCardProps<BoxProps>): React.ReactNode => {
   if (props.paddingRight) sy["padding-right"] = `${props.paddingRight}px`;
 
   sy = {
-    ...(style?.shad as Record<string, string | number> | undefined),
+    ...(style as {shad?: Record<string, string | number>} | undefined)?.shad,
   };
 
   function renderContent() {

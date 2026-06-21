@@ -180,14 +180,18 @@ variant on mobile (\`mobileVariant: "drawer"\`), and optional custom footer
 or close-button text.
   `.trim(),
 
-  preview: () =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  preview: (props: any) =>
     Dialog({
+      // Spread live props from the Controls panel (title, description,
+      // size, variant, desktopVariant, mobileVariant, dismissible, hideClose…)
+      ...props,
+      // Fixed id to avoid card-name collisions in the playground
       id: "playground-dialog-preview",
+      // Always provide real card components for trigger and content so the
+      // preview works regardless of which facet / defaultProps is active.
       trigger: Button({label: "Open Dialog", opts: {variant: "default"}}),
       content: Button({label: "Dialog Content", opts: {variant: "ghost"}}),
-      title: "Example Dialog",
-      description: "Click the button above to open this dialog.",
-      size: "md",
     }),
 
   defaultProps: {

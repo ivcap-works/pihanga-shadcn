@@ -1,12 +1,11 @@
-import {createCardDeclaration, registerCardComponent} from "@pihanga2/core";
-import type {StackProps} from "@pihanga2/cards";
+import {registerCardComponent} from "@pihanga2/core";
 
 import {Component} from "./stack.component";
+import {STACK_CARD} from "./stack.types";
 
-export const CARD_TYPE = "shad/stack";
-export const Stack = createCardDeclaration<StackProps>(CARD_TYPE);
+export * from "./stack.types";
 
 registerCardComponent({
-  name: CARD_TYPE,
+  name: STACK_CARD,
   component: Component,
 });

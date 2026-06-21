@@ -3,7 +3,7 @@
  */
 import {definePlayground} from "@/playground/definePlayground";
 import {Box} from "./index";
-import type {BoxProps} from "@pihanga2/cards";
+import type {BoxProps} from "./box.types";
 
 export default definePlayground<BoxProps>({
   cardId: "shad/box",

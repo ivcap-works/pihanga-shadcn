@@ -3,7 +3,7 @@
  */
 import {definePlayground} from "@/playground/definePlayground";
 import {Stack} from "./index";
-import type {StackProps} from "@pihanga2/cards";
+import type {StackProps} from "./stack.types";
 
 export default definePlayground<StackProps>({
   cardId: "shad/stack",

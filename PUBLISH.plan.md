@@ -502,7 +502,7 @@ import "@pihanga2/shadcn/cards/dialog";
 
 | Type | Packages |
 |---|---|
-| `peerDependencies` | `react`, `react-dom`, `@pihanga2/core`, `@pihanga2/cards` |
+| `peerDependencies` | `react`, `react-dom`, `@pihanga2/core` |
 | `dependencies` | all Radix UI, `lucide-react`, `clsx`, `class-variance-authority`, `tailwind-merge`, `sonner` |
 
 ### Tailwind CSS
