@@ -5,9 +5,15 @@ first-time project setup, through building multi-page apps with reactive state,
 to creating your own custom card types.
 
 | Resource | URL |
-|----------|-----|
+|---|---|
 | Registry base URL | `https://ivcap-works.github.io/pihanga-shadcn/r` |
+| npm package | `@pihanga2/shadcn` |
 | Source repository | `https://github.com/ivcap-works/pihanga-shadcn` |
+| **Issues / feedback** | **`https://github.com/ivcap-works/pihanga-shadcn/issues`** |
+
+> 💬 **Found a bug, a missing card, or an unclear doc?**
+> Please open an issue at the link above — card suggestions, integration
+> problems, and documentation improvements are all very welcome.
 
 ---
 
@@ -16,9 +22,14 @@ to creating your own custom card types.
 **Part 1 — Using Cards**
 
 - [What is pihanga-shadcn?](#what-is-pihanga-shadcn)
+- [Choosing a distribution channel](#choosing-a-distribution-channel)
 - [Prerequisites — one-time project setup](#prerequisites--one-time-project-setup)
-- [Adding cards to your project](#adding-cards-to-your-project)
+- [Channel 1 — shadcn registry (copy-on-install)](#channel-1--shadcn-registry-copy-on-install)
   - [Available cards](#available-cards)
+- [Channel 2 — npm package `@pihanga2/shadcn`](#channel-2--npm-package-pihanga2shadcn)
+  - [Core card subset](#core-card-subset)
+  - [Migrating a card from npm to a local copy](#migrating-a-single-card-from-npm-to-a-local-customised-copy)
+  - [Tailwind CSS with the npm package](#tailwind-css-with-the-npm-package)
 - [Bootstrapping a Pihanga app](#bootstrapping-a-pihanga-app)
   - [One `registerFramework` per app](#one-registerframework-per-app)
 - [Reactive state with `memo()`](#reactive-state-with-memo)
@@ -50,20 +61,16 @@ to creating your own custom card types.
 `pihanga-shadcn` is a library of **Pihanga card components** built on top of
 [shadcn/ui](https://ui.shadcn.com) and [Radix UI](https://radix-ui.com).
 
-**The key idea:** instead of publishing a binary npm package, each card is
-distributed as a *shadcn-style copy-on-install registry entry*.  When you run
-`npx shadcn@latest add <url>` the CLI copies the card's TypeScript source files
-directly into your project — **you own the code** and can customise it freely.
+Cards are available through **two distribution channels**:
 
-```mermaid
-flowchart LR
-    R["pihanga-shadcn\nRegistry\n(GitHub Pages)"]
-    CLI["npx shadcn\n@latest add"]
-    P["Your project\nsrc/cards/"]
+| Channel | How to install | Best for |
+|---|---|---|
+| **shadcn registry** | `npx shadcn@latest add <url>` | Projects already using shadcn/ui; maximum customisability |
+| **npm package** | `npm install @pihanga2/shadcn` | Standard npm workflows; monorepos; CI pipelines |
 
-    R -- "JSON registry entry\n+ source files" --> CLI
-    CLI -- "copies source +\ninstalls npm deps" --> P
-```
+Both channels use the same card source.  The registry copies source files into
+your project (you own and can edit them); the npm package ships pre-built ESM
+bundles.
 
 A Pihanga app is structured around **cards** — declarative configuration
 objects that describe UI widgets.  The runtime (from `@pihanga2/core`) wires
@@ -131,11 +138,62 @@ to `tsconfig.json`:
 }
 ```
 
+### 3 — Configure `src/index.css` (Tailwind v4 + shadcn theme)
+
+> **⚠️ This is a Tailwind CSS project.**  Your `index.html` must **not** contain
+> any `<link rel="stylesheet">` tags for external CSS frameworks (Bootstrap,
+> Bulma, etc.), CDN font `<link>` tags loaded as stylesheets, or `<style>`
+> blocks.  Tailwind generates all styles at build time from the utility classes
+> in your source files.  Adding foreign stylesheets will conflict with
+> Tailwind's generated output and break the shadcn colour variables.
+
+Your `src/index.css` must include the full Tailwind v4 `@theme inline` block
+that bridges shadcn's CSS custom properties (`--card`, `--background`, …) to
+Tailwind colour utilities (`bg-card`, `bg-background`, …).  Without it,
+dialog panels, popovers, and card backgrounds render as **transparent**.
+
+**Get the reference file** by copying directly from the repository:
+
+```sh
+curl -o src/index.css \
+  https://raw.githubusercontent.com/ivcap-works/pihanga-shadcn/main/src/index.css
+```
+
+or view / copy it at:
+`https://github.com/ivcap-works/pihanga-shadcn/blob/main/src/index.css`
+
+The file provides the `@theme inline` colour token mappings, light/dark CSS
+variable tokens, and `scrollbar-gutter: stable` on `<body>` (to prevent layout
+reflow when Radix dialogs open).  See
+[AGENT.using-cards.md — step 3](./AGENT.using-cards.md#3--configure-srcindexcss-tailwind-v4--shadcn-theme)
+for the full annotated listing.
+
 ---
 
-## Adding cards to your project
+## Choosing a distribution channel
 
-Once the one-time setup is done, add any card with a single command.
+| | Registry | npm package |
+|---|---|---|
+| **How** | `npx shadcn@latest add <url>` | `npm install @pihanga2/shadcn` |
+| **Files** | Copies source files into your project | Pre-built ESM in `node_modules` |
+| **Customise card source** | ✅ Yes — you own the files | ✗ No |
+| **All cards available** | ✅ Yes (34 cards) | ✗ 30 core cards only |
+| **Auto-installs npm deps** | ✅ Yes (shadcn CLI) | ✅ Yes (package deps) |
+| **shadcn `init` required** | ✅ Yes | ✗ No |
+| **Tailwind** | Consumer's own config | Point Tailwind at `dist-lib/` |
+| **Best for** | shadcn/ui projects; max flexibility | Monorepos; CI; standard npm DX |
+
+> **In practice,** most projects use the **registry** if they are already on
+> shadcn/ui, and the **npm package** for environments where copying source is
+> impractical (e.g. a shared design system package, a monorepo workspace, or
+> when a team wants to pin a specific published version without tracking source
+> files).
+
+---
+
+## Channel 1 — shadcn registry (copy-on-install)
+
+Once the one-time setup (above) is done, add any card with a single command.
 `@pihanga2/core` and all card-specific npm packages are installed automatically
 by the shadcn CLI — no separate `npm install` needed.
 
@@ -168,6 +226,7 @@ import "./cards/form";
 | box | `/r/box` | |
 | button | `/r/button` | |
 | checkbox | `/r/checkbox` | |
+| conditional | `/r/conditional` | |
 | dataTable | `/r/dataTable` | |
 | dialog | `/r/dialog` | |
 | dropDownMenu | `/r/dropDownMenu` | |
@@ -175,18 +234,19 @@ import "./cards/form";
 | flexGrid | `/r/flexGrid` | |
 | form | `/r/form` | |
 | framework | `/r/framework` | App root — add first for new apps |
-| graphin | `/r/graphin` | ⚠️ Heavy AntV deps (~5 MB) |
+| graphin | `/r/graphin` | ⚠️ Heavy AntV deps (~5 MB) — registry only |
 | input | `/r/input` | |
-| jsonViewer | `/r/jsonViewer` | |
+| jsonViewer | `/r/jsonViewer` | registry only |
 | list | `/r/list` | |
 | loadingOverlay | `/r/loadingOverlay` | |
-| markdownViewer | `/r/markdownViewer` | |
+| loadingSkeleton | `/r/loadingSkeleton` | |
+| markdownViewer | `/r/markdownViewer` | ⚠️ Heavy markdown deps — registry only |
 | menu | `/r/menu` | |
 | modeToggle | `/r/modeToggle` | |
 | navbarSearch | `/r/navbarSearch` | |
 | pageWithNavbar | `/r/pageWithNavbar` | |
 | pasteTarget | `/r/pasteTarget` | |
-| resizable | `/r/resizable` | |
+| resizable | `/r/resizable` | registry only |
 | select | `/r/select` | |
 | stack | `/r/stack` | |
 | stepper | `/r/stepper` | |
@@ -197,12 +257,148 @@ import "./cards/form";
 | toggleGroup | `/r/toggleGroup` | |
 | typography | `/r/typography` | |
 
-> **Heads up on `graphin`:** this card pulls in the full AntV graph library
-> (~5 MB).  Only add it if you actually need graph visualisation.
-
 Full registry index (JSON):
 ```
 https://ivcap-works.github.io/pihanga-shadcn/r/registry.json
+```
+
+---
+
+## Channel 2 — npm package `@pihanga2/shadcn`
+
+Install once; no shadcn CLI or `components.json` required.
+
+```sh
+npm install @pihanga2/shadcn
+# or: yarn add @pihanga2/shadcn
+# or: pnpm add @pihanga2/shadcn
+```
+
+Then activate cards in your app entry point.
+
+> **🌲 Always use per-card imports — they are strongly recommended.**
+> The barrel import (`import "@pihanga2/shadcn"`) loads all 30 core cards
+> unconditionally, adding unnecessary weight to every bundle.  **Bundlers
+> (Vite, webpack, esbuild, Rollup) cannot tree-shake side-effect imports**
+> like card registrations, so unused cards will still appear in your production
+> bundle.  Import only the cards your app actually needs:
+
+```ts
+// ✅ RECOMMENDED — import only the cards your app uses
+// src/main.ts (or src/main.tsx)
+import "@pihanga2/shadcn/cards/framework";
+import "@pihanga2/shadcn/cards/button";
+import "@pihanga2/shadcn/cards/form";
+import "@pihanga2/shadcn/cards/dialog";
+// … only the cards you actually use
+
+// ❌ AVOID — loads all 30 cards regardless of usage
+import "@pihanga2/shadcn";
+```
+
+Each import triggers `registerCardComponent(...)` as a side effect, making the
+card available to the Pihanga runtime.  After that, usage is identical to the
+registry channel — call `registerCard(...)` with the card factory in your init
+function.
+
+### Core card subset
+
+The npm package includes 30 of the 34 cards.  The following four cards are
+**registry-only** because they carry heavy optional dependencies:
+
+| Card | Excluded dependency | Install size |
+|---|---|---|
+| `graphin` | `@antv/g`, `@antv/g6`, `@antv/graphin` | ~5 MB |
+| `jsonViewer` | `react-json-view-lite` | ~300 kB |
+| `markdownViewer` | `mermaid`, `rehype-highlight`, `remark-*` | ~2 MB |
+| `resizable` | `react-resizable-panels` | ~50 kB |
+
+If you need one of these cards, install it via the registry channel in addition
+to using the npm package for the core cards.
+
+### Migrating a single card from npm to a local customised copy
+
+Sometimes you start with the npm package but later need to modify one specific
+card (custom styling, extra props, different behaviour).  The safest workflow is:
+
+**Step 1 — Switch to per-card imports** (if you haven't already)
+
+```ts
+// Before: activates all 30 cards — you have no control over which is loaded
+import "@pihanga2/shadcn";
+
+// After: explicit per-card imports — omit the one you want to customise
+import "@pihanga2/shadcn/cards/badge";
+import "@pihanga2/shadcn/cards/form";
+// import "@pihanga2/shadcn/cards/button";  ← omit this one
+import "@pihanga2/shadcn/cards/dialog";
+// … remaining cards
+```
+
+**Step 2 — Install the card from the registry into your project**
+
+```sh
+npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button
+```
+
+This copies `src/cards/button/` into your project and installs any npm deps.
+
+**Step 3 — Import your local copy instead**
+
+```ts
+// src/main.ts
+import "./cards/button";    // your local copy — same card ID as the npm version
+```
+
+Because the local `index.ts` calls `registerCardComponent` with the **same
+card ID** (e.g. `"shad/button"`), every existing `registerCard("myApp/save",
+Button({…}))` call in your app continues to work without any changes.
+
+> **No import-order tricks needed.** As long as you do *not* import the npm
+> sub-path for that card (step 1) and *do* import your local copy (step 3),
+> there is exactly one registration and no conflict.
+
+**Alternative — rename the card (optional)**
+
+If you want to keep the npm card and the local version coexisting (e.g. for a
+side-by-side comparison or when multiple teams share the same app), rename the
+local card's ID before importing it:
+
+```ts
+// src/cards/button/button.types.ts
+// Change: export const BUTTON_CARD = "shad/button";
+export const BUTTON_CARD = "myapp/custom-button";   // ← new unique ID
+```
+
+Then update all `registerCard` calls that should use your custom version:
+
+```ts
+import {Button} from "@/cards/button";
+registerCard("myApp/save", Button({label: "Save"}));  // now uses "myapp/custom-button"
+```
+
+Cards that still reference the original ID (`"shad/button"`) will use the npm
+version; cards referencing `"myapp/custom-button"` will use yours.
+
+### Tailwind CSS with the npm package
+
+The package ships Tailwind **source** (standard shadcn convention — no
+pre-built CSS).  Point Tailwind at the package so it can scan utility classes:
+
+```css
+/* src/index.css — Tailwind v4 */
+@import "tailwindcss";
+@source "../../node_modules/@pihanga2/shadcn/dist-lib";
+
+/* … rest of your theme */
+```
+
+For Tailwind v3, add to `tailwind.config.js`:
+```js
+content: [
+  "./src/**/*.{ts,tsx}",
+  "./node_modules/@pihanga2/shadcn/dist-lib/**/*.{js,mjs}",
+]
 ```
 
 ---
@@ -481,10 +677,26 @@ npx shadcn@latest add \
 
 ## Quick reference — using cards
 
+**Registry channel:**
+
 | Task | Command / snippet |
 |------|-------------------|
 | One-time shadcn init | `npx shadcn@latest init` |
-| Add a card | `npx shadcn@latest add https://…/r/<card>` |
+| Add a card (registry) | `npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/<card>` |
+| Pin to a version | Use raw GitHub URL with tag: `.../pihanga-shadcn/v1.0.0/public/r/<card>.json` |
+
+**npm channel:**
+
+| Task | Command / snippet |
+|------|-------------------|
+| Install package | `npm install @pihanga2/shadcn` |
+| Activate one card (recommended) | `import "@pihanga2/shadcn/cards/button"` |
+| Activate all core cards (avoid — no tree-shaking) | `import "@pihanga2/shadcn"` |
+
+**Both channels — app wiring:**
+
+| Task | Command / snippet |
+|------|-------------------|
 | Start dev server | `npm run dev` (or `yarn dev`) |
 | Production build | `npm run build` (or `yarn build`) |
 | Register root card | `registerFramework(SdFramework({page: "app/main"}))` |

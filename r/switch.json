@@ -4,7 +4,7 @@
   "type": "registry:component",
   "description": "Pihanga switch card component",
   "dependencies": [
-    "@radix-ui/react-switch@UNKNOWN - add to root package.json",
+    "@radix-ui/react-switch@^1.1.2",
     "radix-ui@^1.4.3"
   ],
   "registryDependencies": [
