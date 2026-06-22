@@ -1,4 +1,5 @@
 import {createCardDeclaration} from "@pihanga2/core";
+import type {CSSProperties} from "react";
 import type {PluggableList} from "unified";
 import type {Components} from "react-markdown";
 
@@ -7,7 +8,7 @@ export const MARKDOWN_CARD = "markdown-viewer";
 export const MarkdownViewer =
   createCardDeclaration<MarkdownViewerProps>(MARKDOWN_CARD);
 
-export type MarkdownViewerProps<S = object> = {
+export type MarkdownViewerProps = {
   /** Markdown source string to render directly. */
   source?: string;
   /** URL/path to a file whose text content will be fetched and rendered. */
@@ -31,5 +32,5 @@ export type MarkdownViewerProps<S = object> = {
 
   /** Additional CSS class to apply to the outer wrapper div. */
   className?: string;
-  style?: S;
+  style?: CSSProperties;
 };
