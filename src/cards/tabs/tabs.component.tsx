@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {Card, isCardRef, type PiCardProps} from "@pihanga2/core";
+import {Card, type PiCardProps} from "@pihanga2/core";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import type {TabsEvents, TabsProps} from "./tabs.types";
 
@@ -54,26 +54,18 @@ export const TabsComponent = (
       >
         <TabsList className={listClassName}>
           {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              disabled={tab.disabled}
-            >
-              {isCardRef(tab.title) ? (
+            <TabsTrigger key={tab.id} value={tab.id} disabled={tab.disabled}>
+              {typeof tab.title !== "string" ? (
                 <Card cardName={tab.title} parentCard={cardName} />
               ) : (
-                (tab.title as string)
+                tab.title
               )}
             </TabsTrigger>
           ))}
         </TabsList>
 
         {tabs.map((tab) => (
-          <TabsContent
-            key={tab.id}
-            value={tab.id}
-            className={contentClassName}
-          >
+          <TabsContent key={tab.id} value={tab.id} className={contentClassName}>
             <Card cardName={tab.contentCard} parentCard={cardName} />
           </TabsContent>
         ))}
