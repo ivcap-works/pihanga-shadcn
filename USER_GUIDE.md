@@ -680,9 +680,9 @@ a normal button.
 ### Theming the `brand` variant
 
 `variant="brand"` on `pi/button` is reserved for a prominent call-to-action
-button that carries your app's brand colour.  Out of the box it falls back to
-the primary colour, but it is designed to be **rethemed with CSS only** — no
-TypeScript changes are needed.
+button that carries your app's brand colour.  Its out-of-the-box default is
+the primary colour — an intentional baseline you can retheme with **CSS only**;
+no TypeScript changes are needed.
 
 The three tokens that control the brand button live in the `@theme inline`
 block of your `src/index.css`:

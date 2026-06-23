@@ -1,6 +1,7 @@
 import React from "react";
-import {Card, PiCardProps, PiCardRef} from "@pihanga2/core";
-import {FlexGridProps} from "./flexGrid.types";
+import {Card} from "@pihanga2/core";
+import type {PiCardProps, PiCardRef} from "@pihanga2/core";
+import type {FlexGridProps} from "./flexGrid.types";
 import clsx from "clsx";
 
 export const FlexGridComponent = (
@@ -19,7 +20,7 @@ export const FlexGridComponent = (
   } = props;
 
   // console.log("AREA", area)
-  const _style = {
+  const _style: React.CSSProperties & Record<string, unknown> = {
     display: "grid",
     gridGap: template.gap || "10px",
     height,
@@ -29,7 +30,7 @@ export const FlexGridComponent = (
   };
 
   if (template.area) {
-    const areaRows = template.area.map((rn) => `"${rn.join(" ")}"`);
+    const areaRows = template.area.map((row: string[]) => `"${row.join(" ")}"`);
     _style.gridTemplateAreas = areaRows.join(" ");
   }
   if (template.rows) {
@@ -61,7 +62,7 @@ export const FlexGridComponent = (
       className={clsx(_cls("root"), className)}
       data-pihanga={cardName}
     >
-      {Object.entries(cards).map(renderGridCard)}
+      {(Object.entries(cards) as [string, PiCardRef][]).map(renderGridCard)}
     </div>
   );
 };

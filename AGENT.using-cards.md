@@ -856,9 +856,9 @@ This table is a quick-lookup to avoid "card not found" or type-error surprises.
 ### `pi/button` — theming the `brand` variant
 
 `variant="brand"` is intended for a visually prominent call-to-action button
-that carries your app's brand colour.  Out of the box it falls back to the
-primary colour family, but — unlike other variants — it is designed to be
-**rethemed with CSS only**, without touching any TypeScript.
+that carries your app's brand colour.  Its out-of-the-box default is the
+primary colour family — an intentional baseline; unlike other variants, it is
+designed to be **rethemed with CSS only**, without touching any TypeScript.
 
 The button's appearance is driven by three CSS tokens declared in the
 `@theme inline` block of `src/index.css`:
@@ -960,6 +960,36 @@ registerCard("myApp/tabs", SdTabs({
 }));
 ```
 
+### `shad/tabs` — `tab.title` strings are always rendered as text, not card IDs
+
+When `tab.title` is a plain `string`, it is **always rendered as literal text**
+on the tab trigger — even if the string happens to be a registered card name.
+To mount a card inside the tab trigger, use an **object-form card declaration**:
+
+```ts
+import {SdBadge} from "@/cards/badge";
+
+registerCard("myApp/tabs", SdTabs({
+  tabs: [
+    // ✅ String label — rendered as tab text
+    {id: "home",     title: "Home",                    contentCard: "myApp/home"},
+
+    // ✅ Object card declaration — card is mounted inside the tab trigger
+    {id: "alerts",   title: SdBadge({label: "3", variant: "destructive"}),
+                     contentCard: "myApp/alerts"},
+
+    // ❌ String card ID — NOT mounted; "myApp/badgeCard" appears as literal text
+    {id: "settings", title: "myApp/badgeCard",          contentCard: "myApp/settings"},
+  ],
+}));
+```
+
+**Why?** The component uses `typeof tab.title !== "string"` to distinguish plain
+labels from object card declarations.  `isCardRef()` from `@pihanga2/core` does
+not recognise plain-string card IDs — only object-form `PiCardDef` values — so
+the `typeof` guard is the correct approach.  A string `title` is therefore
+unambiguously a label, regardless of whether it looks like a card path.
+
 ### `pi/input` — the labeled, **controlled** standalone text input
 
 **`pi/input`** in this library is a fully-controlled labeled text input that
@@ -1039,6 +1069,71 @@ registerCard("myApp/hint", Conditional({
 
 This is a transparent pass-through — no extra DOM wrapper is added.  Prefer
 it over `className: (s) => s.x ? "" : "hidden"` workarounds.
+
+### `shad/framework` — default theme is `"dark"`
+
+> ⚠️ **Do NOT assume the default theme is `"light"` or `"system"`.** The
+> `framework` card defaults to `theme: "dark"` when no `theme` prop is provided.
+
+The `theme` prop is passed to `ThemeProvider` and persisted in `localStorage`
+under the key `"shadcn-ui-theme"`.  Override it explicitly if your app needs
+a different default:
+
+```ts
+// Dark (default — no explicit prop needed):
+registerFramework(SdFramework({page: "app/main"}));
+
+// Light on first load:
+registerFramework(SdFramework({page: "app/main", theme: "light"}));
+
+// Follow the OS preference:
+registerFramework(SdFramework({page: "app/main", theme: "system"}));
+```
+
+The `modeToggle` card switches between `"light"` and `"dark"` at runtime and
+persists the new preference.  Once the user has toggled, the stored
+`localStorage` value takes over from the `theme` default.
+
+### `shad/list` — icon decorators require registered icons
+
+The `shad/list` card supports an `"icon"` decorator type on list items.  When
+a list item specifies `decorator: {type: "icon", name: "someIcon"}`, the
+component calls `getIcon(name)` from `src/cards/icons.ts` to resolve the icon.
+
+> ⚠️ **Icons must be registered before they can appear in list item decorators.**
+> This dependency is NOT visible from the card's type declarations — an
+> unregistered icon name silently renders nothing.
+
+Register icons in `src/cards/icons.ts` (or your app's icon registry file):
+
+```ts
+// src/cards/icons.ts  (or your project's equivalent)
+import {registerIcon} from "@/cards/icons";
+import {CheckCircle, AlertCircle, Info} from "lucide-react";
+
+registerIcon("check-circle", CheckCircle);
+registerIcon("alert",        AlertCircle);
+registerIcon("info",         Info);
+```
+
+Then use the registered name in list item decorators:
+
+```ts
+import {ShadList} from "@/cards/list";
+
+registerCard("myApp/statusList", ShadList({
+  items: [
+    {
+      id: "1",
+      title: "Job complete",
+      decorator: {type: "icon", name: "check-circle"},   // ← registered name
+    },
+  ],
+}));
+```
+
+If the icon name is not registered, the decorator slot renders as empty with no
+error in the console — making the omission easy to miss.
 
 ---
 
@@ -1131,3 +1226,17 @@ an anchor / link*).  No local card was needed.
 | Root cause | Fix applied |
 |---|---|
 | `href` / `target` props on `pi/button` existed in `button.types.ts` but were never documented in any guide or quick-reference section | Added `pi/button — rendering as an anchor / link` section to *Card API quick reference* in `AGENT.using-cards.md` and a matching `### Button as an anchor link` subsection to `USER_GUIDE.md` |
+
+### 2026-06 app developer findings — hidden contracts and misunderstood defaults
+
+An app team building on pihanga-shadcn documented several card behaviours that
+they had to discover by reading source, along with two cases where they made
+local modifications to the registry code for features that already existed.
+
+| Reported issue | Reality | Fix applied |
+|---|---|---|
+| `shad/framework` defaults to `"light"` or `"system"` — team patched it to `"dark"` | The registry already defaults to `theme: "dark"`; no patch was needed | Added *`shad/framework` — default theme is `"dark"`* to *Card API quick reference* |
+| `shad/tabs` with a string card ID as `tab.title` rendered the raw ID string instead of mounting the card | This is intended behaviour: strings are always text labels; only object-form declarations mount as cards; `isCardRef()` cannot reliably identify string card IDs | Added *`shad/tabs` — `tab.title` strings are always rendered as text* to *Card API quick reference* with correct object-form pattern |
+| `shad/list` icon decorators silently rendered nothing when icon names were unregistered | The `shad/list` card calls `getIcon(name)` which requires icons to be pre-registered via `registerIcon()` in `src/cards/icons.ts`; this contract is not visible in the type declarations | Added *`shad/list` — icon decorators require registered icons* to *Card API quick reference* |
+| `flexGrid.component.tsx` failed to compile under `verbatimModuleSyntax` / `noImplicitAny` strict TypeScript | Registry source mixed value and type imports; had implicit `any` in `.map()` callback; `Object.entries` lacked an explicit cast; `_style` lacked widened type for `gridTemplateAreas` | Fixed directly in `flexGrid.component.tsx`: split `import type`, added explicit `row: string[]` annotation, added `as [string, PiCardRef][]` cast, widened `_style` type |
+| `stack.component.tsx` contained commented-out Joy UI dead code | Leftover from a previous MUI Joy UI implementation; the current Tailwind implementation is complete and the comment block serves no purpose | Removed the dead code block |

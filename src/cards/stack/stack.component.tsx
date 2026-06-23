@@ -98,17 +98,6 @@ export const Component = (props: PiCardProps<StackProps>): React.ReactNode => {
     }
   }
 
-  // const sx = style?.joy
-  // const p = {
-  //   direction,
-  //   spacing,
-  //   justifyContent,
-  //   alignItems,
-  //   divider: divider ? <Card cardName={divider} parentCard={cardName} /> : null,
-  //   sx,
-  //   className,
-  // }
-
   function renderContent() {
     if (!content) return null;
 
