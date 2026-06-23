@@ -27,7 +27,7 @@ export const TOAST_OP_ACTION = registerActions("toast/op", ["show"]);
  * dispatchShowToast(_dispatch, {
  *   message: "Success!",
  *   description: "Your changes were saved.",
- *   type: "success",
+ *   variant: "success",
  *   duration: 3000,
  * });
  * ```
@@ -77,23 +77,23 @@ export type ToastPosition =
 
 export type PiToastProps = {
   /**
-   * Default type/variant for toasts.
-   * Can be overridden per toast via ShowToastEvent.type
+   * Default variant for toasts shown by this card instance.
+   * Can be overridden per individual toast via ShowToastEvent.variant.
    * @default 'default'
    */
   variant?: ToastType;
 
   /**
    * Default duration in milliseconds before the toast auto-closes.
-   * Can be overridden per toast via ShowToastEvent.duration
+   * Can be overridden per individual toast via ShowToastEvent.duration.
    * Set to `Infinity` to disable auto-close.
    * @default 4000
    */
   duration?: number;
 
   /**
-   * Default: whether toasts are dismissible.
-   * Can be overridden per toast via ShowToastEvent.dismissible
+   * Whether toasts from this card are dismissible by the user.
+   * This is a card-level setting only; it cannot be overridden per individual toast.
    * @default true
    */
   dismissible?: boolean;

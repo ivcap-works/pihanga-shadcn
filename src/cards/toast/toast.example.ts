@@ -27,7 +27,7 @@ export const infoToastConfig = Toast({
 export const successToastPayload = {
   message: "Operation successful!",
   description: "Your changes have been saved.",
-  type: "success" as const,
+  variant: "success" as const,
   duration: 3000,
 };
 
@@ -37,7 +37,7 @@ export const successToastPayload = {
 export const errorToastPayload = {
   message: "An error occurred",
   description: "Please try again later.",
-  type: "error" as const,
+  variant: "error" as const,
   duration: 5000,
 };
 
@@ -46,7 +46,7 @@ export const errorToastPayload = {
  */
 export const infoToastPayload = {
   message: "This is an information message",
-  type: "info" as const,
+  variant: "info" as const,
   duration: Infinity,
 };
 
@@ -55,7 +55,7 @@ export const infoToastPayload = {
  */
 export const warningToastPayload = {
   message: "Warning: This action cannot be undone.",
-  type: "warning" as const,
+  variant: "warning" as const,
   duration: 4000,
 };
 

@@ -26,6 +26,7 @@ A Pihanga card that provides toast notifications using the **Sonner** toast libr
 ```
 
 **Important:** Message and description come ONLY via Redux messages, not props.
+`dismissible` is a card-level configuration only; it cannot be overridden per individual toast via `ShowToastEvent`.
 
 ## Events
 
@@ -175,13 +176,39 @@ dispatchShowToast(_dispatch, {
   duration: 3000,
 });
 
-// Broadcast to all (first matching variant displays)
+// Broadcast to all registered toast cards (every mounted toast instance shows it)
 dispatchShowToast(_dispatch, {
-  message: "This goes to any available toast",
+  message: "This goes to every mounted toast card",
   variant: "info",
   // No cardName = broadcast mode
 });
 ```
+
+### Pattern 3: Rich Content via `contentCard`
+
+When a plain `message` string is not enough, set `contentCard` to the name of any
+registered Pihanga card. The toast body will render that card instead of text:
+
+```typescript
+// Register a card that provides the rich toast body
+registerCard("myFeature/uploadProgressCard", UploadProgress({
+  // ... whatever props your card needs
+}));
+
+// Trigger the toast with a contentCard reference
+dispatchShowToast(_dispatch, {
+  cardName: "myFeature/toast",
+  contentCard: "myFeature/uploadProgressCard",
+  variant: "info",
+  duration: 8000,
+});
+```
+
+> **Note:** When `contentCard` is provided, `message` and `description` are ignored —
+> the entire toast body is replaced by the rendered card.  The card receives
+> `parentCard` set to the toast card's `cardName`.
+
+---
 
 ### Message Filtering Logic
 
