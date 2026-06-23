@@ -55,6 +55,7 @@ export type PiButtonOpts = {
   size?:
     | "default"
     | "xs"
+    | "sm"
     | "md"
     | "lg"
     | "icon"

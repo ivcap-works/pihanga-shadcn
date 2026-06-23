@@ -7,6 +7,27 @@
  * cards, popovers, etc. will appear invisible or incorrectly coloured.
  */
 @theme inline {
+  /*
+   * ── Brand button tokens ──────────────────────────────────────────────────
+   * The `brand` variant of pi/button uses these tokens instead of hard-coded
+   * colour names, so any consuming app can retheme the brand button by
+   * overriding only these CSS variables in their own @theme inline block —
+   * no TypeScript changes needed.  Tailwind v4 processes later @theme inline
+   * blocks after earlier ones, so the app-level block silently wins.
+   *
+   * Defaults map to the primary colour family so the out-of-the-box
+   * appearance is sensible.  Example override in your app's index.css:
+   *
+   *   @theme inline {
+   *     --color-btn-brand:            #your-brand-color;
+   *     --color-btn-brand-foreground: #ffffff;
+   *     --radius-btn-brand:           var(--radius-md);
+   *   }
+   */
+  --color-btn-brand: var(--primary);
+  --color-btn-brand-foreground: var(--primary-foreground);
+  --radius-btn-brand: var(--radius-md);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

@@ -60,6 +60,7 @@
 - [`MarkdownViewer` — inline source vs. fetched path](#markdownviewer--inline-source-vs-fetched-path)
 - [`registerFramework` — only one active at a time](#registerframework--only-one-active-at-a-time)
 - [Card API quick reference — common naming gotchas](#card-api-quick-reference--common-naming-gotchas)
+  - [`pi/button` — theming the `brand` variant](#pibutton--theming-the-brand-variant)
 - [Known gaps identified during AI agent evaluations](#known-gaps-identified-during-ai-agent-evaluations)
 
 ---
@@ -159,6 +160,14 @@ The required `src/index.css`:
  * cards, popovers, etc. will appear invisible or incorrectly coloured.
  */
 @theme inline {
+  /*
+   * Brand button tokens — override these in your app to retheme variant="brand".
+   * Defaults to the primary colour family.  See the pi/button section below.
+   */
+  --color-btn-brand: var(--primary);
+  --color-btn-brand-foreground: var(--primary-foreground);
+  --radius-btn-brand: var(--radius-md);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -844,6 +853,78 @@ export function appPiInit(): void {
 Several cards have prop or export names that differ from what you might intuit.
 This table is a quick-lookup to avoid "card not found" or type-error surprises.
 
+### `pi/button` — theming the `brand` variant
+
+`variant="brand"` is intended for a visually prominent call-to-action button
+that carries your app's brand colour.  Out of the box it falls back to the
+primary colour family, but — unlike other variants — it is designed to be
+**rethemed with CSS only**, without touching any TypeScript.
+
+The button's appearance is driven by three CSS tokens declared in the
+`@theme inline` block of `src/index.css`:
+
+| Token | Default | Controls |
+|---|---|---|
+| `--color-btn-brand` | `var(--primary)` | Background colour |
+| `--color-btn-brand-foreground` | `var(--primary-foreground)` | Text / icon colour |
+| `--radius-btn-brand` | `var(--radius-md)` | Border radius |
+
+To apply your app's brand colour, add an `@theme inline` override **after**
+the registry tokens in your `src/index.css`.  Tailwind v4 processes later
+`@theme inline` blocks last, so your values silently win:
+
+```css
+/* src/index.css — app-level override */
+@theme inline {
+  --color-btn-brand:            oklch(0.78 0.18 85);  /* your brand colour */
+  --color-btn-brand-foreground: oklch(0.15 0 0);      /* high-contrast foreground */
+  --radius-btn-brand:           9999px;               /* pill shape */
+}
+```
+
+Usage in `app.pihanga.ts` is unchanged:
+
+```ts
+import {Button} from "@/cards/button";
+
+registerCard("myApp/cta", Button({
+  label: "Get started",
+  opts:  {variant: "brand"},
+}));
+```
+
+> **Why token indirection?**  Hard-coding a brand colour directly into the CVA
+> string would couple every consumer of the registry to a specific palette.
+> Routing through `--color-btn-brand` means any app can retheme the `brand`
+> variant in CSS alone.  The pattern can be extended to any other variant that
+> needs per-app theming.
+
+### `pi/button` — rendering as an anchor / link
+
+> ⚠️ **Do NOT write a separate local link-button card.**  The `pi/button` card
+> already renders as an `<a>` element when `href` is provided.
+
+Pass `href` (and optionally `target`) directly to `Button(…)`:
+
+```ts
+registerCard("myApp/docsLink", Button({
+  label:  "Documentation",
+  href:   "https://example.com/docs",
+  target: "_blank",          // open in new tab
+  opts:   {variant: "outline"},
+}));
+```
+
+When `href` is set the card renders an `<a>` tag styled identically to the
+`<button>` variant.  The `onClicked` event still fires (via `e.preventDefault()`
+internally), so Pihanga event handlers work as usual if you also need to react
+to the click in Redux.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `href` | `string` | Destination URL; presence switches element to `<a>` |
+| `target` | `string` | e.g. `"_blank"` for new tab; passed straight to `<a target>` |
+
 ### `shad/tabs` — import `SdTabs`, not `Tabs`
 
 ```ts
@@ -1036,3 +1117,17 @@ All fixes have been added to the new *[Vite configuration (both channels)](#vite
 | Vite `"Failed to resolve import '@/cards/dropDownMenu/dropdown-context'"` | `button` card has a transitive dependency on `dropDownMenu` that isn't obvious | Added **Transitive card dependencies** table |
 | `pageWithNavbar` missing internal helpers at runtime | `pageWithNavbar` has transitive dependencies on `modeToggle`, `navbarSearch`, and `toast` | Added to transitive dependencies table |
 | `@pihanga2/cards` not in package.json | `shad/stack` previously imported `StackProps` from `@pihanga2/cards` | **`@pihanga2/cards` is now deprecated.** `BoxProps` and `StackProps` are defined locally in `box.types.ts` / `stack.types.ts`. Do **not** install `@pihanga2/cards`. |
+
+### 2026-06 app developer wrote a local link-button card
+
+A developer building an app with `pi/button` wrote a separate local card for
+anchor-style buttons, believing that `pi/button` only rendered `<button>`
+elements and had no link capability.
+
+**Reality:** `pi/button` already renders as an `<a>` element when the `href`
+prop is provided (see *Card API quick reference → `pi/button` — rendering as
+an anchor / link*).  No local card was needed.
+
+| Root cause | Fix applied |
+|---|---|
+| `href` / `target` props on `pi/button` existed in `button.types.ts` but were never documented in any guide or quick-reference section | Added `pi/button — rendering as an anchor / link` section to *Card API quick reference* in `AGENT.using-cards.md` and a matching `### Button as an anchor link` subsection to `USER_GUIDE.md` |

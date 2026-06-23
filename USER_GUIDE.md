@@ -35,6 +35,7 @@ to creating your own custom card types.
 - [Reactive state with `memo()`](#reactive-state-with-memo)
 - [Multi-page navigation with `PageWithNavbar`](#multi-page-navigation-with-pagewithnavbar)
 - [`MarkdownViewer` — inline content vs. fetched file](#markdownviewer--inline-content-vs-fetched-file)
+- [The `pi/button` card — links and theming](#the-pibutton-card--links-and-theming)
 - [Pinning to a specific version](#pinning-to-a-specific-version)
 - [Quick reference — using cards](#quick-reference--using-cards)
 
@@ -653,6 +654,70 @@ export default defineConfig({
 
 Do **not** copy the file to `public/` manually — the plugin handles both dev
 and production in one place.
+
+---
+
+## The `pi/button` card — links and theming
+
+### Button as an anchor link
+
+> ⚠️ **Do not write a local "link button" card.**  `pi/button` already renders
+> as an `<a>` element when `href` is provided.
+
+```ts
+registerCard("myApp/docsLink", Button({
+  label:  "Documentation",
+  href:   "https://example.com/docs",
+  target: "_blank",           // open in new tab
+  opts:   {variant: "outline"},
+}));
+```
+
+When `href` is present the card renders a styled `<a>` tag.  Every other prop
+(variant, size, icon, tooltip, disabled, `onClicked`, …) works exactly as with
+a normal button.
+
+### Theming the `brand` variant
+
+`variant="brand"` on `pi/button` is reserved for a prominent call-to-action
+button that carries your app's brand colour.  Out of the box it falls back to
+the primary colour, but it is designed to be **rethemed with CSS only** — no
+TypeScript changes are needed.
+
+The three tokens that control the brand button live in the `@theme inline`
+block of your `src/index.css`:
+
+| Token | Default | Controls |
+|---|---|---|
+| `--color-btn-brand` | `var(--primary)` | Background |
+| `--color-btn-brand-foreground` | `var(--primary-foreground)` | Text / icon colour |
+| `--radius-btn-brand` | `var(--radius-md)` | Border radius |
+
+Override them by appending a second `@theme inline` block after the registry
+defaults.  Tailwind v4 processes later blocks last, so your values win without
+touching any shared files:
+
+```css
+/* src/index.css — add at the bottom, after the registry @theme inline block */
+@theme inline {
+  --color-btn-brand:            oklch(0.78 0.18 85);  /* your brand colour   */
+  --color-btn-brand-foreground: oklch(0.15 0 0);      /* high-contrast ink   */
+  --radius-btn-brand:           9999px;               /* pill shape          */
+}
+```
+
+Usage in your app is unchanged:
+
+```ts
+registerCard("myApp/cta", Button({
+  label: "Get started",
+  opts:  {variant: "brand"},
+}));
+```
+
+> For the full explanation of how the token indirection works and how it can be
+> extended to other variants, see
+> [AGENT.using-cards.md — `pi/button` theming](./AGENT.using-cards.md#pibutton--theming-the-brand-variant).
 
 ---
 

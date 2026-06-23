@@ -25,7 +25,8 @@ const buttonVariants = cva(
         ghost3:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         ghostActive: "bg-accent text-accent-foreground",
-        brand: "bg-primary text-primary-foreground hover:bg-primary/90",
+        brand:
+          "bg-btn-brand text-btn-brand-foreground font-semibold hover:bg-btn-brand/90 shadow-sm rounded-btn-brand",
         nav: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         navAction:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
