@@ -4,7 +4,7 @@
   "type": "registry:component",
   "description": "Pihanga fileDrop card component",
   "dependencies": [
-    "react-drag-drop-files@UNKNOWN - add to root package.json"
+    "react-drag-drop-files@^3.0.1"
   ],
   "registryDependencies": [
     "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json"

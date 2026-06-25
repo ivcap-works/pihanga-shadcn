@@ -68,6 +68,10 @@
       "type": "registry:component"
     },
     {
+      "name": "fileDrop",
+      "type": "registry:component"
+    },
+    {
       "name": "flexGrid",
       "type": "registry:component"
     },

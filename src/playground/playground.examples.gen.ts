@@ -9,7 +9,7 @@
 // Source: every src/cards/**/*.example.ts that contains a
 //         `definePlayground()` default export.
 //
-// Last generated: 2026-06-09T01:40:45.624Z
+// Last generated: 2026-06-25T05:37:43.715Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
@@ -22,6 +22,7 @@ import dataTableDef from "@/cards/dataTable/dataTable.example";
 import dialogDef from "@/cards/dialog/dialog.example";
 import dropDownMenuDef from "@/cards/dropDownMenu/drop-down.example";
 import fieldDef from "@/cards/field/field.example";
+import fileDropDef from "@/cards/fileDrop/fileDrop.example";
 import flexGridDef from "@/cards/flexGrid/flexGrid.example";
 import formDef from "@/cards/form/form.example";
 import graphinDef from "@/cards/graphin/graphin.example";
@@ -67,6 +68,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   dialogDef,
   dropDownMenuDef,
   fieldDef,
+  fileDropDef,
   flexGridDef,
   formDef,
   graphinDef,

@@ -34,6 +34,7 @@ import {
   existsSync,
   statSync,
 } from "node:fs";
+import {createHash} from "node:crypto";
 import {join, dirname, basename} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -580,62 +581,99 @@ if (!DRY_RUN) mkdirSync(OUTPUT_DIR, {recursive: true});
 
 const allItems = [];
 let totalFiles = 0;
+let unchangedFiles = 0;
 let errorCount = 0;
 
+/**
+ * Write a registry JSON file — but only if the content has changed.
+ *
+ * Compares a SHA-256 hash of the newly-generated content against the existing
+ * file on disk.  If they match the write is skipped entirely, which keeps file
+ * mtimes stable and makes it immediately obvious in the log which entries
+ * actually changed.
+ *
+ * Returns true  → file was written (new or changed)
+ * Returns false → file was identical to the existing one (skipped)
+ */
 function write(name, json) {
   const jsonStr = JSON.stringify(json, null, 2) + "\n";
-  if (!DRY_RUN) {
-    writeFileSync(join(OUTPUT_DIR, `${name}.json`), jsonStr);
-  }
   totalFiles++;
+
+  if (DRY_RUN) return true; // dry-run always counts as "would write"
+
+  const outPath = join(OUTPUT_DIR, `${name}.json`);
+
+  // Compare SHA-256 hashes to avoid touching unchanged files
+  if (existsSync(outPath)) {
+    const existingHash = createHash("sha256")
+      .update(readFileSync(outPath))
+      .digest("hex");
+    const newHash = createHash("sha256").update(jsonStr).digest("hex");
+    if (existingHash === newHash) {
+      unchangedFiles++;
+      return false; // unchanged — skip write
+    }
+  }
+
+  writeFileSync(outPath, jsonStr);
+  return true; // written
 }
 
 function track(name, type) {
   allItems.push({name, type});
 }
 
+/** Log ✓ (written/new) or – (unchanged) for a registry entry. */
+function logResult(changed, label) {
+  console.log(changed ? `  ✓  ${label}` : `  –  ${label}  (unchanged)`);
+}
+
 // --- Shared primitives -------------------------------------------------------
 
 try {
-  write("pihanga-base", genPihangaBase());
+  logResult(write("pihanga-base", genPihangaBase()), "pihanga-base");
   track("pihanga-base", "registry:component");
-  console.log("  ✓  pihanga-base");
 } catch (e) {
   console.error(`  ✗  pihanga-base: ${e.message}`);
   errorCount++;
 }
 
 try {
-  write("pihanga-lib-utils", genLibUtils());
+  logResult(write("pihanga-lib-utils", genLibUtils()), "pihanga-lib-utils");
   track("pihanga-lib-utils", "registry:lib");
-  console.log("  ✓  pihanga-lib-utils");
 } catch (e) {
   console.error(`  ✗  pihanga-lib-utils: ${e.message}`);
   errorCount++;
 }
 
 try {
-  write("pihanga-cards-icons", genCardsIcons());
+  logResult(
+    write("pihanga-cards-icons", genCardsIcons()),
+    "pihanga-cards-icons",
+  );
   track("pihanga-cards-icons", "registry:component");
-  console.log("  ✓  pihanga-cards-icons");
 } catch (e) {
   console.error(`  ✗  pihanga-cards-icons: ${e.message}`);
   errorCount++;
 }
 
 try {
-  write("pihanga-cards-types", genCardsTypes());
+  logResult(
+    write("pihanga-cards-types", genCardsTypes()),
+    "pihanga-cards-types",
+  );
   track("pihanga-cards-types", "registry:component");
-  console.log("  ✓  pihanga-cards-types");
 } catch (e) {
   console.error(`  ✗  pihanga-cards-types: ${e.message}`);
   errorCount++;
 }
 
 try {
-  write("pihanga-theme-provider", genThemeProvider());
+  logResult(
+    write("pihanga-theme-provider", genThemeProvider()),
+    "pihanga-theme-provider",
+  );
   track("pihanga-theme-provider", "registry:component");
-  console.log("  ✓  pihanga-theme-provider");
 } catch (e) {
   console.error(`  ✗  pihanga-theme-provider: ${e.message}`);
   errorCount++;
@@ -645,9 +683,8 @@ try {
 
 for (const {name, json} of genHooks()) {
   try {
-    write(name, json);
+    logResult(write(name, json), name);
     track(name, "registry:hook");
-    console.log(`  ✓  ${name}`);
   } catch (e) {
     console.error(`  ✗  ${name}: ${e.message}`);
     errorCount++;
@@ -658,10 +695,11 @@ for (const {name, json} of genHooks()) {
 
 try {
   const uiExtras = genUIExtras();
-  write("pihanga-ui-extras", uiExtras);
+  const changed = write("pihanga-ui-extras", uiExtras);
   track("pihanga-ui-extras", "registry:ui");
-  console.log(
-    `  ✓  pihanga-ui-extras  (${uiExtras.files.length} custom UI files)`,
+  logResult(
+    changed,
+    `pihanga-ui-extras  (${uiExtras.files.length} custom UI files)`,
   );
 } catch (e) {
   console.error(`  ✗  pihanga-ui-extras: ${e.message}`);
@@ -682,9 +720,8 @@ for (const entry of readdirSync(CARDS_DIR).sort()) {
   try {
     const card = genCard(cardDir);
     if (!card) continue;
-    write(entry, card);
+    logResult(write(entry, card), `card/${entry}`);
     track(entry, "registry:component");
-    console.log(`  ✓  card/${entry}`);
     cardCount++;
   } catch (e) {
     console.error(`  ✗  card/${entry}: ${e.message}`);
@@ -700,13 +737,20 @@ const registryIndex = {
   homepage: "https://ivcap-works.github.io/pihanga-shadcn",
   items: allItems,
 };
-write("registry", registryIndex);
+logResult(write("registry", registryIndex), "registry.json");
 
 // --- Summary -----------------------------------------------------------------
 
+const writtenFiles = totalFiles - unchangedFiles;
 const dryTag = DRY_RUN ? "  (dry-run — no files written)" : "";
 console.log("");
-console.log(`✓  Generated ${totalFiles} registry files${dryTag}`);
+console.log(`✓  Processed ${totalFiles} registry files${dryTag}`);
+if (!DRY_RUN) {
+  console.log(`   Written:        ${writtenFiles}  (new or changed)`);
+  console.log(
+    `   Unchanged:      ${unchangedFiles}  (skipped — dependencies identical)`,
+  );
+}
 console.log(`   Cards:          ${cardCount}`);
 console.log(
   `   Shared:         6  (pihanga-base, lib-utils, ui-extras, cards-icons, cards-types, theme-provider)`,
