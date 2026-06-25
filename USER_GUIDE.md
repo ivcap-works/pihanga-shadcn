@@ -200,13 +200,13 @@ by the shadcn CLI — no separate `npm install` needed.
 
 ```sh
 # Add a single card
-npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button
+npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button.json
 
 # Add several cards at once
 npx shadcn@latest add \
-  https://ivcap-works.github.io/pihanga-shadcn/r/button \
-  https://ivcap-works.github.io/pihanga-shadcn/r/form \
-  https://ivcap-works.github.io/pihanga-shadcn/r/dataTable
+  https://ivcap-works.github.io/pihanga-shadcn/r/button.json \
+  https://ivcap-works.github.io/pihanga-shadcn/r/form.json \
+  https://ivcap-works.github.io/pihanga-shadcn/r/dataTa.jsonle
 ```
 
 After installation, each card self-registers when its `index.ts` is imported.
@@ -339,7 +339,7 @@ import "@pihanga2/shadcn/cards/dialog";
 **Step 2 — Install the card from the registry into your project**
 
 ```sh
-npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button
+npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button.json
 ```
 
 This copies `src/cards/button/` into your project and installs any npm deps.
@@ -747,7 +747,7 @@ npx shadcn@latest add \
 | Task | Command / snippet |
 |------|-------------------|
 | One-time shadcn init | `npx shadcn@latest init` |
-| Add a card (registry) | `npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/<card>` |
+| Add a card (registry) | `npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/<card>.json` |
 | Pin to a version | Use raw GitHub URL with tag: `.../pihanga-shadcn/v1.0.0/public/r/<card>.json` |
 
 **npm channel:**
