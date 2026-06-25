@@ -1,0 +1,58 @@
+.pi-file-drop-root label {
+  /* background-color: yellow; */
+  max-width: 100%;
+  border: dashed 2px #999;
+  /* #666; */
+
+  display: flex;
+  justify-content: space-between;
+  flex-grow: 1;
+}
+
+.pi-file-drop-root .dropzone-msg {
+  cursor: pointer;
+  text-align: center;
+  margin: 3em 0;
+  flex-grow: 4;
+}
+
+/*** PROGRESS ***/
+
+.pi-file-drop-root .pi-progress {
+  /* background-color: yellow; */
+  max-width: 100%;
+
+  /* display: flex; */
+  /* flex: 1 1 auto; */
+  padding: 1.25em;
+
+}
+
+.pi-file-drop-root .pi-progress-label {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+}
+
+.pi-file-drop -root.pi-progress-container {
+  position: relative;
+  display: flex;
+  height: 1rem;
+  overflow: hidden;
+  border-radius: 4px;
+  background-color: #dadfe5;
+}
+
+.pi-file-drop-root .pi-progress-bar {
+  background-color: #0054a6;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pi-file-drop-root .pi-progress .label {
+  font-size: 1em;
+  display: block;
+}

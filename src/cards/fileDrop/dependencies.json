@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "react-drag-drop-files": "^3.0.1"
+  },
+  "devDependencies": {}
+}
