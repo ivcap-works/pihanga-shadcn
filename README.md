@@ -29,6 +29,13 @@ A collection of **Pihanga cards** built on top of [shadcn/ui](https://ui.shadcn.
 - [Adding a new card](#adding-a-new-card)
 - [Adding shadcn/ui primitives](#adding-shadcnui-primitives)
 - [Available cards](#available-cards)
+- [Publishing to npm](#publishing-to-npm)
+  - [Step 1 — Create the @pihanga2 npm organisation](#step-1--create-the-pihanga2-npm-organisation)
+  - [Step 2 — Authenticate your CLI](#step-2--authenticate-your-cli)
+  - [Step 3 — Verify publish access](#step-3--verify-publish-access)
+  - [Step 4 — Dry run](#step-4--dry-run)
+  - [Step 5 — Build and publish](#step-5--build-and-publish)
+  - [Bumping the version](#bumping-the-version)
 
 ---
 
@@ -293,3 +300,100 @@ its `dependencies.json` stays accurate.
 
 Registry base URL: `https://ivcap-works.github.io/pihanga-shadcn/r`
 npm package: `@pihanga2/shadcn` (npm sub-path: `@pihanga2/shadcn/cards/<name>`)
+
+---
+
+## Publishing to npm
+
+The build pipeline for `@pihanga2/shadcn` is **fully implemented**. Follow these
+steps whenever you need to publish a new release to https://www.npmjs.com/.
+
+### Step 1 — Create the @pihanga2 npm organisation
+
+> Skip this step if the `@pihanga2` org already exists on npm (e.g. because
+> `@pihanga2/core` or `@pihanga2/cards` have already been published).
+
+1. Go to https://www.npmjs.com/org/create
+2. Sign in (or create a free npm account).
+3. Set the organisation name to **`pihanga2`**.
+4. Choose **"Unlimited public packages"** (free tier).
+
+If the org already exists, ask the owner to add you as a `developer` or `owner`.
+
+### Step 2 — Authenticate your CLI
+
+```sh
+npm login
+```
+
+Follow the browser-based login flow. Confirm you are authenticated:
+
+```sh
+npm whoami   # should print your npm username
+```
+
+### Step 3 — Verify publish access
+
+```sh
+npm org ls pihanga2
+```
+
+Your username should appear with a `developer` or `owner` role.
+
+### Step 4 — Dry run
+
+Preview exactly what will be built and what the generated `dist-lib/package.json`
+will contain — without writing any files or touching npm:
+
+```sh
+make build-core-dry
+```
+
+### Step 5 — Build and publish
+
+```sh
+make publish
+```
+
+This single command:
+1. Runs `yarn install`
+2. Generates `src/cards/core-index.ts` (root barrel for all core cards)
+3. Runs `vite build --config vite.lib.config.ts` → output in `dist-lib/`
+4. Aggregates runtime dependencies from each core card's `dependencies.json`
+5. Writes `dist-lib/package.json` (exports map, peer deps, `sideEffects` list)
+6. Writes `dist-lib/README.md`
+7. Runs `cd dist-lib && npm publish --access public`
+
+The published package will be **`@pihanga2/shadcn`** at the version declared in
+the root `package.json`.
+
+### Bumping the version
+
+The published version is read from the root `package.json`. Bump it before
+publishing:
+
+```sh
+npm version patch   # e.g. 0.1.0 → 0.1.1 (bug fixes)
+npm version minor   # e.g. 0.1.0 → 0.2.0 (new cards / features)
+npm version major   # e.g. 0.1.0 → 1.0.0 (breaking API changes)
+```
+
+Then publish:
+
+```sh
+make publish
+```
+
+Or as a one-liner for patch releases:
+
+```sh
+npm version patch && make publish
+```
+
+### Verifying the release
+
+```sh
+npm info @pihanga2/shadcn
+```
+
+Or visit: https://www.npmjs.com/package/@pihanga2/shadcn
