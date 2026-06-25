@@ -326,7 +326,7 @@ import "@pihanga2/shadcn/cards/dialog";
 **Step 2 — Install the card from the registry (copies source into your project)**
 
 ```sh
-npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button
+npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button.json
 # → creates src/cards/button/ and installs its npm deps
 ```
 
@@ -504,13 +504,13 @@ installed automatically.
 
 ```sh
 # Add a single card
-npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button
+npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button.json
 
 # Add multiple cards at once
 npx shadcn@latest add \
-  https://ivcap-works.github.io/pihanga-shadcn/r/button \
-  https://ivcap-works.github.io/pihanga-shadcn/r/form \
-  https://ivcap-works.github.io/pihanga-shadcn/r/dataTable
+  https://ivcap-works.github.io/pihanga-shadcn/r/button.json \
+  https://ivcap-works.github.io/pihanga-shadcn/r/form.json \
+  https://ivcap-works.github.io/pihanga-shadcn/r/dataTa.jsonle
 ```
 
 ### npm channel

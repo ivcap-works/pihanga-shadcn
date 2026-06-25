@@ -1,13 +1,13 @@
 {
   "dependencies": {
-    "react-markdown": "UNKNOWN - add to root package.json",
-    "rehype-highlight": "^7.0.2",
-    "rehype-katex": "UNKNOWN - add to root package.json",
+    "highlight.js": "^11.11.1",
     "mermaid": "^11.15.0",
-    "remark-gfm": "UNKNOWN - add to root package.json",
-    "remark-math": "UNKNOWN - add to root package.json",
-    "unified": "UNKNOWN - add to root package.json",
-    "highlight.js": "^11.11.1"
+    "react-markdown": "^9.0.0",
+    "rehype-highlight": "^7.0.2",
+    "rehype-katex": "^7.0.0",
+    "remark-gfm": "^4.0.0",
+    "remark-math": "^6.0.0",
+    "unified": "^11.0.0"
   },
   "devDependencies": {}
 }

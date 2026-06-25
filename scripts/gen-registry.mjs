@@ -155,9 +155,19 @@ const allVersions = {
   ...(rootPkg.devDependencies ?? {}),
 };
 
-/** Return "pkg@version" if version known, else just "pkg" */
+/**
+ * Return "pkg@version" if version known, else just "pkg".
+ *
+ * "UNKNOWN…" placeholder strings written by gen-card-dependencies.mjs when a
+ * package is absent from the root package.json are treated as absent so we
+ * fall through to the root-package.json lookup before emitting a bare name.
+ */
 function fmtDep(pkg, version) {
-  const ver = version ?? allVersions[pkg];
+  const rawVer =
+    typeof version === "string" && version.startsWith("UNKNOWN")
+      ? undefined
+      : version;
+  const ver = rawVer ?? allVersions[pkg];
   return ver ? `${pkg}@${ver}` : pkg;
 }
 
@@ -767,4 +777,4 @@ console.log(`   Base URL:    ${BASE_URL}`);
 console.log(`   Output dir:  public/r/`);
 console.log("");
 console.log("   Consumer install example:");
-console.log(`     npx shadcn@latest add ${BASE_URL}/r/button`);
+console.log(`     npx shadcn@latest add ${BASE_URL}/r/button.json`);
