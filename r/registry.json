@@ -44,6 +44,10 @@
       "type": "registry:component"
     },
     {
+      "name": "chartGraph",
+      "type": "registry:component"
+    },
+    {
       "name": "checkbox",
       "type": "registry:component"
     },
@@ -137,6 +141,14 @@
     },
     {
       "name": "select",
+      "type": "registry:component"
+    },
+    {
+      "name": "slider",
+      "type": "registry:component"
+    },
+    {
+      "name": "sliderValue",
       "type": "registry:component"
     },
     {
