@@ -226,12 +226,14 @@ export type PlaygroundFacet<P = Record<string, unknown>> = {
  * | `"select"`  | `<select>` dropdown              | Long enumerated options (> 6)   |
  * | `"text"`    | Free-text `<input>`              | String props (label, placeholder)|
  * | `"boolean"` | Checkbox / toggle                | `true` / `false` props          |
+ * | `"number"`  | Numeric `<input>`                | Numeric props (min, max, step)  |
  */
 export type PlaygroundControl =
   | TokenControl
   | SelectControl
   | TextControl
-  | BooleanControl;
+  | BooleanControl
+  | NumberControl;
 
 /**
  * Pill-row single-select control (the "Variant", "Size", "Orientation" style
@@ -275,4 +277,16 @@ export type BooleanControl = {
   prop: string;
   type: "boolean";
   label?: string;
+};
+
+/**
+ * Numeric text input control for props like `value`, `min`, `max`, `step`.
+ * The playground engine parses the string input back to a `number` before
+ * writing it into `playgroundCurrentProps`.
+ */
+export type NumberControl = {
+  prop: string;
+  type: "number";
+  label?: string;
+  placeholder?: string;
 };

@@ -45,6 +45,8 @@ const {cards: CORE_CARDS} = JSON.parse(
  */
 const entry: Record<string, string> = {
   "cards/core-index": path.resolve(__dirname, "src/cards/core-index.ts"),
+  "cards/types": path.resolve(__dirname, "src/cards/types.ts"),
+  "cards/icons": path.resolve(__dirname, "src/cards/icons.ts"),
 };
 
 for (const card of CORE_CARDS) {
@@ -132,6 +134,11 @@ export default defineConfig({
       {find: "@", replacement: path.resolve(__dirname, "./src")},
     ],
   },
+
+  // Do NOT copy public/ into dist-lib/ — the /r/*.json shadcn registry files
+  // and other static assets are only needed for the playground dev server /
+  // GitHub Pages, not for the npm package.
+  publicDir: false,
 
   build: {
     lib: {

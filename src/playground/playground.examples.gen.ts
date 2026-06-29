@@ -9,7 +9,7 @@
 // Source: every src/cards/**/*.example.ts that contains a
 //         `definePlayground()` default export.
 //
-// Last generated: 2026-06-25T05:37:43.715Z
+// Last generated: 2026-06-28T23:30:42.806Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
@@ -39,6 +39,8 @@ import pageWithNavbarDef from "@/cards/pageWithNavbar/pageWithNavbar.example";
 import pasteTargetDef from "@/cards/pasteTarget/pasteTarget.example";
 import resizableDef from "@/cards/resizable/resizable.example";
 import selectDef from "@/cards/select/select.example";
+import sliderDef from "@/cards/slider/slider.example";
+import sliderValueDef from "@/cards/sliderValue/sliderValue.example";
 import stackDef from "@/cards/stack/stack.example";
 import stepperDef from "@/cards/stepper/stepper.example";
 import switchDef from "@/cards/switch/switch.example";
@@ -85,6 +87,8 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   pasteTargetDef,
   resizableDef,
   selectDef,
+  sliderDef,
+  sliderValueDef,
   stackDef,
   stepperDef,
   switchDef,

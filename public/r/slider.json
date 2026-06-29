@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "slider",
+  "type": "registry:component",
+  "description": "Pihanga slider card component",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-ui-extras.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/form.json"
+  ],
+  "files": [
+    {
+      "path": "cards/slider/index.ts",
+      "content": "import {actionTypesToEvents, registerCardComponent} from \"@pihanga2/core\";\n\nimport {SliderComponent} from \"./slider.component\";\nimport {PI_SLIDER_ACTION, PI_SLIDER_CARD} from \"./slider.types\";\n\nexport * from \"./slider.types\";\n\nregisterCardComponent({\n  name: PI_SLIDER_CARD,\n  component: SliderComponent,\n  events: actionTypesToEvents(PI_SLIDER_ACTION),\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/slider/index.ts"
+    },
+    {
+      "path": "cards/slider/slider.component.tsx",
+      "content": "import React from \"react\";\nimport {type PiCardProps} from \"@pihanga2/core\";\nimport {Slider as SliderUI} from \"@/components/ui/slider\";\nimport {useFormContext} from \"@/cards/form/form.context\";\nimport type {PiSliderEvents, PiSliderProps} from \"./slider.types\";\n\nexport const SliderComponent = (\n  props: PiCardProps<PiSliderProps, PiSliderEvents>,\n): React.ReactNode => {\n  const {\n    name,\n    value: propValue,\n    min = 0,\n    max = 100,\n    step = 1,\n    disabled,\n    label,\n    className,\n    cardName,\n    onChanged,\n  } = props;\n\n  // Detect if we are inside a pi/form card via React context.\n  const form = useFormContext();\n  const useFormData = form.isInForm && Boolean(name);\n\n  const value = useFormData\n    ? ((form.formData[name!] as number | undefined) ?? min)\n    : (propValue ?? min);\n\n  function handleValueChange(newValues: number[]) {\n    const newValue = newValues[0] ?? min;\n    if (useFormData) {\n      form.handleChange(name!, newValue);\n    } else {\n      onChanged({name, value: newValue});\n    }\n  }\n\n  return (\n    <div\n      data-pihanga={cardName}\n      className={`flex flex-col gap-2 ${className ?? \"\"}`}\n    >\n      {label && (\n        <div className=\"flex items-center justify-between\">\n          <span className=\"text-sm font-medium leading-none\">{label}</span>\n          <span className=\"text-sm text-muted-foreground tabular-nums\">\n            {value}\n          </span>\n        </div>\n      )}\n      <SliderUI\n        value={[value]}\n        min={min}\n        max={max}\n        step={step}\n        disabled={disabled}\n        onValueChange={handleValueChange}\n        className=\"w-full\"\n      />\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/slider/slider.component.tsx"
+    },
+    {
+      "path": "cards/slider/slider.types.ts",
+      "content": "import {\n  createCardDeclaration,\n  createOnAction,\n  registerActions,\n} from \"@pihanga2/core\";\n\nexport const PI_SLIDER_CARD = \"shad/slider\";\n\nexport const Slider = createCardDeclaration<PiSliderProps, PiSliderEvents>(\n  PI_SLIDER_CARD,\n);\n\nexport const PI_SLIDER_ACTION = registerActions(PI_SLIDER_CARD, [\"changed\"]);\n\nexport const onPiSliderChanged = createOnAction<PiSliderChangedEvent>(\n  PI_SLIDER_ACTION.CHANGED,\n);\n\n// ---------------------------------------------------------------------------\n// Props & Events\n// ---------------------------------------------------------------------------\n\nexport type PiSliderProps = {\n  /**\n   * Field name used to bind to FormContext when inside a pi/form card.\n   * When provided the component reads its value from form data and writes\n   * back via form.handleChange.\n   */\n  name?: string;\n\n  /**\n   * Controlled numeric value (single thumb).\n   * Ignored when `name` is set and the component is inside a pi/form.\n   */\n  value?: number;\n\n  /** Minimum value of the slider range. Defaults to 0. */\n  min?: number;\n\n  /** Maximum value of the slider range. Defaults to 100. */\n  max?: number;\n\n  /** Stepping interval between selectable values. Defaults to 1. */\n  step?: number;\n\n  /** When true, the slider is disabled and non-interactive. */\n  disabled?: boolean;\n\n  /**\n   * Optional label text rendered above the slider.\n   * When provided, the current numeric value is shown to the right of the label.\n   */\n  label?: string;\n\n  /** Extra Tailwind / CSS classes forwarded to the root wrapper element. */\n  className?: string;\n};\n\nexport type PiSliderChangedEvent = {\n  /** Field name, mirrors the `name` prop if provided. */\n  name?: string;\n  /** New numeric value after the change. */\n  value: number;\n};\n\nexport type PiSliderEvents = {\n  onChanged: PiSliderChangedEvent;\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/slider/slider.types.ts"
+    }
+  ]
+}

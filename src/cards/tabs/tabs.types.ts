@@ -7,7 +7,10 @@ import {
 
 export const TABS_CARD = "shad/tabs";
 
-export const SdTabs = createCardDeclaration<TabsProps, TabsEvents>(TABS_CARD);
+export const Tabs = createCardDeclaration<TabsProps, TabsEvents>(TABS_CARD);
+
+/** @deprecated Use {@link Tabs} instead. */
+export const SdTabs = Tabs;
 
 export const TABS_ACTION = registerActions(TABS_CARD, ["tabChanged"]);
 

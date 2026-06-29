@@ -104,3 +104,18 @@ export type ColorT = string;
  * registry) or an arbitrary Tailwind-class string for inline SVG icons.
  */
 export type DecoratorT = string;
+
+/**
+ * CSS `align-items` values supported by the Box & Stack card.
+ */
+export type AlignItemsT =
+  | "normal"
+  | "stretch"
+  | "center"
+  | "flex-start"
+  | "flex-end"
+  | "start"
+  | "end"
+  | "baseline"
+  | "initial"
+  | "inherit";

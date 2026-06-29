@@ -132,8 +132,7 @@ function buildFacetSection(
                     direction: "row",
                     justifyContent: "center",
                     alignItems: "center",
-                    className:
-                      "rounded-lg border bg-muted/20 py-8 px-4 min-h-20",
+                    className: "rounded-lg border bg-muted/20 p-4 min-h-16",
                     content: [def.preview({...def.defaultProps, ...f.props})],
                   }),
                 ]
@@ -263,7 +262,7 @@ function buildControlsSection(
         direction: "row",
         justifyContent: "center",
         alignItems: "center",
-        className: "rounded-lg border bg-muted/20 py-8 px-4 min-h-20",
+        className: "rounded-lg border bg-muted/20 p-4 min-h-16",
         content: [def.preview(currentProps)],
       }),
     );
@@ -373,6 +372,16 @@ function buildControlWidget(
     return Switch({
       name: ctrl.prop,
       checked: Boolean(current),
+    });
+  }
+
+  if (ctrl.type === "number") {
+    // Render a text input; `onPiInputCommitted` parses the value back to a
+    // number before writing it into `playgroundCurrentProps`.
+    return PiInput({
+      name: ctrl.prop,
+      value: current != null ? String(current) : "0",
+      placeholder: ctrl.placeholder,
     });
   }
 
@@ -589,7 +598,15 @@ export function playgroundPiInit(): void {
     });
 
     onPiInputCommitted(r, (state: AppState, {name, value}) => {
-      patchPgProp(state, name, value);
+      // If the matching control is type "number", parse the string to a float
+      // so the live JSON viewer and card preview receive the correct type.
+      const def = PLAYGROUND_EXAMPLES.find(
+        (d) => d.cardId === state.playgroundSelectedCardId,
+      );
+      const ctrl = def?.controls?.find((c) => c.prop === name);
+      const coerced =
+        ctrl?.type === "number" ? (parseFloat(value) ?? value) : value;
+      patchPgProp(state, name, coerced);
     });
 
     // When a playground facet tab is clicked, update selected facet in state

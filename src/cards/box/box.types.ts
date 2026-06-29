@@ -1,21 +1,7 @@
 import {type PiCardRef, createCardDeclaration} from "@pihanga2/core";
+import { AlignItemsT } from "../types";
 
 export const BOX_CARD = "shad/box";
-
-/**
- * CSS `align-items` values supported by the Box card.
- */
-export type AlignItemsT =
-  | "normal"
-  | "stretch"
-  | "center"
-  | "flex-start"
-  | "flex-end"
-  | "start"
-  | "end"
-  | "baseline"
-  | "initial"
-  | "inherit";
 
 /**
  * Responsive display grid breakpoints.

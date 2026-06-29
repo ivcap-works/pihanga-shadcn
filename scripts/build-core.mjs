@@ -10,6 +10,7 @@
  *   4. Aggregates npm dependencies from each core card's dependencies.json.
  *   5. Writes dist-lib/package.json  (the publishable manifest).
  *   6. Writes dist-lib/README.md.
+ *   7. Copies AGENT.*.md files into dist-lib/ for AI-assisted consumers.
  *
  * Usage
  * -----
@@ -19,7 +20,13 @@
  *   make build-core
  */
 
-import {readFileSync, writeFileSync, existsSync, mkdirSync} from "node:fs";
+import {
+  readFileSync,
+  writeFileSync,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+} from "node:fs";
 import {join, dirname} from "node:path";
 import {fileURLToPath} from "node:url";
 import {execSync} from "node:child_process";
@@ -166,6 +173,16 @@ for (const card of CORE_CARDS) {
     types: `./cards/${card}/index.d.ts`,
   };
 }
+
+// Shared helper modules — always exported regardless of card allowlist
+exportsMap["./cards/types"] = {
+  import: "./cards/types.js",
+  types: "./cards/types.d.ts",
+};
+exportsMap["./cards/icons"] = {
+  import: "./cards/icons.js",
+  types: "./cards/icons.d.ts",
+};
 
 // ---------------------------------------------------------------------------
 // Step 5 — Write dist-lib/package.json
@@ -319,6 +336,32 @@ if (!DRY_RUN) {
   console.log("    ✓  Written");
 } else {
   console.log("    (dry-run — not written)");
+}
+
+// ---------------------------------------------------------------------------
+// Step 7 — Copy AGENT.*.md files for AI-assisted consumers
+// ---------------------------------------------------------------------------
+
+const AGENT_FILES = [
+  "AGENT.md",
+  "AGENT.building-cards.md",
+  "AGENT.using-cards.md",
+];
+
+console.log("\n🤖  Copying AGENT.*.md files…");
+if (!DRY_RUN) {
+  mkdirSync(DIST_DIR, {recursive: true});
+  for (const file of AGENT_FILES) {
+    const src = join(ROOT, file);
+    if (existsSync(src)) {
+      copyFileSync(src, join(DIST_DIR, file));
+      console.log(`    ✓  ${file}`);
+    } else {
+      console.warn(`    ⚠  ${file} not found — skipped`);
+    }
+  }
+} else {
+  console.log(`    (dry-run — would copy: ${AGENT_FILES.join(", ")})`);
 }
 
 // ---------------------------------------------------------------------------

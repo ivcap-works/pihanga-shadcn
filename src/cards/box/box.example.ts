@@ -34,7 +34,7 @@ as direct children.
       id: "empty",
       title: "Empty",
       description: "An unstyled empty container — the base for custom layouts.",
-      props: {content: []},
+      props: {content: [], className: "bg-blue-500/50"},
     },
     {
       id: "with-padding",
@@ -46,7 +46,7 @@ as direct children.
         paddingBottom: 16,
         paddingLeft: 16,
         paddingRight: 16,
-        className: "border rounded bg-muted/20",
+        className: "border rounded bg-blue-500/50",
       },
     },
     {
@@ -58,19 +58,25 @@ as direct children.
         content: [],
         width: 120,
         height: 80,
-        className: "border rounded bg-accent/30",
+        className: "border rounded bg-blue-500/50",
       },
     },
     {
       id: "with-margin",
       title: "With margin",
       description:
-        "Outer margin pushes the box away from surrounding elements.",
+        "Outer margin pushes the box away from surrounding elements. " +
+        "All four sides are demonstrated here — the muted preview background " +
+        "is visible through each margin gap.",
       props: {
         content: [],
-        marginTop: 16,
-        marginBottom: 16,
-        className: "border border-dashed rounded",
+        width: 220,
+        height: 60,
+        marginTop: 20,
+        marginBottom: 20,
+        marginLeft: 32,
+        marginRight: 32,
+        className: "border border-dashed rounded bg-blue-500/50",
       },
     },
   ],

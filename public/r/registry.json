@@ -140,6 +140,14 @@
       "type": "registry:component"
     },
     {
+      "name": "slider",
+      "type": "registry:component"
+    },
+    {
+      "name": "sliderValue",
+      "type": "registry:component"
+    },
+    {
       "name": "stack",
       "type": "registry:component"
     },

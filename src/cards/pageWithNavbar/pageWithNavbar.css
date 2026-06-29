@@ -1,10 +1,10 @@
-@import "tailwindcss";
-
 /* ============================================================
    Outermost wrapper — centres the page horizontally
    ============================================================ */
 .window {
-  @apply flex w-full justify-center;
+  display: flex;
+  width: 100%;
+  justify-content: center;
 }
 
 /* ============================================================
@@ -12,7 +12,9 @@
    collapses gracefully when the footer element is absent)
    ============================================================ */
 .page {
-  @apply w-full min-h-screen h-screen;
+  width: 100%;
+  min-height: 100vh;
+  height: 100vh;
   display: grid;
   grid-template-areas:
     "header"
@@ -26,60 +28,206 @@
    Header
    ============================================================ */
 .header {
-  @apply flex items-center gap-4 border-b bg-(--background) px-4 md:px-6;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  /* gap-4 */
+  border-bottom: 1px solid var(--border);
+  /* border-b */
+  background-color: var(--background);
+  /* bg-(--background) */
+  padding-left: 1rem;
+  /* px-4 */
+  padding-right: 1rem;
   grid-area: header;
+}
+
+@media (min-width: 768px) {
+
+  /* md:px-6 */
+  .header {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
 
 /* Title section (icon + text) */
 .title-section {
-  @apply inline-flex items-center gap-2;
+  display: inline-flex;
+  /* inline-flex */
+  align-items: center;
+  /* items-center */
+  gap: 0.5rem;
+  /* gap-2 */
 }
 
 .title-section .title-icon {
-  @apply h-6 w-6 shrink-0;
+  height: 1.5rem;
+  /* h-6 */
+  width: 1.5rem;
+  /* w-6 */
+  flex-shrink: 0;
+  /* shrink-0 */
 }
 
 .title-section .title-text {
-  @apply text-lg font-semibold text-(--foreground);
+  font-size: 1.125rem;
+  /* text-lg */
+  line-height: 1.75rem;
+  font-weight: 600;
+  /* font-semibold */
+  color: var(--foreground);
+  /* text-(--foreground) */
 }
 
 /* Medium-and-above horizontal nav */
 .nav-md {
-  @apply hidden md:flex flex-row items-center gap-5 lg:gap-6;
+  display: none;
+  /* hidden */
+}
 
-  .nav-link {
-    @apply text-(--muted-foreground) transition-colors hover:text-(--foreground) px-0;
+@media (min-width: 768px) {
+
+  /* md:flex */
+  .nav-md {
+    display: flex;
+    flex-direction: row;
+    /* flex-row */
+    align-items: center;
+    /* items-center */
+    gap: 1.25rem;
+    /* gap-5 */
   }
+}
+
+@media (min-width: 1024px) {
+
+  /* lg:gap-6 */
+  .nav-md {
+    gap: 1.5rem;
+  }
+}
+
+.nav-md .nav-link {
+  color: var(--muted-foreground);
+  /* text-(--muted-foreground) */
+  /* transition-colors */
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  padding-left: 0;
+  /* px-0 */
+  padding-right: 0;
+}
+
+.nav-md .nav-link:hover {
+  color: var(--foreground);
+  /* hover:text-(--foreground) */
 }
 
 /* Small-screen slide-out nav content */
 .nav-sm {
-  @apply grid gap-6 text-lg font-medium p-4;
+  display: grid;
+  /* grid */
+  gap: 1.5rem;
+  /* gap-6 */
+  font-size: 1.125rem;
+  /* text-lg */
+  line-height: 1.75rem;
+  font-weight: 500;
+  /* font-medium */
+  padding: 1rem;
+  /* p-4 */
+}
 
-  .nav-link {
-    @apply text-(--muted-foreground) hover:text-(--foreground) justify-start px-0 text-lg;
-  }
+.nav-sm .nav-link {
+  color: var(--muted-foreground);
+  /* text-(--muted-foreground) */
+  justify-content: flex-start;
+  /* justify-start */
+  padding-left: 0;
+  /* px-0 */
+  padding-right: 0;
+  font-size: 1.125rem;
+  /* text-lg */
+  line-height: 1.75rem;
+}
+
+.nav-sm .nav-link:hover {
+  color: var(--foreground);
+  /* hover:text-(--foreground) */
 }
 
 /* Right-aligned action cards area */
 .header-actions {
-  @apply ml-auto flex items-center gap-2 lg:gap-4;
+  margin-left: auto;
+  /* ml-auto */
+  display: flex;
+  /* flex */
+  align-items: center;
+  /* items-center */
+  gap: 0.5rem;
+  /* gap-2 */
+}
+
+@media (min-width: 1024px) {
+
+  /* lg:gap-4 */
+  .header-actions {
+    gap: 1rem;
+  }
 }
 
 /* ============================================================
    Main — scrollable content area
    ============================================================ */
 .main {
-  @apply bg-(--background) p-4 py-2 md:p-8 md:py-4;
+  background-color: var(--background);
+  /* bg-(--background) */
+  padding: 1rem;
+  /* p-4 */
+  padding-top: 0.5rem;
+  /* py-2 */
+  padding-bottom: 0.5rem;
   grid-area: main;
   overflow-y: auto;
   min-height: 0;
+}
+
+@media (min-width: 768px) {
+
+  /* md:p-8 md:py-4 */
+  .main {
+    padding: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
 }
 
 /* ============================================================
    Footer (optional)
    ============================================================ */
 .footer {
-  @apply bg-(--background) text-(--muted-foreground) px-4 py-2 md:px-8 md:py-4;
+  background-color: var(--background);
+  /* bg-(--background) */
+  color: var(--muted-foreground);
+  /* text-(--muted-foreground) */
+  padding-left: 1rem;
+  /* px-4 */
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  /* py-2 */
+  padding-bottom: 0.5rem;
   grid-area: footer;
+}
+
+@media (min-width: 768px) {
+
+  /* md:px-8 md:py-4 */
+  .footer {
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
 }

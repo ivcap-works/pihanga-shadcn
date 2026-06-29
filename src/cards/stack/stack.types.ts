@@ -1,6 +1,25 @@
 import {type PiCardRef, createCardDeclaration} from "@pihanga2/core";
+import {AlignItemsT} from "../types";
 
-export const STACK_CARD = "shad/stack";
+export const STACK_CARD = "pi/stack";
+
+/**
+ * Factory function for declaring a `stack` card instance.
+ *
+ * ```ts
+ * import {registerCard} from "@pihanga2/core";
+ * import {Stack} from "@/cards/stack";
+ *
+ * registerCard("myApp/toolbar", Stack({
+ *   direction:      "row",
+ *   spacing:        2,
+ *   alignItems:     "center",
+ *   justifyContent: "space-between",
+ *   content:        ["myApp/logo", "myApp/navLinks", "myApp/userMenu"],
+ * }));
+ * ```
+ */
+export const Stack = createCardDeclaration<StackProps>(STACK_CARD);
 
 /**
  * CSS `flex-direction` values supported by the Stack card.
@@ -17,21 +36,6 @@ export type JustifyContentT =
   | "space-between"
   | "space-around"
   | "space-evenly";
-
-/**
- * CSS `align-items` values supported by the Stack card.
- */
-export type AlignItemsT =
-  | "normal"
-  | "stretch"
-  | "center"
-  | "flex-start"
-  | "flex-end"
-  | "start"
-  | "end"
-  | "baseline"
-  | "initial"
-  | "inherit";
 
 export type StackProps<S = object> = {
   /** Ordered list of child card refs to render */
@@ -52,21 +56,3 @@ export type StackProps<S = object> = {
   /** Card style object (use the `shad` key for Tailwind-compatible overrides) */
   style?: S;
 };
-
-/**
- * Factory function for declaring a `shad/stack` card instance.
- *
- * ```ts
- * import {registerCard} from "@pihanga2/core";
- * import {Stack} from "@/cards/stack";
- *
- * registerCard("myApp/toolbar", Stack({
- *   direction:      "row",
- *   spacing:        2,
- *   alignItems:     "center",
- *   justifyContent: "space-between",
- *   content:        ["myApp/logo", "myApp/navLinks", "myApp/userMenu"],
- * }));
- * ```
- */
-export const Stack = createCardDeclaration<StackProps>(STACK_CARD);
