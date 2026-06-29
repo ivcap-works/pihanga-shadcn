@@ -14,7 +14,7 @@
  *   │  │  • Badge     │  h2  Badge                 │   │
  *   │  │  • Input  ◀  │  MarkdownViewer intro      │   │
  *   │  │  …           │  h4  Examples              │   │
- *   │  │              │  SdTabs [Default|Secondary…│   │
+ *   │  │              │  Tabs [Default|Secondary… │   │
  *   │  │              │    └─ JsonViewer props      │   │
  *   │  │              │  h4  Controls              │   │
  *   │  │              │  Stack (live preview box)  │   │
@@ -51,7 +51,7 @@ import type {PiCardRef} from "@pihanga2/core";
 import {List, onListItemClicked} from "@/cards/list";
 import {Stack} from "@/cards/stack";
 import {Typography} from "@/cards/typography";
-import {SdTabs, onTabsTabChanged} from "@/cards/tabs";
+import {Tabs, onTabsTabChanged} from "@/cards/tabs";
 import {MarkdownViewer} from "@/cards/markdownViewer";
 import {JsonViewer} from "@/cards/jsonViewer";
 import {Select, onPiSelectChanged} from "@/cards/select";
@@ -76,6 +76,20 @@ export const PlaygroundCard = {
   List: "playground/list",
   Detail: "playground/detail",
 } as const;
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+/**
+ * Maximum number of items to show as a pill strip (ToggleGroup) or tab bar
+ * before collapsing to a Select drop-down.
+ *
+ * Applied to:
+ *  - The facet tab strip in `buildFacetSection` (via `Tabs.maxTabs`).
+ *  - Token-type controls in `buildControlWidget` (ToggleGroup → Select).
+ */
+const MAX_STRIP_ITEMS = 4;
 
 // ============================================================================
 // Content builders (pure functions — no Pihanga side-effects)
@@ -112,9 +126,12 @@ function buildFacetSection(
 
   return [
     Typography({level: "h4", text: "Examples"}),
-    SdTabs({
+    Tabs({
       selfManaged: false,
       value,
+      // When a card has many facets, replace the tab strip with a Select
+      // drop-down so the selector stays compact on narrow panels.
+      maxTabs: MAX_STRIP_ITEMS,
       tabs: def.facets.map((f) => ({
         id: f.id,
         title: f.title,
@@ -336,8 +353,21 @@ function buildControlWidget(
   const current = getNestedProp(currentProps, ctrl.prop);
 
   if (ctrl.type === "token") {
-    // ToggleGroup single-select.  `name` carries the prop key so the global
-    // onPiToggleGroupChanged handler knows which prop to patch.
+    // When the option list is long, a Select drop-down is more compact than a
+    // pill row.  Switch automatically once the number of options exceeds the
+    // shared MAX_STRIP_ITEMS threshold.
+    // Both widget types fire events that `patchPgProp` already handles:
+    //   ToggleGroup → onPiToggleGroupChanged
+    //   Select      → onPiSelectChanged
+    if (ctrl.options.length > MAX_STRIP_ITEMS) {
+      return Select({
+        name: ctrl.prop,
+        options: ctrl.options.map((opt: string) => ({value: opt, label: opt})),
+        value: current != null ? String(current) : undefined,
+        selfManaged: false,
+      });
+    }
+    // Standard pill-style toggle group for ≤ MAX_STRIP_ITEMS options.
     return ToggleGroup({
       name: ctrl.prop,
       type: "single",
@@ -612,7 +642,7 @@ export function playgroundPiInit(): void {
     // When a playground facet tab is clicked, update selected facet in state
     // and merge defaultProps + facet.props into currentProps.
     // Only respond when the clicked tabId matches a facet of the current card
-    // (prevents preview-internal SdTabs from hijacking the facet selection).
+    // (prevents preview-internal Tabs from hijacking the facet selection).
     onTabsTabChanged(r, (state: AppState, {tabId}) => {
       const def = PLAYGROUND_EXAMPLES.find(
         (d) => d.cardId === state.playgroundSelectedCardId,

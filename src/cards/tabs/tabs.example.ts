@@ -1,5 +1,5 @@
 import {definePlayground} from "@/playground/definePlayground";
-import {SdTabs, onTabsTabChanged, type TabsProps} from "./index";
+import {Tabs, onTabsTabChanged, type TabsProps} from "./index";
 import {Typography} from "@/cards/typography";
 
 // Shared placeholder content for preview tabs
@@ -14,6 +14,14 @@ const TAB_PASSWORD = Typography({
 const TAB_NOTIFY = Typography({
   level: "p",
   text: "Configure your notification preferences.",
+});
+const TAB_PROFILE = Typography({
+  level: "p",
+  text: "Edit your public profile information.",
+});
+const TAB_BILLING = Typography({
+  level: "p",
+  text: "Manage your billing details and invoices.",
 });
 
 export default definePlayground<TabsProps>({
@@ -34,6 +42,10 @@ In **both** modes the \`onTabChanged\` event is dispatched whenever a tab is sel
 so external reducers can observe or override the active tab even in self-managed mode.
 
 Each tab entry requires an \`id\`, a \`title\`, and a \`contentCard\` (\`PiCardRef\`).
+
+**Overflow → drop-down:** set \`maxTabs\` to an integer. When the number of tabs
+exceeds that limit the tab strip is automatically replaced by a \`<Select>\`
+drop-down so the UI stays compact even with many tabs.
   `.trim(),
 
   defaultProps: {
@@ -58,7 +70,7 @@ Each tab entry requires an \`id\`, a \`title\`, and a \`contentCard\` (\`PiCardR
     ],
   },
 
-  preview: (props) => SdTabs(props),
+  preview: (props) => Tabs(props),
 
   facets: [
     {
@@ -126,6 +138,28 @@ Each tab entry requires an \`id\`, a \`title\`, and a \`contentCard\` (\`PiCardR
         ],
       },
     },
+    {
+      id: "dropdown-overflow",
+      title: "Dropdown overflow",
+      description:
+        "When tabs exceed maxTabs the tab strip is replaced by a Select drop-down. Here maxTabs=3 with 5 tabs forces the drop-down.",
+      props: {
+        selfManaged: true,
+        maxTabs: 3,
+        contentClassName: "mt-4",
+        tabs: [
+          {id: "account", title: "Account", contentCard: TAB_ACCOUNT},
+          {id: "password", title: "Password", contentCard: TAB_PASSWORD},
+          {
+            id: "notifications",
+            title: "Notifications",
+            contentCard: TAB_NOTIFY,
+          },
+          {id: "profile", title: "Profile", contentCard: TAB_PROFILE},
+          {id: "billing", title: "Billing", contentCard: TAB_BILLING},
+        ],
+      },
+    },
   ],
 
   controls: [
@@ -137,12 +171,18 @@ Each tab entry requires an \`id\`, a \`title\`, and a \`contentCard\` (\`PiCardR
       options: ["horizontal", "vertical"],
     },
     {
+      prop: "maxTabs",
+      type: "number",
+      label: "Max tabs (dropdown threshold)",
+      placeholder: "e.g. 3",
+    },
+    {
       prop: "className",
       type: "text",
       label: "Root class",
       placeholder: "e.g. w-full",
     },
-    {prop: "listClassName", type: "text", label: "List class"},
+    {prop: "listClassName", type: "text", label: "List / trigger class"},
     {prop: "contentClassName", type: "text", label: "Content class"},
   ],
 
@@ -158,10 +198,10 @@ Each tab entry requires an \`id\`, a \`title\`, and a \`contentCard\` (\`PiCardR
 
 \`\`\`ts
 import {registerCard} from "@pihanga2/core";
-import {SdTabs} from "@/cards/tabs";
+import {Tabs} from "@/cards/tabs";
 import {Typography} from "@/cards/typography";
 
-registerCard("myApp/tabs", SdTabs({
+registerCard("myApp/tabs", Tabs({
   selfManaged: true,
   tabs: [
     {
@@ -182,7 +222,7 @@ registerCard("myApp/tabs", SdTabs({
 
 \`\`\`ts
 import {registerCard, memo, register} from "@pihanga2/core";
-import {SdTabs, onTabsTabChanged} from "@/cards/tabs";
+import {Tabs, onTabsTabChanged} from "@/cards/tabs";
 import type {AppState} from "@/app.state";
 
 register((r) => {
@@ -191,7 +231,7 @@ register((r) => {
   });
 });
 
-registerCard("myApp/tabs", SdTabs({
+registerCard("myApp/tabs", Tabs({
   value: memo(
     (s: AppState) => s.activeTab,
     (v) => v ?? "account",
@@ -199,6 +239,23 @@ registerCard("myApp/tabs", SdTabs({
   tabs: [
     {id: "account",  title: "Account",  contentCard: "myApp/tab-account"},
     {id: "password", title: "Password", contentCard: "myApp/tab-password"},
+  ],
+}));
+\`\`\`
+
+**Dropdown overflow** — automatically switch to a \`<Select>\` when there are more than N tabs:
+
+\`\`\`ts
+registerCard("myApp/tabs", Tabs({
+  selfManaged: true,
+  // Tab strip for ≤ 3 tabs; Select drop-down for 4 or more.
+  maxTabs: 3,
+  tabs: [
+    {id: "account",       title: "Account",       contentCard: "myApp/tab-account"},
+    {id: "password",      title: "Password",      contentCard: "myApp/tab-password"},
+    {id: "notifications", title: "Notifications", contentCard: "myApp/tab-notify"},
+    {id: "profile",       title: "Profile",       contentCard: "myApp/tab-profile"},
+    {id: "billing",       title: "Billing",       contentCard: "myApp/tab-billing"},
   ],
 }));
 \`\`\`

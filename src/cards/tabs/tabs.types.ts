@@ -87,6 +87,17 @@ export type TabsProps = {
 
   /** Additional classes applied to each TabsContent element. */
   contentClassName?: string;
+
+  /**
+   * Maximum number of tabs to display as a standard tab strip.
+   * When the number of tabs exceeds this value the tab selector is replaced
+   * by a drop-down `<Select>` menu while the tab content area continues to
+   * work as normal.
+   *
+   * When omitted (or `undefined`) the tab strip is always used regardless of
+   * how many tabs there are.
+   */
+  maxTabs?: number;
 };
 
 // ─── Events ───────────────────────────────────────────────────────────────────
