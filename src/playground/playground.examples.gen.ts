@@ -16,6 +16,7 @@ import type {PlaygroundDef} from "./playground.types";
 import badgeDef from "@/cards/badge/badge.example";
 import boxDef from "@/cards/box/box.example";
 import buttonDef from "@/cards/button/button.example";
+import chartGraphDef from "@/cards/chartGraph/chartGraph.example";
 import checkboxDef from "@/cards/checkbox/checkbox.example";
 import conditionalDef from "@/cards/conditional/conditional.example";
 import dataTableDef from "@/cards/dataTable/dataTable.example";
@@ -64,6 +65,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   badgeDef,
   boxDef,
   buttonDef,
+  chartGraphDef,
   checkboxDef,
   conditionalDef,
   dataTableDef,

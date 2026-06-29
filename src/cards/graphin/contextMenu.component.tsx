@@ -1,53 +1,67 @@
 /**
- * TooltipComponent
+ * ContextMenuComponent
  *
  * A child component (must live inside a <Graphin> tree) that renders a
- * lightweight, non-interactive floating card while the pointer hovers
- * over a node.  The panel has `pointerEvents: none` so it never blocks
- * interaction with the graph.
+ * floating, interactive panel anchored near the node the user clicked.
  *
- * For an interactive, click-to-open panel see ContextMenuComponent.
+ * Behaviour:
+ *  - Opens on `node:click`.
+ *  - Stays open until:
+ *      (a) the user clicks outside the panel, or
+ *      (b) the built-in ✕ close button is pressed.
+ *  - An `onClose` callback is forwarded to the content card so custom
+ *    cards can close the panel programmatically.
+ *  - The panel passes `GraphinNodeEventContext` (nodeId, nodeData, x, y)
+ *    as extra props to the content card.
  */
-import {useState, useEffect, useRef} from "react";
+import React, {useState, useEffect, useRef, useCallback} from "react";
 import {useGraphin} from "@antv/graphin";
 import type {IPointerEvent} from "@antv/g6";
 import type {DisplayObject} from "@antv/g";
 import {Target} from "@antv/g6/lib/types";
 import {Card} from "@pihanga2/core";
-import type {GraphinNodeEventContext, GraphinTooltip} from "./graphin.types";
+import type {
+  GraphinContextMenu,
+  GraphinNodeEventContext,
+} from "./graphin.types";
 
 // ---------------------------------------------------------------------------
 // Public context type
 // ---------------------------------------------------------------------------
 
 /**
- * Context forwarded to the tooltip content card as props.
+ * Context forwarded to the content card as props.
+ * Consumers can import this type to type their card props:
  *
  * ```ts
- * type MyTooltipProps = TooltipContext & { ... }
+ * type MyMenuProps = ContextMenuContext & { ... }
  * ```
  */
-export type TooltipContext<T = Record<string, unknown>> = {
-  /** `true` when the hovered element is an edge, `false` for a node */
+export type ContextMenuContext<T = Record<string, unknown>> = {
+  /** Whether this panel was triggered from an edge (vs node) */
   isEdge?: boolean;
   /** The G6 element id */
   elementID?: string;
   /** The element's raw `data` bag */
   elementData?: T;
+  /**
+   * Call this to close the context menu panel from within the content card.
+   */
+  onClose?: () => void;
 };
 
 // ---------------------------------------------------------------------------
 // Internal state
 // ---------------------------------------------------------------------------
 
-type TooltipState = TooltipContext & {
+type ContextMenuState = ContextMenuContext & {
   visible: boolean;
   x: number;
   y: number;
 };
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Component
 // ---------------------------------------------------------------------------
 
 /** Resolve offset prop → [ox, oy] in pixels. */
@@ -61,23 +75,14 @@ function resolveOffset(
 
 /**
  * Compute the pointer position in **CSS pixels relative to the G6 container
- * element** so that `position:absolute` overlays land at the pointer
+ * element** so that `position:absolute` overlays land at the click point
  * regardless of zoom / pan / page scroll / container offset.
- *
- * Strategy: use `evt.client.x/y` (browser client coords, equivalent to the
- * native `clientX/Y`) minus the container element's `getBoundingClientRect()`.
- * This is immune to the coordinate-system mismatch between G6 world space and
- * our absolute-positioning context.
- *
- * Falls back to `evt.viewport` → `evt.canvas` → `evt.x/y` when the container
- * cannot be resolved.
  */
 function getContainerXY(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   graph: any,
   evt: IPointerEvent<DisplayObject & Target>,
 ): [number, number] {
-  // Try: clientX/Y minus container bounding rect
   try {
     const container: HTMLElement | undefined =
       graph?.container ??
@@ -93,19 +98,13 @@ function getContainerXY(
   } catch {
     // fall through
   }
-  // Fallback: G6 viewport (CSS pixels relative to canvas element)
   const vp = (evt as unknown as {viewport?: {x: number; y: number}}).viewport;
   if (vp) return [vp.x, vp.y];
-  // Last resort: world coordinates (wrong when zoomed/panned)
   return [evt.canvas?.x ?? evt.x, evt.canvas?.y ?? evt.y];
 }
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-
-export function TooltipComponent(props: {
-  contentCards: GraphinTooltip;
+export function ContextMenuComponent(props: {
+  contentCards: GraphinContextMenu;
   parentCard: string;
   onOpen?: (ctx: GraphinNodeEventContext) => void;
   onClose?: (ctx: GraphinNodeEventContext) => void;
@@ -114,13 +113,15 @@ export function TooltipComponent(props: {
   const [ox, oy] = resolveOffset(contentCards.offset);
   const {graph, isReady} = useGraphin();
 
-  const [tooltip, setTooltip] = useState<TooltipState>({
+  const [menu, setMenu] = useState<ContextMenuState>({
     visible: false,
     x: 0,
     y: 0,
   });
 
-  // Keep callbacks in a ref so the G6 handler always calls the latest version
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isOpeningRef = useRef(false);
+  // Keep Pihanga callbacks in refs so closures always call the latest version
   const onOpenRef = useRef(onOpen);
   const onCloseRef = useRef(onClose);
   onOpenRef.current = onOpen;
@@ -128,14 +129,25 @@ export function TooltipComponent(props: {
   // Store last context so onClose can forward it
   const lastCtxRef = useRef<GraphinNodeEventContext | null>(null);
 
+  const handleClose = useCallback(() => {
+    const ctx = lastCtxRef.current ?? {nodeId: "", x: 0, y: 0};
+    setMenu((prev) => ({...prev, visible: false}));
+    onCloseRef.current?.(ctx);
+  }, []);
+
+  // ── G6 node click → open / update panel ───────────────────────────────
   useEffect(() => {
     if (!isReady || !graph) return;
 
-    const handleNodePointerEnter = (
-      evt: IPointerEvent<DisplayObject & Target>,
-    ) => {
+    const handleNodeClick = (evt: IPointerEvent<DisplayObject & Target>) => {
       const nodeId = (evt.target as {id?: string})?.id;
       if (!nodeId) return;
+
+      isOpeningRef.current = true;
+      setTimeout(() => {
+        isOpeningRef.current = false;
+      }, 0);
+
       const [px, py] = getContainerXY(graph, evt);
       let nodeData: Record<string, unknown> | undefined;
       try {
@@ -145,14 +157,9 @@ export function TooltipComponent(props: {
       } catch {
         // noop
       }
-      const ctx: GraphinNodeEventContext = {
-        nodeId,
-        nodeData,
-        x: px,
-        y: py,
-      };
+      const ctx: GraphinNodeEventContext = {nodeId, nodeData, x: px, y: py};
       lastCtxRef.current = ctx;
-      setTooltip({
+      setMenu({
         visible: true,
         x: px,
         y: py,
@@ -163,53 +170,65 @@ export function TooltipComponent(props: {
       onOpenRef.current?.(ctx);
     };
 
-    const handleNodePointerLeave = () => {
-      const ctx = lastCtxRef.current ?? {nodeId: "", x: 0, y: 0};
-      setTooltip({
-        visible: false,
-        x: 0,
-        y: 0,
-        isEdge: undefined,
-        elementID: undefined,
-        elementData: undefined,
-      });
-      onCloseRef.current?.(ctx);
-    };
-
-    graph.on("node:pointerenter", handleNodePointerEnter);
-    graph.on("node:pointerleave", handleNodePointerLeave);
-
+    graph.on("node:click", handleNodeClick);
     return () => {
-      graph.off("node:pointerenter", handleNodePointerEnter);
-      graph.off("node:pointerleave", handleNodePointerLeave);
+      graph.off("node:click", handleNodeClick);
     };
   }, [graph, isReady]);
 
-  if (!contentCards.node) return null;
-  if (!tooltip.visible) return null;
+  // ── Outside-click → dismiss ────────────────────────────────────────────
+  useEffect(() => {
+    if (!menu.visible) return;
 
-  const {visible: _v, x, y, ...contextProps} = tooltip;
+    const handleOutsideClick = (e: MouseEvent) => {
+      // Ignore the click that opened this menu
+      if (isOpeningRef.current) return;
+
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        handleClose();
+      }
+    };
+
+    // Defer by one tick so the click that opened the menu isn't caught
+    const timer = setTimeout(() => {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [menu.visible, handleClose]);
+
+  // ── Nothing to render ─────────────────────────────────────────────────
+  if (!contentCards.node) return null;
+  if (!menu.visible) return null;
+
+  const {visible: _v, x, y, ...contextProps} = menu;
 
   return (
     <div
+      ref={containerRef}
       style={{
         position: "absolute",
         left: x + ox,
         top: y + oy,
-        background: "hsl(var(--background))",
-        border: "1px solid hsl(var(--border))",
-        padding: "12px",
-        borderRadius: "var(--radius, 4px)",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        // Tooltip must never block graph interaction
-        pointerEvents: "none",
         zIndex: 1000,
+        // Panel is fully interactive
+        pointerEvents: "auto",
       }}
+      // Prevent clicks inside the panel from bubbling to the outside-click handler
+      onMouseDown={(e) => e.stopPropagation()}
     >
+      {/* Content card — responsible for its own chrome (close button, etc.) */}
       <Card
         cardName={contentCards.node}
         parentCard={parentCard}
         {...contextProps}
+        onClose={handleClose}
       />
     </div>
   );

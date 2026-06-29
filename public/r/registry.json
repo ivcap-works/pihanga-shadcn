@@ -44,6 +44,10 @@
       "type": "registry:component"
     },
     {
+      "name": "chartGraph",
+      "type": "registry:component"
+    },
+    {
       "name": "checkbox",
       "type": "registry:component"
     },
