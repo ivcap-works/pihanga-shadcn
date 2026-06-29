@@ -1,18 +1,70 @@
 import * as React from "react";
 import {Card, type PiCardProps} from "@pihanga2/core";
+import {
+  useBreakpoint,
+  useContainerBreakpoint,
+} from "@/components/hooks/use-breakpoint";
 import type {ConditionalProps} from "./conditional.types";
 
 /**
  * ConditionalComponent
  *
- * Transparent pass-through: renders the `content` card when `show` is `true`,
- * returns `null` otherwise.  No extra DOM wrapper is added — the mounted
- * card's own root element is the only node in the tree.
+ * Renders the `content` card when the combined visibility condition is `true`,
+ * returns `null` otherwise.
+ *
+ * Visibility rules (all must be satisfied):
+ *  1. `show`          — manual boolean gate (defaults to `true` when omitted)
+ *  2. `showOn`        — breakpoint selector (always `true` when omitted)
+ *     • `containerQuery: false` (default) → evaluated against the **viewport**
+ *       via `window.matchMedia`
+ *     • `containerQuery: true`            → evaluated against the width of the
+ *       **enclosing container** via `ResizeObserver`; a thin `<div>` wrapper
+ *       is rendered so the container width can be measured
+ *
+ * Both hooks are always called unconditionally (React rules); whichever is not
+ * "active" receives `undefined` and returns `true` immediately.
  */
 export const ConditionalComponent = (
   props: PiCardProps<ConditionalProps>,
 ): React.ReactNode => {
-  const {cardName, show, content} = props;
-  if (!show) return null;
+  const {
+    cardName,
+    show = true,
+    showOn,
+    containerQuery = false,
+    content,
+  } = props;
+
+  // Ref for container-query mode — attached to the wrapper div.
+  // Always created (hooks must not be conditional).
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
+
+  // Viewport breakpoint: active when containerQuery is false.
+  const viewportMatch = useBreakpoint(containerQuery ? undefined : showOn);
+
+  // Container breakpoint: active when containerQuery is true.
+  const containerMatch = useContainerBreakpoint(
+    containerQuery ? showOn : undefined,
+    wrapperRef,
+  );
+
+  const breakpointMatch = containerQuery ? containerMatch : viewportMatch;
+  const visible = show && breakpointMatch;
+
+  // ── Container-query mode ─────────────────────────────────────────────────
+  // Render a full-width wrapper so ResizeObserver has something to measure.
+  // The wrapper is always in the DOM (measuring must be continuous), but the
+  // content card inside it is mounted/unmounted based on `visible`.
+  if (containerQuery) {
+    return (
+      <div ref={wrapperRef} style={{width: "100%"}}>
+        {visible && <Card cardName={content} parentCard={cardName} />}
+      </div>
+    );
+  }
+
+  // ── Viewport / manual mode ───────────────────────────────────────────────
+  // Transparent pass-through — no extra DOM node.
+  if (!visible) return null;
   return <Card cardName={content} parentCard={cardName} />;
 };

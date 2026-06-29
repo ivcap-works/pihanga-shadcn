@@ -10,40 +10,66 @@ export default definePlayground<ConditionalProps>({
   title: "Conditional",
 
   introduction: `
-Renders a child card only when a boolean predicate is \`true\`.
+Renders a child card only when a boolean predicate and/or a viewport-width (or
+container-width) breakpoint condition is satisfied.
 
 Use \`shad/conditional\` to show or hide any card based on application state
-without reaching for CSS \`hidden\` / \`display:none\` hacks.  The content card
-is **mounted and unmounted** from the React tree — not just visually hidden —
-so subscriptions, side-effects, and focus state inside it are fully reset when
-the condition changes.  The card is a transparent pass-through: no extra DOM
-wrapper is added.
+**or window/container width** without reaching for CSS \`hidden\` / \`display:none\`
+hacks.  The content card is **mounted and unmounted** from the React tree — not
+just visually hidden — so subscriptions, side-effects, and focus state inside it
+are fully reset when the condition changes.
 
 | Prop | Purpose |
 |---|---|
-| \`show\` | Boolean gate; drive with \`memo()\` so the card reacts to state changes |
-| \`content\` | The card to render when \`show\` is \`true\` |
+| \`show\` | Optional boolean gate (default \`true\`); drive with \`memo()\` for reactive mount/unmount |
+| \`showOn\` | Optional breakpoint selector; mounts content only when the width condition is met |
+| \`containerQuery\` | When \`true\`, \`showOn\` is evaluated against the **enclosing container** width (via \`ResizeObserver\`) instead of the viewport (via \`matchMedia\`) |
+| \`content\` | The card to render when the visibility condition is met |
 
-Common use-cases: auth-gating a dashboard, showing an empty-state hint when
-a list has no items, swapping an edit form in/out of a read-only view.
+When **both** \`show\` and \`showOn\` are provided the card is visible only when
+both conditions are satisfied (logical AND).
+
+### \`showOn\` selector formats
+
+| Value | Meaning |
+|---|---|
+| \`sm\` | width ≥ 640 px (Tailwind \`sm\`) |
+| \`md\` | width ≥ 768 px |
+| \`lg\` | width ≥ 1024 px |
+| \`xl\` | width ≥ 1280 px |
+| \`2xl\` | width ≥ 1536 px |
+| \`400px\` | width ≥ 400 px (bare value = min-width) |
+| \`>=640px\` | width ≥ 640 px |
+| \`>640px\` | width > 640 px |
+| \`<=1024px\` | width ≤ 1024 px |
+| \`<768px\` | width < 768 px |
+
+Common use-cases: auth-gating a dashboard, showing an empty-state hint when a
+list has no items, swapping an edit form in/out of a read-only view, showing a
+desktop sidebar only on large screens, showing a mobile drawer only on small
+screens, or adapting a panel's content to its own rendered width.
   `.trim(),
 
   // ── Preview factory ──────────────────────────────────────────────────────
-  // `content` is always a fresh badge ref registered by the factory.
-  // Only `show` is driven by the playground controls.
   preview: (props) =>
     Conditional({
-      show: Boolean(props.show),
+      show: props.show !== undefined ? Boolean(props.show) : undefined,
+      // "none" is the sentinel for "no breakpoint restriction"
+      showOn:
+        !props.showOn || (props.showOn as string) === "none"
+          ? undefined
+          : (props.showOn as string),
+      containerQuery: Boolean(props.containerQuery),
       content: ShadBadge({
-        label: "✓  show is true — content is mounted",
+        label: "✓  visibility condition met — content is mounted",
         variant: "default",
       }),
     }),
 
   defaultProps: {
     show: true,
-    // content is supplied by the preview factory; a placeholder is needed
-    // here to satisfy the type but it is never rendered directly.
+    showOn: "none",
+    containerQuery: false,
     content: "" as string,
   },
 
@@ -63,6 +89,55 @@ a list has no items, swapping an edit form in/out of a read-only view.
         "The `content` card is fully unmounted — no DOM node, no active subscriptions, no hidden element.",
       props: {show: false},
     },
+    {
+      id: "show-on-md",
+      title: "showOn: 'md' (viewport)",
+      description:
+        "Mounts content only when the **viewport** is ≥ 768 px wide (Tailwind `md`). Resize the window to see live mount/unmount.",
+      props: {showOn: "md", containerQuery: false},
+    },
+    {
+      id: "show-on-lg",
+      title: "showOn: 'lg' (viewport)",
+      description:
+        "Mounts content only when the **viewport** is ≥ 1024 px wide (Tailwind `lg`).",
+      props: {showOn: "lg", containerQuery: false},
+    },
+    {
+      id: "show-on-custom-min",
+      title: "showOn: '>400px'",
+      description:
+        "Mounts content only when the viewport is wider than 400 px (custom exclusive min-width).",
+      props: {showOn: ">400px", containerQuery: false},
+    },
+    {
+      id: "show-on-custom-max",
+      title: "showOn: '<768px'",
+      description:
+        "Mounts content only when the viewport is narrower than 768 px (mobile-only content).",
+      props: {showOn: "<768px", containerQuery: false},
+    },
+    {
+      id: "container-md",
+      title: "containerQuery: md",
+      description:
+        "Mounts content only when the **enclosing container** is ≥ 768 px wide. Evaluates the selector against the card's own rendered width via `ResizeObserver` — not the viewport.",
+      props: {showOn: "md", containerQuery: true},
+    },
+    {
+      id: "container-custom",
+      title: "containerQuery: >400px",
+      description:
+        "Mounts content only when the **enclosing container** is wider than 400 px.",
+      props: {showOn: ">400px", containerQuery: true},
+    },
+    {
+      id: "combined",
+      title: "show + showOn (AND)",
+      description:
+        "Both conditions must be satisfied: `show` is `true` **and** viewport ≥ 768 px.",
+      props: {show: true, showOn: "md"},
+    },
   ],
 
   // ── Controls ─────────────────────────────────────────────────────────────
@@ -70,11 +145,37 @@ a list has no items, swapping an edit form in/out of a read-only view.
     {
       prop: "show",
       type: "boolean",
-      label: "Show content",
+      label: "show",
+    },
+    {
+      prop: "showOn",
+      type: "select",
+      label: "showOn",
+      // "none" is the sentinel value for "no breakpoint restriction".
+      // Radix Select does not accept empty-string values.
+      options: [
+        "none",
+        "sm",
+        "md",
+        "lg",
+        "xl",
+        "2xl",
+        ">400px",
+        ">=640px",
+        "<768px",
+        "<=1024px",
+      ],
+    },
+    {
+      prop: "containerQuery",
+      type: "boolean",
+      label: "containerQuery",
     },
   ],
 
   note: `
+### Manual boolean gate
+
 Wire \`show\` to a \`memo()\` selector so the card responds to state changes:
 
 \`\`\`ts
@@ -87,19 +188,58 @@ registerCard("myApp/hint", Conditional({
   show:    memo((s: AppState) => s.services.length === 0 && !s.servicesLoading),
   content: "myApp/hintText",
 }));
+\`\`\`
 
-// Auth-gate a dashboard behind a login form.
-registerCard("myApp/authGate", Conditional({
-  show:    memo((s: AppState) => s.isLoggedIn),
-  content: "myApp/dashboard",
+### Breakpoint against the viewport (default)
+
+Set \`showOn\` to automatically mount/unmount based on **viewport** width.
+The component subscribes to \`window.matchMedia\` — no extra state or memo needed:
+
+\`\`\`ts
+// Desktop sidebar — visible on lg screens and up
+registerCard("myApp/layout", Conditional({
+  showOn:  "lg",
+  content: "myApp/desktopSidebar",
+}));
+
+// Mobile drawer — visible only on narrow viewports
+registerCard("myApp/mobileNav", Conditional({
+  showOn:  "<768px",
+  content: "myApp/mobileDrawer",
 }));
 \`\`\`
 
-**Why not \`className="hidden"\`?**
+### Breakpoint against the enclosing container
 
-Toggling a Tailwind \`hidden\` class keeps the card mounted — its subscriptions,
-timers, and focus state remain active even when invisible.  \`shad/conditional\`
-fully unmounts the false branch so you get clean lifecycle semantics at no
-extra boilerplate cost.
+Set \`containerQuery: true\` to measure the card's own rendered width via
+\`ResizeObserver\` instead of the global viewport.  This is useful inside
+resizable panels, grid cells, or any layout where the card's container width
+differs from the window width:
+
+\`\`\`ts
+// Show detail panel only when the grid cell is wide enough
+registerCard("myApp/gridCell", Conditional({
+  showOn:         ">400px",
+  containerQuery: true,
+  content:        "myApp/detailPanel",
+}));
+\`\`\`
+
+> **Trade-off:** when \`containerQuery\` is \`true\` a thin \`<div style="width:100%">\`
+> wrapper is added to the DOM so that \`ResizeObserver\` has an element to
+> observe.  In viewport mode (\`containerQuery: false\`, the default) no extra
+> DOM node is added.
+
+### Combined (AND)
+
+Both conditions must be satisfied:
+
+\`\`\`ts
+registerCard("myApp/adminSidebar", Conditional({
+  show:    memo((s: AppState) => s.isAdmin),
+  showOn:  "lg",
+  content: "myApp/adminPanel",
+}));
+\`\`\`
   `.trim(),
 });

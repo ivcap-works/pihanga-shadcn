@@ -10,16 +10,50 @@ export const CONDITIONAL_CARD = "shad/conditional";
 export const Conditional =
   createCardDeclaration<ConditionalProps>(CONDITIONAL_CARD);
 
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Named Tailwind-compatible breakpoints or a custom pixel expression.
+ *
+ * Named breakpoints (Tailwind CSS defaults)
+ * ─────────────────────────────────────────
+ *  `sm`   → viewport ≥ 640 px
+ *  `md`   → viewport ≥ 768 px
+ *  `lg`   → viewport ≥ 1024 px
+ *  `xl`   → viewport ≥ 1280 px
+ *  `2xl`  → viewport ≥ 1536 px
+ *
+ * Pixel expressions
+ * ─────────────────
+ *  `400px`    → viewport ≥ 400 px  (bare value = min-width)
+ *  `>=640px`  → viewport ≥ 640 px
+ *  `>640px`   → viewport >  640 px (min-width: 641px)
+ *  `<=1024px` → viewport ≤ 1024 px
+ *  `<1024px`  → viewport <  1024 px (max-width: 1023px)
+ */
+export type BreakpointSelector =
+  | "sm"
+  | "md"
+  | "lg"
+  | "xl"
+  | "2xl"
+  | (string & Record<never, never>); // allows arbitrary strings with IDE hints
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 /**
  * Props for the `shad/conditional` card.
  *
- * Renders `content` only when `show` is `true`; renders nothing otherwise.
- * This is a transparent pass-through — no extra DOM wrapper is added.
+ * The card renders `content` only when the combined visibility condition is
+ * `true`; it renders nothing otherwise.  This is a transparent pass-through —
+ * no extra DOM wrapper is added.
  *
- * In a real app, drive `show` from a `memo()` selector so the card
- * reactively mounts/unmounts as state changes:
+ * ## Modes
+ *
+ * ### 1 · Manual boolean (existing behaviour)
+ *
+ * Drive `show` from a `memo()` selector so the card reactively mounts/unmounts
+ * as state changes:
  *
  * ```ts
  * import {memo, registerCard} from "@pihanga2/core";
@@ -30,12 +64,81 @@ export const Conditional =
  *   content: "myApp/emptyStateHint",
  * }));
  * ```
+ *
+ * ### 2 · Breakpoint-based auto-selection (new)
+ *
+ * Set `showOn` to a breakpoint name or pixel expression.  The component
+ * subscribes to `window.matchMedia` and automatically mounts/unmounts the
+ * content card as the viewport crosses the breakpoint — no state, no memo:
+ *
+ * ```ts
+ * // Show only on tablet-sized screens and up
+ * registerCard("myApp/sidebar", Conditional({
+ *   showOn:  "md",
+ *   content: "myApp/desktopSidebar",
+ * }));
+ *
+ * // Show only on narrow viewports (mobile drawer)
+ * registerCard("myApp/mobileNav", Conditional({
+ *   showOn:  "<768px",
+ *   content: "myApp/drawer",
+ * }));
+ * ```
+ *
+ * ### 3 · Combined
+ *
+ * Both conditions are ANDed — content renders only when the breakpoint matches
+ * **and** `show` is `true`:
+ *
+ * ```ts
+ * registerCard("myApp/adminSidebar", Conditional({
+ *   show:    memo((s: AppState) => s.isAdmin),
+ *   showOn:  "lg",
+ *   content: "myApp/adminPanel",
+ * }));
+ * ```
  */
 export type ConditionalProps = {
-  /** Render `content` only when this is `true`.  Drive with `memo()` for
-   *  reactive mount/unmount behaviour. */
-  show: boolean;
+  /**
+   * Manual boolean gate.  When omitted it defaults to `true` so that a
+   * `showOn`-only card does not need to set it explicitly.
+   *
+   * Drive with `memo()` for reactive mount/unmount behaviour.
+   */
+  show?: boolean;
 
-  /** The card to render when `show` is `true`. */
+  /**
+   * Viewport-width breakpoint selector.  When set, the component subscribes
+   * to `window.matchMedia` and reactively shows/hides the content card
+   * whenever the viewport crosses the breakpoint.
+   *
+   * Supported values: `sm` | `md` | `lg` | `xl` | `2xl` (Tailwind),
+   * or pixel expressions such as `>400px`, `>=640px`, `<768px`, `<=1024px`,
+   * `400px`.
+   *
+   * When both `show` and `showOn` are provided the content is rendered only
+   * when **both** conditions are satisfied.
+   *
+   * By default the breakpoint is evaluated against the **viewport** width via
+   * `window.matchMedia`.  Set `containerQuery: true` to evaluate it against
+   * the width of the **enclosing container** instead (uses `ResizeObserver`).
+   */
+  showOn?: BreakpointSelector;
+
+  /**
+   * When `true`, the `showOn` breakpoint is measured against the width of the
+   * component's **enclosing container** rather than the viewport.
+   *
+   * Internally the component renders a transparent `<div style="width:100%">`
+   * wrapper and observes it with `ResizeObserver`.  This means a single extra
+   * DOM node is added when `containerQuery` is `true`.
+   *
+   * Has no effect when `showOn` is not set.
+   *
+   * @default false
+   */
+  containerQuery?: boolean;
+
+  /** The card to render when the visibility condition is met. */
   content: PiCardRef;
 };
