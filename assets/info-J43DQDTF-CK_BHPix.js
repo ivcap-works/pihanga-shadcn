@@ -1,1 +1,0 @@
-import{h as e}from"./mermaid-parser.core-Xz32t6nM.js";export{e as createInfoServices};

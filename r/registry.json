@@ -24,6 +24,10 @@
       "type": "registry:component"
     },
     {
+      "name": "pihanga-hook-use-breakpoint",
+      "type": "registry:hook"
+    },
+    {
       "name": "pihanga-hook-use-is-touch-device",
       "type": "registry:hook"
     },
