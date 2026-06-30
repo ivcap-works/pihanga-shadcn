@@ -13,9 +13,12 @@ export const Button = createCardDeclaration<PiButtonProps, PiButtonEvents>(
 
 export const PI_BUTTON_ACTION = registerActions(PI_BUTTON_CARD, ["clicked"]);
 
-export const onPiButtonClicked = createOnAction<PiButtonClickedEvent>(
+export const onButtonClicked = createOnAction<PiButtonClickedEvent>(
   PI_BUTTON_ACTION.CLICKED,
 );
+
+/* @deprecated Use `onButtonClicked` instead. */
+export const onPiButtonClicked = onButtonClicked;
 
 /**
  * Declarative "opts" subset based on `src/registry/ui/button.tsx`.

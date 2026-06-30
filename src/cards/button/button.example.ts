@@ -1,7 +1,7 @@
 import {registerIcon} from "@/cards/icons";
 import {MoreHorizontalIcon, Settings, Heart} from "lucide-react";
 
-import {Button, onPiButtonClicked, type PiButtonProps} from "./index";
+import {Button, onButtonClicked, type PiButtonProps} from "./index";
 import {definePlayground} from "@/playground/definePlayground";
 
 // Example icon registration (usually done once during app init)
@@ -300,8 +300,8 @@ for rich custom tooltip content.
 
   registerEvents: (r, logEvent) => {
     // Fires whenever the button is clicked in the live preview.
-    onPiButtonClicked(r, (state, ev) => {
-      logEvent(state, "onPiButtonClicked", {id: ev.id});
+    onButtonClicked(r, (state, ev) => {
+      logEvent(state, "onButtonClicked", {id: ev.id});
     });
   },
 
@@ -310,10 +310,10 @@ Inside \`app.pihanga.ts\`, wire a button to dispatch an action:
 
 \`\`\`ts
 import {registerCard, register} from "@pihanga2/core";
-import {Button, onPiButtonClicked} from "@/cards/button";
+import {Button, onButtonClicked} from "@/cards/button";
 
 register((r) => {
-  onPiButtonClicked(r, (state, {id}) => {
+  onButtonClicked(r, (state, {id}) => {
     if (id === "save") {
       state.isSaving = true;
     }

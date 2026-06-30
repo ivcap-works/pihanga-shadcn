@@ -30,12 +30,19 @@ https://github.com/ivcap-works/pihanga-shadcn
 
 | If your task is … | Read this file |
 |---|---|
+| **Getting started** — brand-new project, shadcn/ui + pihanga setup, file layout | [`AGENTS.getting-started.md`](./AGENTS.getting-started.md) |
 | **Using** existing cards — install, wire, compose, navigate | [`AGENT.using-cards.md`](./AGENT.using-cards.md) |
 | **Building** new cards — create a new card type for this repo | [`AGENT.building-cards.md`](./AGENT.building-cards.md) |
 
-If you are **unsure**, start with `AGENT.using-cards.md`; it covers the common
-app-building case.  Switch to `AGENT.building-cards.md` only when you need to
-add a new card *type* to `src/cards/` itself.
+If you are **starting from scratch**, read `AGENTS.getting-started.md` first — it
+covers Vite setup, shadcn/ui init, pihanga-core installation, and the initial file
+layout.  Then continue with `AGENT.using-cards.md` for wiring and composing cards.
+
+If you are adding cards to an **existing project**, go straight to
+`AGENT.using-cards.md`.
+
+Switch to `AGENT.building-cards.md` only when you need to add a new card *type*
+to `src/cards/` itself.
 
 ---
 

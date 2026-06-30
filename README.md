@@ -4,6 +4,9 @@ A collection of **Pihanga cards** built on top of [shadcn/ui](https://ui.shadcn.
 [Radix UI](https://radix-ui.com/), distributed through two channels: a
 **shadcn copy-on-install registry** and a traditional **`@pihanga2/shadcn` npm package**.
 
+**New here? Start with the getting-started guide:**
+→ [AGENTS.getting-started.md](./AGENTS.getting-started.md) — scaffold a new app from scratch (Vite, shadcn/ui, pihanga-core, initial file layout)
+
 **For users of the cards** (install, wire, build apps):
 → [USER_GUIDE.md](./USER_GUIDE.md) · [AGENT.md](./AGENT.md) (AI assistants)
 
@@ -16,6 +19,7 @@ A collection of **Pihanga cards** built on top of [shadcn/ui](https://ui.shadcn.
 
 ## Table of Contents
 
+- [Getting started](#getting-started)
 - [Stack](#stack)
 - [This repo: dual playground + card library](#this-repo-dual-playground--card-library)
 - [Project structure](#project-structure)
@@ -36,6 +40,74 @@ A collection of **Pihanga cards** built on top of [shadcn/ui](https://ui.shadcn.
   - [Step 4 — Dry run](#step-4--dry-run)
   - [Step 5 — Build and publish](#step-5--build-and-publish)
   - [Bumping the version](#bumping-the-version)
+
+---
+
+## Getting started
+
+If you are building a **new app** that uses pihanga-shadcn cards, follow these steps in order:
+
+1. **Scaffold a Vite + React + TypeScript project**
+
+   ```sh
+   npm create vite@latest my-app -- --template react-ts
+   cd my-app && npm install
+   ```
+
+2. **Install shadcn/ui** (creates `components.json`, Tailwind, path aliases)
+
+   ```sh
+   npx shadcn@latest init   # choose: New York · Neutral · CSS variables = Yes
+   # yarn users: yarn dlx shadcn@latest init
+   ```
+
+   > ⚠️ **Node 24 / npm 11 users:** `npx shadcn@latest` fails on this combination.
+   > Use `nvm use 22` or replace `npx` with `yarn dlx`.
+
+3. **Install pihanga-core**
+
+   ```sh
+   npm install @pihanga2/core
+   ```
+
+4. **Add cards** via the registry or npm package
+
+   ```sh
+   # Registry — copies editable source into src/cards/
+   npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/framework.json
+   npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/pageWithNavbar.json
+   # … add more cards as needed
+
+   # npm package alternative — no shadcn CLI required
+   npm install @pihanga2/shadcn
+   ```
+
+5. **Wire up the initial file layout**
+
+   Create five files using the templates in the full guide:
+
+   | File | Purpose |
+   |---|---|
+   | `src/app.types.ts` | Error envelope type definitions |
+   | `src/app.state.ts` | Redux state shape (`AppState`) |
+   | `src/app.pihanga.ts` | `registerFramework` + `registerCard` declarations |
+   | `src/app.reducer.ts` | External event handlers — `register()` + `on*` helpers |
+   | `src/main.ts` | Entry point — `start()` call |
+
+   Copy `src/app.root.tsx` from the
+   [`example/src/`](https://github.com/ivcap-works/pihanga-shadcn/tree/main/example/src)
+   directory — it wires the Redux `<Provider>` and Sonner `<Toaster>`.
+
+   > **Quick start:** the [`example/`](./example) directory in this repo is a
+   > complete, runnable counter app that demonstrates all five files.
+   > Run it with `cd example && yarn install && yarn dev`.
+
+**→ Full step-by-step guide (Vite config, Tailwind theme, file layout, code examples):**
+[AGENTS.getting-started.md](./AGENTS.getting-started.md)
+
+Once your scaffold is in place, see [AGENT.using-cards.md](./AGENT.using-cards.md) for
+installing more cards, wiring `memo()`, multi-page navigation, and the Card API quick
+reference.
 
 ---
 

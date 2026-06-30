@@ -20,7 +20,7 @@ import type {PiCardRef} from "@pihanga2/core";
  * "Events" panel beside the facet props JSON viewer.
  */
 export type PlaygroundEventRecord = {
-  /** Human-readable event name shown in the panel (e.g. `"onPiButtonClicked"`). */
+  /** Human-readable event name shown in the panel (e.g. `"onButtonClicked"`). */
   label: string;
   /** Serialisable event payload displayed as a collapsible JSON tree. */
   data: Record<string, unknown>;
@@ -156,11 +156,11 @@ export type PlaygroundDef<
    *
    * @example
    * ```ts
-   * import {onPiButtonClicked} from "./index";
+   * import {onButtonClicked} from "./index";
    *
    * registerEvents: (r, logEvent) => {
-   *   onPiButtonClicked(r, (state, ev) => {
-   *     logEvent(state, "onPiButtonClicked", { id: ev.id });
+   *   onButtonClicked(r, (state, ev) => {
+   *     logEvent(state, "onButtonClicked", { id: ev.id });
    *   });
    * },
    * ```

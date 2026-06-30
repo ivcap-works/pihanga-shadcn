@@ -78,7 +78,7 @@ It provides:
 | Event log cleared on card select and facet tab switch | `playground.pihanga.ts` |
 | `memo()` selector extended to include `s.playgroundEventLog` — rebuilds detail panel on each event | `playground.pihanga.ts` |
 | Per-def event handler loop in `register()` block — calls `def.registerEvents(r, makeEventLogger(def.cardId))` | `playground.pihanga.ts` |
-| `button.example.ts` — `registerEvents` for `onPiButtonClicked` | `cards/button/button.example.ts` |
+| `button.example.ts` — `registerEvents` for `onButtonClicked` | `cards/button/button.example.ts` |
 | `toggleGroup.example.ts` — `registerEvents` for `onPiToggleGroupChanged` | `cards/toggleGroup/toggleGroup.example.ts` |
 | `switch.example.ts` — `registerEvents` for `onPiSwitchChanged` | `cards/switch/switch.example.ts` |
 | `input.example.ts` — `registerEvents` for `onPiInputChanged` + `onPiInputCommitted` | `cards/input/input.example.ts` |

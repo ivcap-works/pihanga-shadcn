@@ -226,7 +226,7 @@ These are used by *consumers* (reducers, effects, page wiring, etc.) to react to
 Example:
 
 ```ts
-export const onPiButtonClicked = createOnAction<PiButtonClickedEvent>(
+export const onButtonClicked = createOnAction<PiButtonClickedEvent>(
   PI_BUTTON_ACTION.CLICKED,
 );
 ```
@@ -611,10 +611,10 @@ Inside \`app.pihanga.ts\`, wire a button to dispatch an action:
 
 \`\`\`ts
 import {registerCard, register} from "@pihanga2/core";
-import {Button, onPiButtonClicked} from "@/cards/button";
+import {Button, onButtonClicked} from "@/cards/button";
 
 register((r) => {
-  onPiButtonClicked(r, (state, {id}) => {
+  onButtonClicked(r, (state, {id}) => {
     if (id === "save") state.isSaving = true;
   });
 });

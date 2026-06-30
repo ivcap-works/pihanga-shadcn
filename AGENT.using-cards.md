@@ -4,6 +4,10 @@
 > Read [`AGENT.md`](./AGENT.md) first for orientation and universal rules.
 > If you need to *create* a new card type, switch to
 > [`AGENT.building-cards.md`](./AGENT.building-cards.md).
+>
+> **Starting from scratch?**  Follow [`AGENTS.getting-started.md`](./AGENTS.getting-started.md)
+> first to scaffold your Vite project, run `shadcn init`, install `@pihanga2/core`,
+> and wire up the initial file layout.  Return here once the scaffold is in place.
 
 > 💬 **Encountered a bug, a missing card, or an agent-unfriendly doc section?**
 > Please open an issue at **https://github.com/ivcap-works/pihanga-shadcn/issues**
@@ -41,12 +45,10 @@
 ## Table of Contents
 
 - [Distribution channels — choose one](#distribution-channels--choose-one)
-- [Channel 1 — shadcn registry prerequisites](#channel-1--shadcn-registry-prerequisites)
+- [Channel 1 — shadcn registry (one-time project setup)](#channel-1--shadcn-registry-one-time-project-setup)
 - [Channel 2 — npm package `@pihanga2/shadcn`](#channel-2--npm-package-pihanga2shadcn)
   - [Migrating a card from npm to a local copy](#migrating-a-card-from-npm-to-a-local-customised-copy)
 - [Vite configuration (both channels)](#vite-configuration-both-channels)
-  - [Required Vite aliases](#required-vite-aliases)
-  - [Required `src/components/lib/utils.ts`](#required-srccomponentslibutils-ts)
   - [`@pihanga2/cards` — deprecated, do not use](#pihanga2cards--deprecated-do-not-use)
   - [Type-only import gotcha](#type-only-import-gotcha--picardref-store-etc)
   - [Transitive card dependencies](#transitive-card-dependencies)
@@ -69,7 +71,7 @@
 
 | | Registry | npm package |
 |---|---|---|
-| **Install** | `npx shadcn@latest add <url>` | `npm install @pihanga2/shadcn` |
+| **Install** | `npx shadcn@latest add <url>` (or `yarn dlx shadcn@latest add <url>`) | `npm install @pihanga2/shadcn` |
 | **Cards available** | All 34 | 30 core (no graphin / jsonViewer / markdownViewer / resizable) |
 | **Requires `shadcn init`** | Yes | No |
 | **Files land in your project** | Yes — editable source | No — compiled bundle |
@@ -81,192 +83,23 @@ a clean `npm install` workflow is preferred.
 
 ---
 
-## Channel 1 — shadcn registry prerequisites
+## Channel 1 — shadcn registry (one-time project setup)
 
-### 1 — Initialise shadcn (creates `components.json` and `@/` alias)
+> **New project?** The full one-time setup (Vite scaffold, shadcn init, Tailwind
+> theme, Vite aliases, pihanga-core install) is documented step-by-step in
+> **[`AGENTS.getting-started.md`](./AGENTS.getting-started.md)**.  Follow that
+> guide first, then return here to install and wire individual cards.
 
-```sh
-npx shadcn@latest init
-```
+Key things the setup guide covers:
 
-When prompted, choose:
-- **Style**: New York
-- **Base colour**: Neutral
-- **CSS variables**: Yes
-
-This command creates `components.json`, patches `tsconfig.json` with the `@/`
-path alias, and installs Tailwind CSS if not already present.
-
-### 2 — Ensure `@/cards` alias is configured
-
-Pihanga cards are copied to `src/cards/` and import each other via the
-`@/cards/` alias.  After `shadcn init`, add this alias to `tsconfig.json`:
-
-```jsonc
-// tsconfig.json  →  compilerOptions.paths
-{
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
-}
-```
-
-The `@/*` → `./src/*` mapping (which `shadcn init` creates) already covers
-`@/cards/` → `src/cards/`, so **no extra alias is needed** as long as cards
-are placed at `src/cards/`.
-
-If cards end up elsewhere, add an explicit alias:
-```jsonc
-"@/cards/*": ["./src/cards/*"]
-```
-
-### 3 — Configure `src/index.css` (Tailwind v4 + shadcn theme)
-
-> **⚠️ This is a Tailwind CSS project.**  `index.html` must NOT contain any
-> `<link rel="stylesheet">` tags for external CSS frameworks (Bootstrap, Bulma,
-> etc.) or manual font CDN links, and no `<style>` blocks.  Tailwind generates
-> all styles at build time from utility classes in your source files.  Adding
-> foreign stylesheets will conflict with Tailwind's generated output and break
-> the shadcn colour variables.
-
-Tailwind v4 no longer auto-discovers shadcn's semantic CSS variables.  Without
-an explicit `@theme inline` block, classes like `bg-card`, `bg-background`, and
-`border-border` have no associated colour and render as **transparent** — causing
-dialog panels, popovers, and cards to appear invisible.
-
-In addition, Radix UI overlays (Dialog, Sheet, etc.) apply `overflow: hidden` to
-`<body>` when open, which removes the scrollbar and widens the content area by
-~15 px, causing **visible text reflow** behind the dialog backdrop.
-
-The complete reference `src/index.css` is maintained in the pihanga-shadcn
-repository.  **Copy it directly** from:
-```
-https://raw.githubusercontent.com/ivcap-works/pihanga-shadcn/main/src/index.css
-```
-or from `src/index.css` in a local clone.  The full content is reproduced below
-for reference / offline use:
-
-The required `src/index.css`:
-
-```css
-@import "tailwindcss";
-
-/*
- * Tailwind v4 — map shadcn semantic CSS variables to Tailwind colour utilities.
- * Without this @theme block, classes like bg-card / bg-background / border-border
- * have no associated colour and render as transparent.  This means dialog panels,
- * cards, popovers, etc. will appear invisible or incorrectly coloured.
- */
-@theme inline {
-  /*
-   * Brand button tokens — override these in your app to retheme variant="brand".
-   * Defaults to the primary colour family.  See the pi/button section below.
-   */
-  --color-btn-brand: var(--primary);
-  --color-btn-brand-foreground: var(--primary-foreground);
-  --radius-btn-brand: var(--radius-md);
-
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-}
-
-/* ── Light theme (shadcn neutral / new-york) ─────────────────────────────── */
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --radius: 0.625rem;
-}
-
-/* ── Dark theme ──────────────────────────────────────────────────────────── */
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-    /*
-     * Prevent layout reflow when a dialog (or any Radix overlay) applies
-     * `overflow: hidden` to <body> to disable background scrolling.
-     * Without this, removing the scrollbar widens the content area by ~15 px
-     * and causes visible text reflow behind the dialog backdrop.
-     */
-    scrollbar-gutter: stable;
-  }
-}
-```
-
-> **Why `@theme inline`?**  Tailwind v4 separates design tokens from utility
-> generation.  shadcn stores its colours as CSS custom properties (`--card`,
-> `--background`, …) but Tailwind v4 will not generate colour utilities from
-> raw CSS variables unless they are declared inside an `@theme` block.  Without
-> it the generated CSS contains no colour definitions for those utility classes.
-
-> **Why `scrollbar-gutter: stable`?**  When a Radix dialog opens, the library
-> `@radix-ui/react-remove-scroll` sets `overflow: hidden` on `<body>` to
-> prevent background scrolling.  This hides the scrollbar and adds ~15 px of
-> width back to the page — causing text to reflow.  `scrollbar-gutter: stable`
-> reserves a permanent gutter for the scrollbar so its appearance/disappearance
-> never changes the usable width.
+- **⚠️ npx + npm 11 + Node 24 incompatibility** — use `nvm use 22` or `yarn dlx`
+  as a drop-in (see getting-started § *npx compatibility*)
+- `npx shadcn@latest init` / `yarn dlx shadcn@latest init` — creates
+  `components.json`, patches `tsconfig.json` with `@/*` alias, installs Tailwind
+- `src/index.css` — requires a full `@theme inline` block; without it `bg-card`,
+  `bg-background` etc. render transparent and dialogs appear invisible
+- `src/components/lib/utils.ts` — must create the `cn()` helper at this path
+- `vite.config.ts` aliases — `@/lib`, `@/registry`, `@/components`, `@/cards`, `@`
 
 ---
 
@@ -364,62 +197,10 @@ import-order dependency.
 
 ## Vite configuration (both channels)
 
-When building a **Vite + React + TypeScript** app from scratch (i.e. without
-using `shadcn init` or copying the playground project), the following setup is
-required regardless of whether you use the registry or the npm channel.
-
-### Required Vite aliases
-
-pihanga-shadcn cards reference each other and shadcn UI primitives via these
-path aliases.  Without the `@/registry` alias in particular, `button.component.tsx`
-(and other cards) will fail at Vite dev time with a cryptic
-`"Failed to resolve import '@/registry/ui/button'"` error.
-
-```ts
-// vite.config.ts — required for both channels
-import path from "path";
-import tailwindcss from "@tailwindcss/vite";
-import react from "@vitejs/plugin-react";
-import {defineConfig} from "vite";
-
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  resolve: {
-    alias: [
-      // @/lib  →  src/lib  (shared utilities used by cards)
-      {find: "@/lib", replacement: path.resolve(__dirname, "./src/lib")},
-      // @/registry  →  src/components  (shadcn UI primitives — cards import via
-      //   "@/registry/ui/button" etc.; this alias bridges them to the local copies)
-      {find: "@/registry", replacement: path.resolve(__dirname, "./src/components")},
-      // @/components  →  src/components  (needed for cross-component imports)
-      {find: "@/components", replacement: path.resolve(__dirname, "./src/components")},
-      // @/cards  →  src/cards  (explicit card-to-card imports)
-      {find: "@/cards", replacement: path.resolve(__dirname, "./src/cards")},
-      // @  →  src  (catch-all for everything else)
-      {find: "@", replacement: path.resolve(__dirname, "./src")},
-    ],
-  },
-});
-```
-
-### Required `src/components/lib/utils.ts`
-
-All shadcn UI components (`button.tsx`, `tooltip.tsx`, `sheet.tsx`, `badge.tsx`,
-etc.) import the `cn()` helper from `@/components/lib/utils` — **not** from
-`@/lib/utils`.  Create this file:
-
-```ts
-// src/components/lib/utils.ts
-import {clsx, type ClassValue} from "clsx";
-import {twMerge} from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]): string {
-  return twMerge(clsx(inputs));
-}
-```
-
-Note that `@/lib/utils.ts` can also exist for app-level utilities; they are two
-separate files at two separate paths.
+> **Vite project setup** (aliases, `src/components/lib/utils.ts`, `src/index.css`)
+> is documented in full in **[`AGENTS.getting-started.md`](./AGENTS.getting-started.md)
+> — Step 5 & Step 2**.  The sub-sections below cover **runtime-only gotchas** that
+> apply regardless of when the project was scaffolded.
 
 ### `@pihanga2/cards` — deprecated, do not use
 
@@ -502,15 +283,28 @@ After the one-time setup (Channel 1 prerequisites above), add any card with a
 single command. `@pihanga2/core` and all card-specific npm packages are
 installed automatically.
 
+> ⚠️ **npm 11 + Node 24:** `npx` fails on this combination — use Node 22 via
+> `nvm use 22`, or use `yarn dlx` instead (see the
+> [compatibility note above](#channel-1--shadcn-registry-prerequisites)).
+
 ```sh
-# Add a single card
+# npm / npx (Node 22 recommended)
 npx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button.json
 
-# Add multiple cards at once
+# yarn (works on all supported Node versions)
+yarn dlx shadcn@latest add https://ivcap-works.github.io/pihanga-shadcn/r/button.json
+
+# Add multiple cards at once (npx)
 npx shadcn@latest add \
   https://ivcap-works.github.io/pihanga-shadcn/r/button.json \
   https://ivcap-works.github.io/pihanga-shadcn/r/form.json \
-  https://ivcap-works.github.io/pihanga-shadcn/r/dataTa.jsonle
+  https://ivcap-works.github.io/pihanga-shadcn/r/dataTable.json
+
+# Add multiple cards at once (yarn dlx)
+yarn dlx shadcn@latest add \
+  https://ivcap-works.github.io/pihanga-shadcn/r/button.json \
+  https://ivcap-works.github.io/pihanga-shadcn/r/form.json \
+  https://ivcap-works.github.io/pihanga-shadcn/r/dataTable.json
 ```
 
 ### npm channel
@@ -570,6 +364,8 @@ Full registry index: `https://ivcap-works.github.io/pihanga-shadcn/r/registry.js
 **Registry channel:**
 - `npx shadcn@latest add <url>` automatically installs `@pihanga2/core` and all
   card-specific npm packages — no separate `npm install` needed.
+- **`npx` fails on npm 11 + Node 24** — use `nvm use 22` or replace every
+  `npx shadcn@latest` with `yarn dlx shadcn@latest` (identical output).
 - Cards land at `src/cards/<card-name>/` in the consumer's project.
 - The `framework` card is the Pihanga app root — add it first for new apps.
 - `graphin` has heavy AntV dependencies (~5 MB) — only add if graph
@@ -1240,3 +1036,16 @@ local modifications to the registry code for features that already existed.
 | `shad/list` icon decorators silently rendered nothing when icon names were unregistered | The `shad/list` card calls `getIcon(name)` which requires icons to be pre-registered via `registerIcon()` in `src/cards/icons.ts`; this contract is not visible in the type declarations | Added *`shad/list` — icon decorators require registered icons* to *Card API quick reference* |
 | `flexGrid.component.tsx` failed to compile under `verbatimModuleSyntax` / `noImplicitAny` strict TypeScript | Registry source mixed value and type imports; had implicit `any` in `.map()` callback; `Object.entries` lacked an explicit cast; `_style` lacked widened type for `gridTemplateAreas` | Fixed directly in `flexGrid.component.tsx`: split `import type`, added explicit `row: string[]` annotation, added `as [string, PiCardRef][]` cast, widened `_style` type |
 | `stack.component.tsx` contained commented-out Joy UI dead code | Leftover from a previous MUI Joy UI implementation; the current Tailwind implementation is complete and the comment block serves no purpose | Removed the dead code block |
+
+### 2026-06 user feedback — `npx shadcn@latest add` fails on npm 11 + Node 24
+
+Users reported that every `npx shadcn@latest` command failed with
+`npm error could not determine executable to run` when running Node 24 (which
+bundles npm 11).  The docs only showed `npx` examples with no mention of a
+yarn alternative or Node version constraint.
+
+| Reported gap | Fix applied |
+|---|---|
+| No `yarn dlx` alternative documented | Added `yarn dlx shadcn@latest` as the yarn-compatible alternative in the distribution channels table, Channel 1 init step, and "Adding individual cards" commands |
+| No warning about npm 11 + Node 24 incompatibility | Added a prominent compatibility callout at the top of *Channel 1 — shadcn registry prerequisites*, with the `nvm use 22` workaround and the `yarn dlx` alternative |
+| "Notes for AI agents" section did not mention the `npx` breakage | Added a bullet noting that `npx` fails on npm 11 + Node 24 and that `yarn dlx shadcn@latest` is a drop-in replacement |
