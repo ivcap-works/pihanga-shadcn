@@ -111,7 +111,6 @@ export const GraphinComponent = (
   // If a new object reference is passed to <Graphin options={...}> on each
   // render G6 calls graph.setOptions() / graph.layout() which snaps every
   // node back to its layout position, undoing any manual drag.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const mergedOptions = React.useMemo<GraphOptions>(() => {
     const defOptions: GraphOptions = {
       data,
@@ -260,6 +259,9 @@ export const GraphinComponent = (
     // Style functions close over nodeStylesRef (always current) so G6 sees
     // the latest values without rebuilding the options / re-running the layout.
     // NodeStyleWatcher (below) triggers graph.draw() when the prop changes.
+    // nodeStyleKey is intentionally included as a change-trigger even though
+    // it is not referenced directly in the callback body.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     data,
     options,

@@ -139,9 +139,7 @@ export function useBreakpoint(selector: string | undefined): boolean {
       mql.addEventListener("change", handler);
       return () => mql.removeEventListener("change", handler);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       mql.addListener(handler);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return () => mql.removeListener(handler);
     }
   }, [mediaQuery]);
