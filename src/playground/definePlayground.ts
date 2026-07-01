@@ -15,7 +15,6 @@
  * export default definePlayground<BadgeCardProps>({
  *   cardId: "shad/badge",
  *   title:  "Badge",
- *   introduction: "Badges are compact status descriptors…",
  *   defaultProps: { label: "New", variant: "default" },
  *   controls: [
  *     { prop: "variant", type: "token", options: ["default", "secondary", "destructive", "outline"] },
@@ -23,6 +22,11 @@
  *   ],
  * });
  * ```
+ *
+ * The `introduction` field is optional: prefer placing the card description in
+ * a `README.md` file next to the example file.  The code-generation step
+ * (`yarn gen-playground`) will read the README and inject its content as the
+ * introduction automatically.
  */
 
 import type {PlaygroundDef} from "./playground.types";
@@ -38,11 +42,6 @@ export function definePlayground<
   if (!def.title) {
     throw new Error(
       `[definePlayground] Missing required field "title" in playground definition for cardId "${def.cardId}"`,
-    );
-  }
-  if (!def.introduction) {
-    throw new Error(
-      `[definePlayground] Missing required field "introduction" in playground definition for card "${def.title}"`,
     );
   }
 

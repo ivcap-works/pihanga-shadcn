@@ -1,10 +1,10 @@
 import React from "react";
-import {PiCardProps} from "@pihanga2/core";
+import type {PiCardProps} from "@pihanga2/core";
 import {FileUploader} from "react-drag-drop-files";
 import {
   DEF_FILE_DROP_FILE_TYPES,
-  FileDropEvents,
-  FileDropProps,
+  type FileDropEvents,
+  type FileDropProps,
 } from "./fileDrop.types";
 import "./fileDrop.css";
 

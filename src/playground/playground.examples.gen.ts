@@ -9,7 +9,11 @@
 // Source: every src/cards/**/*.example.ts that contains a
 //         `definePlayground()` default export.
 //
-// Last generated: 2026-06-28T23:30:42.806Z
+// README injection: when a card folder contains a README.md, its content is
+// imported with Vite's `?raw` suffix and merged into the definition as the
+// `introduction` field (overriding any inline value in the example file).
+//
+// Last generated: 2026-06-30T23:44:34.877Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
@@ -51,6 +55,43 @@ import toastDef from "@/cards/toast/toast.example";
 import toggleGroupDef from "@/cards/toggleGroup/toggleGroup.example";
 import typographyDef from "@/cards/typography/typography.example";
 
+import badgeReadme from "@/cards/badge/README.md?raw";
+import boxReadme from "@/cards/box/README.md?raw";
+import buttonReadme from "@/cards/button/README.md?raw";
+import chartGraphReadme from "@/cards/chartGraph/README.md?raw";
+import checkboxReadme from "@/cards/checkbox/README.md?raw";
+import conditionalReadme from "@/cards/conditional/README.md?raw";
+import dataTableReadme from "@/cards/dataTable/README.md?raw";
+import dialogReadme from "@/cards/dialog/README.md?raw";
+import dropDownMenuReadme from "@/cards/dropDownMenu/README.md?raw";
+import fieldReadme from "@/cards/field/README.md?raw";
+import fileDropReadme from "@/cards/fileDrop/README.md?raw";
+import flexGridReadme from "@/cards/flexGrid/README.md?raw";
+import formReadme from "@/cards/form/README.md?raw";
+import graphinReadme from "@/cards/graphin/README.md?raw";
+import inputReadme from "@/cards/input/README.md?raw";
+import jsonViewerReadme from "@/cards/jsonViewer/README.md?raw";
+import listReadme from "@/cards/list/README.md?raw";
+import loadingOverlayReadme from "@/cards/loadingOverlay/README.md?raw";
+import loadingSkeletonReadme from "@/cards/loadingSkeleton/README.md?raw";
+import markdownViewerReadme from "@/cards/markdownViewer/README.md?raw";
+import menuReadme from "@/cards/menu/README.md?raw";
+import modeToggleReadme from "@/cards/modeToggle/README.md?raw";
+import navbarSearchReadme from "@/cards/navbarSearch/README.md?raw";
+import pageWithNavbarReadme from "@/cards/pageWithNavbar/README.md?raw";
+import pasteTargetReadme from "@/cards/pasteTarget/README.md?raw";
+import resizableReadme from "@/cards/resizable/README.md?raw";
+import selectReadme from "@/cards/select/README.md?raw";
+import sliderReadme from "@/cards/slider/README.md?raw";
+import sliderValueReadme from "@/cards/sliderValue/README.md?raw";
+import stackReadme from "@/cards/stack/README.md?raw";
+import stepperReadme from "@/cards/stepper/README.md?raw";
+import switchReadme from "@/cards/switch/README.md?raw";
+import tabsReadme from "@/cards/tabs/README.md?raw";
+import textFieldReadme from "@/cards/textField/README.md?raw";
+import toastReadme from "@/cards/toast/README.md?raw";
+import toggleGroupReadme from "@/cards/toggleGroup/README.md?raw";
+import typographyReadme from "@/cards/typography/README.md?raw";
 /**
  * Static list of all playground definitions discovered at code-generation time.
  *
@@ -60,43 +101,46 @@ import typographyDef from "@/cards/typography/typography.example";
  *
  * The playground engine can use either this list or the dynamic registry —
  * see `src/playground/registry.ts` for the runtime alternative.
+ *
+ * Cards that ship a `README.md` alongside their `*.example.ts` have their
+ * README content injected automatically as the `introduction` field.
  */
 export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
-  badgeDef,
-  boxDef,
-  buttonDef,
-  chartGraphDef,
-  checkboxDef,
-  conditionalDef,
-  dataTableDef,
-  dialogDef,
-  dropDownMenuDef,
-  fieldDef,
-  fileDropDef,
-  flexGridDef,
-  formDef,
-  graphinDef,
-  inputDef,
-  jsonViewerDef,
-  listDef,
-  loadingOverlayDef,
-  loadingSkeletonDef,
-  markdownViewerDef,
-  menuDef,
-  modeToggleDef,
-  navbarSearchDef,
-  pageWithNavbarDef,
-  pasteTargetDef,
-  resizableDef,
-  selectDef,
-  sliderDef,
-  sliderValueDef,
-  stackDef,
-  stepperDef,
-  switchDef,
-  tabsDef,
-  textFieldDef,
-  toastDef,
-  toggleGroupDef,
-  typographyDef,
+  {...badgeDef, introduction: badgeReadme},
+  {...boxDef, introduction: boxReadme},
+  {...buttonDef, introduction: buttonReadme},
+  {...chartGraphDef, introduction: chartGraphReadme},
+  {...checkboxDef, introduction: checkboxReadme},
+  {...conditionalDef, introduction: conditionalReadme},
+  {...dataTableDef, introduction: dataTableReadme},
+  {...dialogDef, introduction: dialogReadme},
+  {...dropDownMenuDef, introduction: dropDownMenuReadme},
+  {...fieldDef, introduction: fieldReadme},
+  {...fileDropDef, introduction: fileDropReadme},
+  {...flexGridDef, introduction: flexGridReadme},
+  {...formDef, introduction: formReadme},
+  {...graphinDef, introduction: graphinReadme},
+  {...inputDef, introduction: inputReadme},
+  {...jsonViewerDef, introduction: jsonViewerReadme},
+  {...listDef, introduction: listReadme},
+  {...loadingOverlayDef, introduction: loadingOverlayReadme},
+  {...loadingSkeletonDef, introduction: loadingSkeletonReadme},
+  {...markdownViewerDef, introduction: markdownViewerReadme},
+  {...menuDef, introduction: menuReadme},
+  {...modeToggleDef, introduction: modeToggleReadme},
+  {...navbarSearchDef, introduction: navbarSearchReadme},
+  {...pageWithNavbarDef, introduction: pageWithNavbarReadme},
+  {...pasteTargetDef, introduction: pasteTargetReadme},
+  {...resizableDef, introduction: resizableReadme},
+  {...selectDef, introduction: selectReadme},
+  {...sliderDef, introduction: sliderReadme},
+  {...sliderValueDef, introduction: sliderValueReadme},
+  {...stackDef, introduction: stackReadme},
+  {...stepperDef, introduction: stepperReadme},
+  {...switchDef, introduction: switchReadme},
+  {...tabsDef, introduction: tabsReadme},
+  {...textFieldDef, introduction: textFieldReadme},
+  {...toastDef, introduction: toastReadme},
+  {...toggleGroupDef, introduction: toggleGroupReadme},
+  {...typographyDef, introduction: typographyReadme},
 ];

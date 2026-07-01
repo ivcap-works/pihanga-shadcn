@@ -15,9 +15,12 @@ export const PI_TEXT_FIELD_ACTION = registerActions(PI_TEXT_FIELD_CARD, [
   "changed",
 ]);
 
-export const onPiTextFieldChanged = createOnAction<PiTextFieldChangedEvent>(
+export const onTextFieldChanged = createOnAction<PiTextFieldChangedEvent>(
   PI_TEXT_FIELD_ACTION.CHANGED,
 );
+
+/** @deprecated Use `onTextFieldChanged` instead. */
+export const onPiTextFieldChanged = onTextFieldChanged;
 
 export type PiTextFieldProps = {
   /**

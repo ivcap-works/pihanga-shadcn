@@ -16,17 +16,26 @@ export const PI_SELECT_ACTION = registerActions(PI_SELECT_CARD, [
   "closed",
 ]);
 
-export const onPiSelectChanged = createOnAction<PiSelectChangedEvent>(
+export const onSelectChanged = createOnAction<PiSelectChangedEvent>(
   PI_SELECT_ACTION.CHANGED,
 );
 
-export const onPiSelectOpened = createOnAction<PiSelectOpenedEvent>(
+/** @deprecated Use `onSelectChanged` instead. */
+export const onPiSelectChanged = onSelectChanged;
+
+export const onSelectOpened = createOnAction<PiSelectOpenedEvent>(
   PI_SELECT_ACTION.OPENED,
 );
 
-export const onPiSelectClosed = createOnAction<PiSelectClosedEvent>(
+/** @deprecated Use `onSelectOpened` instead. */
+export const onPiSelectOpened = onSelectOpened;
+
+export const onSelectClosed = createOnAction<PiSelectClosedEvent>(
   PI_SELECT_ACTION.CLOSED,
 );
+
+/** @deprecated Use `onSelectClosed` instead. */
+export const onPiSelectClosed = onSelectClosed;
 
 export type PiSelectOption = {
   /** The value stored in form state / dispatched in events. */

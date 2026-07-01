@@ -82,8 +82,13 @@ export type PlaygroundDef<
    * Plain text or lightweight markdown (paragraph breaks only — no custom
    * renderer is required for the initial phase).  Keep it short: two or
    * three paragraphs explaining what the card is and when to use it.
+   *
+   * Prefer supplying a `README.md` next to the card's `*.example.ts` —
+   * the code-generation step (`yarn gen-playground`) will read the file and
+   * inject its content here automatically.  This field is kept for
+   * backwards-compatibility and as a fallback when no README is present.
    */
-  introduction: string;
+  introduction?: string;
 
   /**
    * Starting props for the live preview.

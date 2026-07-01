@@ -1,5 +1,5 @@
 import {
-  PiCardRef,
+  type PiCardRef,
   createCardDeclaration,
   createOnAction,
   registerActions,

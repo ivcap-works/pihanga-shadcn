@@ -10,10 +10,10 @@ import {
 import {toast} from "sonner";
 
 import {
-  ShowToastEvent,
+  type ShowToastEvent,
   TOAST_OP_ACTION,
-  ToastPosition,
-  ToastType,
+  type ToastPosition,
+  type ToastType,
   type PiToastEvents,
   type PiToastProps,
 } from "./toast.types";

@@ -13,9 +13,12 @@ export const Form = createCardDeclaration<PiFormProps, PiFormEvents>(
 
 export const PI_FORM_ACTION = registerActions(PI_FORM_CARD, ["submitted"]);
 
-export const onPiFormSubmitted = createOnAction<PiFormSubmittedEvent>(
+export const onFormSubmitted = createOnAction<PiFormSubmittedEvent>(
   PI_FORM_ACTION.SUBMITTED,
 );
+
+/** @deprecated Use `onFormSubmitted` instead. */
+export const onPiFormSubmitted = onFormSubmitted;
 
 export type PiFormProps = {
   /**

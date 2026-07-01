@@ -6,7 +6,7 @@ import {
   type DispatchF,
   type ReduxAction,
 } from "@pihanga2/core";
-import {GraphData, GraphOptions} from "@antv/g6";
+import type {GraphData, GraphOptions} from "@antv/g6";
 
 export const GRAPHIN_CARD = "graphin";
 export const Graphin = createCardDeclaration<GraphinProps, GraphinEvents>(

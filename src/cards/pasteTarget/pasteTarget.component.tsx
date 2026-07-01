@@ -5,11 +5,11 @@ import {
   DEF_OVERLAY_OPACITY,
   DEF_PASTE_FIRST_REMINDER,
   DEF_SUCCESS_COLOR,
-  PasteItem,
-  PasteTargetEvents,
-  PasteTargetProps,
+  type PasteItem,
+  type PasteTargetEvents,
+  type PasteTargetProps,
 } from "@/cards/pasteTarget/pasteTarget.types";
-import {PiCardProps} from "@pihanga2/core";
+import type {PiCardProps} from "@pihanga2/core";
 import React, {useRef, useState} from "react";
 
 import "./pasteTarget.css";

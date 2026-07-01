@@ -1,21 +1,21 @@
-import { createCardDeclaration, PiCardRef } from "@pihanga2/core"
+import {createCardDeclaration, type PiCardRef} from "@pihanga2/core";
 
-export const FLEX_GRID_CARD = "flex_grid"
-export const FlexGrid = createCardDeclaration<FlexGridProps>(FLEX_GRID_CARD)
+export const FLEX_GRID_CARD = "flex_grid";
+export const FlexGrid = createCardDeclaration<FlexGridProps>(FLEX_GRID_CARD);
 
 export type FlexGridProps = {
-  cards: { [name: string]: PiCardRef }
-  template: TemplateT
-  height?: string
-  margin?: string
-  overflow?: string
+  cards: {[name: string]: PiCardRef};
+  template: TemplateT;
+  height?: string;
+  margin?: string;
+  overflow?: string;
 
   style?: {
-    root?: React.CSSProperties
-    item?: React.CSSProperties
-  }
-  className?: string
-}
+    root?: React.CSSProperties;
+    item?: React.CSSProperties;
+  };
+  className?: string;
+};
 
 // body {
 //   display: grid;
@@ -32,8 +32,8 @@ export type FlexGridProps = {
 
 // https://css-tricks.com/snippets/css/complete-guide-grid/
 export type TemplateT = {
-  area?: string[][] // name of card dict
-  rows?: string[] // grid-template-rows (e.g ["min-content", "1fr",  "min-content"])
-  columns?: string[] // grid-template-cols (e.g. ["1fr", "50px", "1fr", "1fr"])
-  gap?: string
-}
+  area?: string[][]; // name of card dict
+  rows?: string[]; // grid-template-rows (e.g ["min-content", "1fr",  "min-content"])
+  columns?: string[]; // grid-template-cols (e.g. ["1fr", "50px", "1fr", "1fr"])
+  gap?: string;
+};

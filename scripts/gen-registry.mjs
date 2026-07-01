@@ -118,7 +118,9 @@ const OFFICIAL_SHADCN_UI = new Map([
  * or customised beyond the standard shadcn version.  These are bundled into
  * the `pihanga-ui-extras` registry entry.
  *
- * button.tsx    — adds LinkButton export (not in standard shadcn button)
+ * button.tsx    — extracted to its own `pihanga-ui-button` registry item so
+ *                 that the shadcn CLI can skip it when already installed,
+ *                 avoiding overwrite prompts in existing Pihanga projects.
  * dialog.tsx    — extends shadcn dialog with DialogBody, size/dismissible/
  *                 hideClose/fixed props; NOT the standard shadcn dialog
  * *-variants.ts — Pihanga-specific variant tables
@@ -128,7 +130,7 @@ const OFFICIAL_SHADCN_UI = new Map([
  * toolbar.tsx   — wraps @radix-ui/react-toolbar (not in shadcn v4)
  */
 const PIHANGA_CUSTOM_UI = new Set([
-  "button.tsx",
+  // "button.tsx" — extracted to pihanga-ui-button (its own registry item)
   "button-variants.ts",
   "badge-variants.ts",
   "dialog.tsx",
@@ -329,19 +331,55 @@ function genPihangaBase() {
 }
 
 /**
- * pihanga-lib-utils — the shared cn() utility (src/lib/utils.ts).
+ * pihanga-lib-utils — delegates to the shadcn built-in `utils` registry item
+ * (which installs the standard cn() helper at src/lib/utils.ts).
+ *
+ * Previously this item inlined lib/utils.ts directly, which caused the shadcn
+ * CLI to prompt "Overwrite?" when the file already existed in an established
+ * Pihanga project.  Referencing the shadcn built-in instead lets the CLI
+ * detect that the dependency is already satisfied and skip the prompt.
  */
 function genLibUtils() {
-  const content = readFileSync(join(LIB_DIR, "utils.ts"), "utf-8");
-  const npmDeps = [...extractNpmImports(content)].map((p) => fmtDep(p));
   return {
     $schema: "https://ui.shadcn.com/schema/registry-item.json",
     name: "pihanga-lib-utils",
     type: "registry:lib",
-    description: "Tailwind CSS utility helper — the cn() function",
+    description:
+      "Tailwind CSS utility helper — the cn() function (delegates to shadcn built-in utils)",
+    dependencies: [],
+    registryDependencies: ["utils"],
+    files: [],
+  };
+}
+
+/**
+ * pihanga-ui-button — the Pihanga-extended button component.
+ *
+ * Extracted from pihanga-ui-extras into its own registry item so the shadcn
+ * CLI can skip it when button.tsx is already present in an existing project,
+ * avoiding "Overwrite?" prompts that exhaust stdin and abort the install.
+ */
+function genUIButton() {
+  const raw = readFileSync(join(COMPONENTS_DIR, "ui", "button.tsx"), "utf-8");
+  const content = transformContent(raw);
+  const npmDeps = [...extractNpmImports(content)].map((p) => fmtDep(p));
+  const regDeps = computeRegistryDeps([{content}], "pihanga-ui-button", true);
+  return {
+    $schema: "https://ui.shadcn.com/schema/registry-item.json",
+    name: "pihanga-ui-button",
+    type: "registry:ui",
+    description:
+      "Pihanga extended button — adds LinkButton export and additional variants " +
+      "(brand, nav, navAction, ghost2/3, ghostActive, etc.) beyond the standard shadcn button.",
     dependencies: npmDeps,
-    registryDependencies: [],
-    files: [{path: "lib/utils.ts", content, type: "registry:lib"}],
+    registryDependencies: regDeps,
+    files: [
+      {
+        path: "components/ui/button.tsx",
+        content,
+        type: "registry:ui",
+      },
+    ],
   };
 }
 
@@ -501,6 +539,14 @@ function genUIExtras() {
 
   const npmDeps = [...allNpmDeps].map((p) => fmtDep(p));
   const regDeps = computeRegistryDeps(contents, "pihanga-ui-extras", true);
+
+  // pihanga-ui-button is extracted to its own registry item to avoid overwrite
+  // prompts when button.tsx already exists in an established Pihanga project.
+  // It is always a dependency of ui-extras so consumers still get the extended
+  // button (LinkButton + extra variants) when they install any Pihanga card.
+  if (!regDeps.includes(itemUrl("pihanga-ui-button"))) {
+    regDeps.push(itemUrl("pihanga-ui-button"));
+  }
 
   return {
     $schema: "https://ui.shadcn.com/schema/registry-item.json",
@@ -703,6 +749,15 @@ for (const {name, json} of genHooks()) {
 
 // --- UI extras (custom / extended shadcn primitives) -------------------------
 
+// pihanga-ui-button must be written before pihanga-ui-extras (which depends on it)
+try {
+  logResult(write("pihanga-ui-button", genUIButton()), "pihanga-ui-button");
+  track("pihanga-ui-button", "registry:ui");
+} catch (e) {
+  console.error(`  ✗  pihanga-ui-button: ${e.message}`);
+  errorCount++;
+}
+
 try {
   const uiExtras = genUIExtras();
   const changed = write("pihanga-ui-extras", uiExtras);
@@ -763,7 +818,7 @@ if (!DRY_RUN) {
 }
 console.log(`   Cards:          ${cardCount}`);
 console.log(
-  `   Shared:         6  (pihanga-base, lib-utils, ui-extras, cards-icons, cards-types, theme-provider)`,
+  `   Shared:         7  (pihanga-base, lib-utils, ui-button, ui-extras, cards-icons, cards-types, theme-provider)`,
 );
 console.log(`   Note: standard shadcn UI components (tooltip, dialog, etc.)`);
 console.log(
@@ -777,4 +832,4 @@ console.log(`   Base URL:    ${BASE_URL}`);
 console.log(`   Output dir:  public/r/`);
 console.log("");
 console.log("   Consumer install example:");
-console.log(`     npx shadcn@latest add ${BASE_URL}/r/button.json`);
+console.log(`     npx shadcn@latest add ${BASE_URL}/r/button`);

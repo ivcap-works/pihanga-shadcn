@@ -12,9 +12,12 @@ export const Switch = createCardDeclaration<PiSwitchProps, PiSwitchEvents>(
 
 export const PI_SWITCH_ACTION = registerActions(PI_SWITCH_CARD, ["changed"]);
 
-export const onPiSwitchChanged = createOnAction<PiSwitchChangedEvent>(
+export const onSwitchChanged = createOnAction<PiSwitchChangedEvent>(
   PI_SWITCH_ACTION.CHANGED,
 );
+
+/** @deprecated Use `onSwitchChanged` instead. */
+export const onPiSwitchChanged = onSwitchChanged;
 
 // ---------------------------------------------------------------------------
 // Props & Events

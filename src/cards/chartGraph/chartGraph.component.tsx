@@ -51,7 +51,13 @@ export const ChartGraphComponent = (
     showGrid = true,
     stacked = false,
     fillOpacity = 0.4,
+    showXAxisLabel = true,
     showYAxis = false,
+    showYAxisLabel = false,
+    yAxisMin,
+    yAxisMax,
+    xAxisMin,
+    xAxisMax,
     yAxisUnit,
     xAxisUnit,
     suppressAnimation = false,
@@ -73,23 +79,27 @@ export const ChartGraphComponent = (
   const chartEl =
     chartType === "area" ? (
       <AreaChart data={data} accessibilityLayer>
-        {showGrid && <CartesianGrid vertical={false} />}
+        {showGrid && <CartesianGrid />}
         <XAxis
           dataKey={xDataKey}
           tickLine={false}
           axisLine={false}
           tickMargin={8}
           unit={xAxisUnit}
+          hide={!showXAxisLabel}
+          {...(xAxisMin != null || xAxisMax != null
+            ? {domain: [xAxisMin ?? "auto", xAxisMax ?? "auto"]}
+            : {})}
         />
-        {showYAxis && (
-          <YAxis
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            width={yAxisUnit ? 48 : 40}
-            unit={yAxisUnit}
-          />
-        )}
+        <YAxis
+          hide={!(showYAxis || showYAxisLabel)}
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          width={yAxisUnit ? 48 : 40}
+          unit={yAxisUnit}
+          domain={[yAxisMin ?? "auto", yAxisMax ?? "auto"]}
+        />
         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
         {showLegend && <ChartLegend content={<ChartLegendContent />} />}
         {series.map((s) => (
@@ -107,23 +117,27 @@ export const ChartGraphComponent = (
       </AreaChart>
     ) : (
       <LineChart data={data} accessibilityLayer>
-        {showGrid && <CartesianGrid vertical={false} />}
+        {showGrid && <CartesianGrid />}
         <XAxis
           dataKey={xDataKey}
           tickLine={false}
           axisLine={false}
           tickMargin={8}
           unit={xAxisUnit}
+          hide={!showXAxisLabel}
+          {...(xAxisMin != null || xAxisMax != null
+            ? {domain: [xAxisMin ?? "auto", xAxisMax ?? "auto"]}
+            : {})}
         />
-        {showYAxis && (
-          <YAxis
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            width={yAxisUnit ? 48 : 40}
-            unit={yAxisUnit}
-          />
-        )}
+        <YAxis
+          hide={!(showYAxis || showYAxisLabel)}
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          width={yAxisUnit ? 48 : 40}
+          unit={yAxisUnit}
+          domain={[yAxisMin ?? "auto", yAxisMax ?? "auto"]}
+        />
         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
         {showLegend && <ChartLegend content={<ChartLegendContent />} />}
         {series.map((s) => (

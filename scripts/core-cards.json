@@ -9,6 +9,7 @@
     "dialog",
     "dropDownMenu",
     "field",
+    "fileDrop",
     "flexGrid",
     "form",
     "framework",
@@ -22,6 +23,8 @@
     "pageWithNavbar",
     "pasteTarget",
     "select",
+    "slider",
+    "sliderValue",
     "stack",
     "stepper",
     "switch",
@@ -32,6 +35,7 @@
     "typography"
   ],
   "excludeReason": {
+    "chartGraph": "recharts dependency (~200-300 KB gzipped) — optional charting, not universally needed",
     "graphin": "heavy AntV deps (@antv/g, @antv/g6, @antv/graphin — ~5 MB install)",
     "jsonViewer": "react-json-view-lite — optional viewer, not universally needed",
     "markdownViewer": "mermaid + remark/rehype stack — heavy markdown rendering pipeline",

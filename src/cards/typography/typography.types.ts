@@ -1,5 +1,5 @@
 import * as React from "react";
-import {PiCardRef, createCardDeclaration} from "@pihanga2/core";
+import {type PiCardRef, createCardDeclaration} from "@pihanga2/core";
 
 export const TYPOGRAPHY_CARD = "shad/typography";
 

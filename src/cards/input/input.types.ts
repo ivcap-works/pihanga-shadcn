@@ -15,19 +15,25 @@ export const PI_INPUT_ACTION = registerActions(PI_INPUT_CARD, [
   "committed",
 ]);
 
-export const onPiInputChanged = createOnAction<PiInputChangedEvent>(
+export const onInputChanged = createOnAction<PiInputChangedEvent>(
   PI_INPUT_ACTION.CHANGED,
 );
 
+/** @deprecated Use `onInputChanged` instead. */
+export const onPiInputChanged = onInputChanged;
+
 /**
  * Subscribe to "committed" events — fired when the user finishes editing
- * (blur or Enter key).  Unlike `onChanged` (which fires on every keystroke),
- * `onCommitted` only fires once per editing session, making it the preferred
+ * (blur or Enter key).  Unlike `onInputChanged` (which fires on every keystroke),
+ * `onInputCommitted` only fires once per editing session, making it the preferred
  * handler for controlled inputs that trigger expensive downstream work.
  */
-export const onPiInputCommitted = createOnAction<PiInputCommittedEvent>(
+export const onInputCommitted = createOnAction<PiInputCommittedEvent>(
   PI_INPUT_ACTION.COMMITTED,
 );
+
+/** @deprecated Use `onInputCommitted` instead. */
+export const onPiInputCommitted = onInputCommitted;
 
 // ---------------------------------------------------------------------------
 // Props & Events

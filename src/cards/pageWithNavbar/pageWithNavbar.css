@@ -4,30 +4,28 @@
 .window {
   display: flex;
   width: 100%;
+  height: 100%;
   justify-content: center;
 }
 
 /* ============================================================
-   Page grid: header / main / footer (footer row is auto so it
-   collapses gracefully when the footer element is absent)
+   Page layout: flex column — header / main / footer
+   (.window must have height:100% and html/body/#root must
+   have height:100% for this to fill the viewport correctly)
    ============================================================ */
 .page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
   width: 100%;
-  min-height: 100vh;
-  height: 100vh;
-  display: grid;
-  grid-template-areas:
-    "header"
-    "main"
-    "footer";
-  grid-template-rows: 4rem 1fr auto;
-  grid-template-columns: 100%;
 }
 
 /* ============================================================
    Header
    ============================================================ */
 .header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -39,7 +37,6 @@
   padding-left: 1rem;
   /* px-4 */
   padding-right: 1rem;
-  grid-area: header;
 }
 
 @media (min-width: 768px) {
@@ -182,6 +179,9 @@
    Main — scrollable content area
    ============================================================ */
 .main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   background-color: var(--background);
   /* bg-(--background) */
   padding: 1rem;
@@ -189,9 +189,6 @@
   padding-top: 0.5rem;
   /* py-2 */
   padding-bottom: 0.5rem;
-  grid-area: main;
-  overflow-y: auto;
-  min-height: 0;
 }
 
 @media (min-width: 768px) {
@@ -208,6 +205,7 @@
    Footer (optional)
    ============================================================ */
 .footer {
+  flex-shrink: 0;
   background-color: var(--background);
   /* bg-(--background) */
   color: var(--muted-foreground);
@@ -218,7 +216,6 @@
   padding-top: 0.5rem;
   /* py-2 */
   padding-bottom: 0.5rem;
-  grid-area: footer;
 }
 
 @media (min-width: 768px) {

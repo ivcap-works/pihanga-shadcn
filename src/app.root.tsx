@@ -1,7 +1,7 @@
 import React from "react";
 import {Provider} from "react-redux";
 
-import {Store} from "@reduxjs/toolkit";
+import type {Store} from "@reduxjs/toolkit";
 import {Card} from "@pihanga2/core";
 import {Toaster} from "sonner";
 

@@ -1,7 +1,7 @@
 import {
   createCardDeclaration,
   createOnAction,
-  PiCardRef,
+  type PiCardRef,
   registerActions,
   type DispatchF,
 } from "@pihanga2/core";
@@ -55,9 +55,12 @@ export const onShowToast = createOnAction<ShowToastEvent>(TOAST_OP_ACTION.SHOW);
 
 export const PI_TOAST_ACTION = registerActions(PI_TOAST_CARD, ["closed"]);
 
-export const onPiToastClosed = createOnAction<PiToastClosedEvent>(
+export const onToastClosed = createOnAction<PiToastClosedEvent>(
   PI_TOAST_ACTION.CLOSED,
 );
+
+/** @deprecated Use `onToastClosed` instead. */
+export const onPiToastClosed = onToastClosed;
 
 /**
  * Toast notification type/variant.

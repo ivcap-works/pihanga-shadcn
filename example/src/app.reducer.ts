@@ -22,7 +22,7 @@
  */
 
 import {register} from "@pihanga2/core";
-import {onButtonClicked} from "@pihanga2/shadcn/cards/button";
+import {onPiButtonClicked as onButtonClicked} from "@pihanga2/shadcn/cards/button";
 import type {AppState} from "./app.state";
 
 register((r) => {

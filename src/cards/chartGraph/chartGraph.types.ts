@@ -87,10 +87,46 @@ export type PiChartGraphProps = {
   showGrid?: boolean;
 
   /**
+   * Show the x-axis tick labels along the bottom of the chart.
+   * Defaults to `true`.  Set to `false` to hide the x-axis entirely.
+   */
+  showXAxisLabel?: boolean;
+
+  /**
    * Show the y-axis with numeric tick labels on the left edge of the chart.
    * Defaults to `false` (y-axis hidden) to keep the chart compact.
+   * Alias: `showYAxisLabel`.
    */
   showYAxis?: boolean;
+
+  /**
+   * Alias for `showYAxis` — provided for naming consistency with `showXAxisLabel`.
+   * When either flag is `true` the y-axis is rendered.
+   */
+  showYAxisLabel?: boolean;
+
+  /**
+   * Minimum value for the y-axis domain.  Defaults to `"auto"` (data-driven).
+   * Pass `0` to always start the y-axis at zero.
+   */
+  yAxisMin?: number;
+
+  /**
+   * Maximum value for the y-axis domain.  Defaults to `"auto"` (data-driven).
+   */
+  yAxisMax?: number;
+
+  /**
+   * Minimum value for the x-axis domain.  Only meaningful for numeric x-axes.
+   * Defaults to `"auto"` (data-driven).
+   */
+  xAxisMin?: number;
+
+  /**
+   * Maximum value for the x-axis domain.  Only meaningful for numeric x-axes.
+   * Defaults to `"auto"` (data-driven).
+   */
+  xAxisMax?: number;
 
   /**
    * Unit string appended to every y-axis tick label (e.g. `"ms"`, `"%"`, `" km"`).

@@ -94,18 +94,23 @@ due to a breaking change in how `npx` resolves packages.  If you see:
 npm error could not determine executable to run
 ```
 
-Switch to Node 22 via `nvm`, or use **`yarn dlx`** as a drop-in replacement:
+Use one of the following alternatives:
 
 ```sh
-nvm install 22 && nvm use 22   # option 1: switch to Node 22
+# npm exec — works with npm 9+ including npm 11 on Node 24
+npm exec shadcn@latest -- init
 
-# option 2: use yarn dlx — works on all supported Node versions
+# yarn dlx — Yarn 2+ (Berry) ONLY; does NOT work with Yarn 1.x (Classic)
 yarn dlx shadcn@latest init
-yarn dlx shadcn@latest add <url>
+
+# nvm switch to Node 22 so npx works normally
+nvm install 22 && nvm use 22
+npx shadcn@latest init
 ```
 
-Both `npx` (on Node 22) and `yarn dlx` produce **identical output** — it is a
-purely toolchain preference.
+> **Note:** `yarn dlx` is only available in **Yarn 2+ (Berry)**.  If you are
+> using Yarn 1.x (Classic), use `npm exec shadcn@latest -- init` instead.
+> Running `yarn dlx` on Yarn 1.x produces `error Command "dlx" not found.`
 
 ### Run shadcn init
 
@@ -113,7 +118,10 @@ purely toolchain preference.
 # npm / npx (Node 22 recommended)
 npx shadcn@latest init
 
-# yarn
+# npm exec (npm 9+, including npm 11 on Node 24)
+npm exec shadcn@latest -- init
+
+# yarn dlx (Yarn 2+ / Berry only)
 yarn dlx shadcn@latest init
 ```
 
@@ -152,12 +160,69 @@ extra alias is needed as long as cards are placed under `src/cards/`.
 > **transparent** — causing dialog panels, popovers, and cards to appear
 > invisible.  This is a very common first-time gotcha.
 
+> ⚠️ **`@source` is required for `@pihanga2/shadcn` cards to be styled.**
+> Tailwind v4 uses static source scanning — it only emits CSS for classes it
+> finds in scanned files.  Without an `@source` directive pointing at the
+> pihanga-shadcn package, every Tailwind class used inside card components
+> (flex layouts, button sizing, spacing, colours, etc.) is **stripped from the
+> CSS bundle**.  The visual result is that all card components render with no
+> styling whatsoever — buttons appear unstyled, layouts collapse — yet **no
+> error is produced**.  This is a completely silent failure that is very hard
+> to diagnose.
+>
+> The correct `@source` path depends on which installation channel you used:
+>
+> ```css
+> /* npm channel — @pihanga2/shadcn installed via yarn/npm */
+> @source "../node_modules/@pihanga2/shadcn/cards";
+> @source "../node_modules/@pihanga2/shadcn/components";
+>
+> /* registry / monorepo channel — local copy of pihanga-shadcn */
+> @source "../node_modules/@pihanga2/shadcn/dist-lib";
+> ```
+>
+> Note: `dist-lib/` is the compiled library output produced by the
+> pihanga-shadcn build (`vite build --config vite.lib.config.ts`).  It exists
+> in the git repository but **is not included in the published npm package**.
+> Using the `dist-lib` path with the npm channel causes Tailwind to silently
+> find no files.  Always use the `cards/` + `components/` paths for npm installs.
+
+> ⚠️ **Do not let your IDE formatter rewrite `@import "tailwindcss"`.**
+> Some CSS formatters (VS Code's built-in formatter, Prettier's CSS mode) do
+> not recognise `@import "tailwindcss"` as valid CSS and may silently strip the
+> `@`, transforming it to `import "tailwindcss"`.  This immediately breaks
+> Tailwind v4 processing and produces the cryptic error:
+>
+> ```
+> Internal server error: Invalid declaration: `import "tailwindcss"`
+> ```
+>
+> The `@` is critical — it is Tailwind's own CSS `@import` directive, not a
+> standard CSS import.  If you use format-on-save, either disable it for
+> `src/index.css` or add `/* stylelint-disable */` as the very first line.
+
 Replace the contents of `src/index.css` with the following (you can also copy
 it directly from the repo at
 `https://raw.githubusercontent.com/ivcap-works/pihanga-shadcn/main/src/index.css`):
 
 ```css
+/* stylelint-disable */
 @import "tailwindcss";
+
+/*
+ * Point Tailwind at the pihanga-shadcn package so it scans card classes.
+ * Without this, ALL Tailwind classes used inside @pihanga2/shadcn card components
+ * are stripped from the CSS output — buttons appear unstyled, layouts collapse.
+ *
+ * Use the paths that match your installation channel (see guide):
+ */
+
+/* npm channel (@pihanga2/shadcn installed via yarn/npm) */
+@source "../node_modules/@pihanga2/shadcn/cards";
+@source "../node_modules/@pihanga2/shadcn/components";
+
+/* registry / monorepo channel (uncomment and remove the two lines above) */
+/* @source "../node_modules/@pihanga2/shadcn/dist-lib"; */
 
 /*
  * Tailwind v4 — map shadcn semantic CSS variables to Tailwind colour utilities.
@@ -349,12 +414,22 @@ npm install @pihanga2/shadcn
 # or: yarn add @pihanga2/shadcn  /  pnpm add @pihanga2/shadcn
 ```
 
-Add `@source` to `src/index.css` so Tailwind can scan the package for classes:
+Add `@source` to `src/index.css` so Tailwind can scan the package for classes
+(see the Step 2 index.css section for full context):
 
 ```css
 /* src/index.css — add after @import "tailwindcss" */
-@source "../../node_modules/@pihanga2/shadcn/dist-lib";
+@source "../node_modules/@pihanga2/shadcn/cards";
+@source "../node_modules/@pihanga2/shadcn/components";
 ```
+
+> **Why `cards/` and `components/`?**  `dist-lib/` is the compiled library
+> output that exists only in the pihanga-shadcn git repository — it is **not**
+> included in the published npm package.  The `cards/` directory contains
+> compiled JS for each card component (with Tailwind class strings like
+> `"flex"`, `"flex-row"`, `"items-center"`), and `components/ui/` contains the
+> shadcn UI primitives.  Using `dist-lib` with the npm channel causes Tailwind
+> to silently find no files.
 
 Activate cards in your entry point:
 
@@ -445,6 +520,36 @@ the `vite.config.ts` above (shadcn init only adds `@/*`; add the rest manually):
   }
 }
 ```
+
+> ⚠️ **TypeScript ≥ 6.0: `baseUrl` deprecation error.**
+> `shadcn init` may inject `"baseUrl": "."` into `tsconfig.json` alongside
+> the `paths` block.  On TypeScript ≥ 6.0 (which ships with Node 24's
+> toolchain) this causes a hard build error:
+>
+> ```
+> error TS5101: Option 'baseUrl' is deprecated and will stop functioning in
+> TypeScript 7.0. Specify compilerOption '"ignoreDeprecations": "6.0"' to
+> silence this error.
+> ```
+>
+> This blocks `tsc -b` and therefore `yarn/npm build` entirely.  Two remedies:
+>
+> **Option 1 — add `ignoreDeprecations`** (minimal change):
+> ```jsonc
+> {
+>   "compilerOptions": {
+>     "ignoreDeprecations": "6.0",  // required on TypeScript ≥ 6.0
+>     "baseUrl": ".",
+>     "paths": { /* ... */ }
+>   }
+> }
+> ```
+>
+> **Option 2 — remove `baseUrl` entirely** (preferred): with
+> `"moduleResolution": "bundler"`, TypeScript resolves `paths` entries
+> relative to the config file by default, so `"baseUrl": "."` is redundant.
+> Simply delete the `"baseUrl"` line and the error disappears without any
+> other changes.
 
 ---
 

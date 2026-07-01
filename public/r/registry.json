@@ -24,8 +24,16 @@
       "type": "registry:component"
     },
     {
+      "name": "pihanga-hook-use-breakpoint",
+      "type": "registry:hook"
+    },
+    {
       "name": "pihanga-hook-use-is-touch-device",
       "type": "registry:hook"
+    },
+    {
+      "name": "pihanga-ui-button",
+      "type": "registry:ui"
     },
     {
       "name": "pihanga-ui-extras",

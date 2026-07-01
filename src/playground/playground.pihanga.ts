@@ -461,9 +461,12 @@ function buildDetailContent(
   const items: PiCardRef[] = [Typography({level: "h2", text: def.title})];
 
   // ── Introduction ───────────────────────────────────────────────────────────
-  // MarkdownViewer renders markdown syntax correctly — GFM, inline code,
-  // fenced code blocks, and math expressions all work.
-  items.push(MarkdownViewer({source: def.introduction}));
+  // Sourced from the card's README.md (injected by gen-playground) or the
+  // legacy inline `introduction` field.  MarkdownViewer renders GFM, inline
+  // code, fenced code blocks, and math expressions.
+  if (def.introduction) {
+    items.push(MarkdownViewer({source: def.introduction}));
+  }
 
   // ── Facets as tabs ─────────────────────────────────────────────────────────
   items.push(...buildFacetSection(def, facetId, eventLog));

@@ -1,5 +1,5 @@
 import {type PiCardRef, createCardDeclaration} from "@pihanga2/core";
-import { AlignItemsT } from "../types";
+import type {AlignItemsT} from "../types";
 
 export const BOX_CARD = "shad/box";
 

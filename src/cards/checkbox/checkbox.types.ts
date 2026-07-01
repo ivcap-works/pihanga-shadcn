@@ -15,9 +15,12 @@ export const PI_CHECKBOX_ACTION = registerActions(PI_CHECKBOX_CARD, [
   "changed",
 ]);
 
-export const onPiCheckboxChanged = createOnAction<PiCheckboxChangedEvent>(
+export const onCheckboxChanged = createOnAction<PiCheckboxChangedEvent>(
   PI_CHECKBOX_ACTION.CHANGED,
 );
+
+/** @deprecated Use `onCheckboxChanged` instead. */
+export const onPiCheckboxChanged = onCheckboxChanged;
 
 export type PiCheckboxProps = {
   /**

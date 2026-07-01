@@ -12,7 +12,7 @@ import {useState, useEffect, useRef} from "react";
 import {useGraphin} from "@antv/graphin";
 import type {IPointerEvent} from "@antv/g6";
 import type {DisplayObject} from "@antv/g";
-import {Target} from "@antv/g6/lib/types";
+import type {Target} from "@antv/g6/lib/types";
 import {Card} from "@pihanga2/core";
 import type {GraphinNodeEventContext, GraphinTooltip} from "./graphin.types";
 

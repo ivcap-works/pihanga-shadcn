@@ -1,7 +1,7 @@
 import {
   createCardDeclaration,
   createOnAction,
-  PiCardRef,
+  type PiCardRef,
   registerActions,
 } from "@pihanga2/core";
 
@@ -17,7 +17,7 @@ export const onButtonClicked = createOnAction<PiButtonClickedEvent>(
   PI_BUTTON_ACTION.CLICKED,
 );
 
-/* @deprecated Use `onButtonClicked` instead. */
+/** @deprecated Use `onButtonClicked` instead. */
 export const onPiButtonClicked = onButtonClicked;
 
 /**

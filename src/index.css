@@ -140,6 +140,18 @@
     @apply border-border outline-ring/50;
   }
 
+  /*
+   * Full-height chain — required so any card that sizes itself to 100% of the
+   * viewport (e.g. pageWithNavbar) actually fills the screen.  Without this,
+   * percentage heights on descendants have nothing to inherit from and the
+   * layout collapses.
+   */
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
     /*
@@ -150,4 +162,47 @@
      */
     scrollbar-gutter: stable;
   }
+}
+
+/* ── pageWithNavbar structural layout ────────────────────────────────────────
+ * pageWithNavbar.css is the per-component stylesheet and is the source of
+ * truth for visual styles (colours, spacing, responsive breakpoints, etc.).
+ * The rules below supply only the structural skeleton so that the layout
+ * works even when the component CSS file is not yet loaded or not included
+ * in the consuming app's bundle.
+ *
+ * Design: flex column chain
+ *   .window  → full-height flex column, centres .page horizontally
+ *   .page    → flex column that grows to fill .window
+ *   .header  → fixed height (shrink: 0) at the top
+ *   .main    → flex: 1 — takes all remaining space, scrolls internally
+ *   .footer  → fixed height (shrink: 0) at the bottom
+ * ─────────────────────────────────────────────────────────────────────────── */
+.window {
+  height: 100%;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  width: 100%;
+}
+
+.header {
+  flex-shrink: 0;
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.footer {
+  flex-shrink: 0;
 }

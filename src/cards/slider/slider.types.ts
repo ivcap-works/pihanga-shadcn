@@ -15,19 +15,25 @@ export const PI_SLIDER_ACTION = registerActions(PI_SLIDER_CARD, [
   "committed",
 ]);
 
-export const onPiSliderChanged = createOnAction<PiSliderChangedEvent>(
+export const onSliderChanged = createOnAction<PiSliderChangedEvent>(
   PI_SLIDER_ACTION.CHANGED,
 );
+
+/** @deprecated Use `onSliderChanged` instead. */
+export const onPiSliderChanged = onSliderChanged;
 
 /**
  * Fired once when the user **finishes** dragging (mouse-up / touch-end).
  *
- * Use this instead of `onPiSliderChanged` when you only care about the final
+ * Use this instead of `onSliderChanged` when you only care about the final
  * settled value and do not want to process every intermediate drag position.
  */
-export const onPiSliderCommitted = createOnAction<PiSliderCommittedEvent>(
+export const onSliderCommitted = createOnAction<PiSliderCommittedEvent>(
   PI_SLIDER_ACTION.COMMITTED,
 );
+
+/** @deprecated Use `onSliderCommitted` instead. */
+export const onPiSliderCommitted = onSliderCommitted;
 
 // ---------------------------------------------------------------------------
 // Props & Events
@@ -92,13 +98,13 @@ export type PiSliderProps = {
   debounceMs?: number;
 
   /**
-   * When true, `onPiSliderChanged` is **never** dispatched during drag.
+   * When true, `onSliderChanged` is **never** dispatched during drag.
    *
-   * Use this together with `onPiSliderCommitted` when you only care about
+   * Use this together with `onSliderCommitted` when you only care about
    * the final settled value and want to eliminate all intermediate Redux
    * actions entirely (stricter than `debounceMs`).
    *
-   * `onPiSliderCommitted` is unaffected and always fires on release.
+   * `onSliderCommitted` is unaffected and always fires on release.
    * `selfManaged` visual updates are also unaffected.
    */
   suppressChangedEvents?: boolean;

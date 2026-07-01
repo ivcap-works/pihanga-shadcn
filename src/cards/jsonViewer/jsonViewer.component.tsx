@@ -1,5 +1,5 @@
 import React, {useLayoutEffect, useRef, useState, useCallback} from "react";
-import {PiCardProps} from "@pihanga2/core";
+import type {PiCardProps} from "@pihanga2/core";
 import {JsonView, allExpanded, defaultStyles} from "react-json-view-lite";
 import {Copy, Check} from "lucide-react";
 import "react-json-view-lite/dist/index.css";

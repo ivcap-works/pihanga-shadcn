@@ -11,13 +11,22 @@
  * has no runtime side-effects and is resolved entirely at build time — making
  * it safe for static-site generation, bundle analysis, and tree-shaking.
  *
+ * README injection
+ * ────────────────
+ * When a card folder contains a `README.md` alongside the `*.example.ts` file,
+ * the generated code imports it with Vite's `?raw` suffix (returning the file
+ * content as a plain string) and spreads it into the playground definition as
+ * `introduction`.  This overrides any `introduction` field authored inline in
+ * the example file, so the single source of truth for card descriptions is the
+ * README.
+ *
  * Usage:
  *   node scripts/gen-playground-registry.mjs
  *   yarn gen-playground
  *   make gen-playground
  */
 
-import {readdirSync, readFileSync, writeFileSync} from "node:fs";
+import {readdirSync, readFileSync, writeFileSync, existsSync} from "node:fs";
 import {join, relative, dirname} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -86,7 +95,32 @@ function toImportPath(filePath) {
 }
 
 // ---------------------------------------------------------------------------
-// Step 4 — generate the output file
+// Step 4 — README detection helpers
+// ---------------------------------------------------------------------------
+
+/** Returns the absolute path to README.md in the same folder as the example. */
+function readmePath(filePath) {
+  return join(dirname(filePath), "README.md");
+}
+
+/** True when a README.md sits alongside the example file. */
+function hasReadme(filePath) {
+  return existsSync(readmePath(filePath));
+}
+
+/** camelCase alias for the README raw import (e.g. badgeReadme). */
+function toReadmeAlias(filePath) {
+  return toAlias(filePath).replace(/Def$/, "Readme");
+}
+
+/** `@/cards/<folder>/README.md?raw` — Vite raw string import. */
+function toReadmeImportPath(filePath) {
+  const rel = relative(join(ROOT, "src"), readmePath(filePath));
+  return `@/${rel}?raw`;
+}
+
+// ---------------------------------------------------------------------------
+// Step 5 — generate the output file
 // ---------------------------------------------------------------------------
 
 const allExamples = findExampleFiles(CARDS_DIR);
@@ -100,10 +134,22 @@ if (eligible.length === 0) {
   process.exit(0);
 }
 
-const importLines = eligible.map(
+// Build import lines — def imports first, then README raw imports
+const defImportLines = eligible.map(
   (f) => `import ${toAlias(f)} from "${toImportPath(f)}";`,
 );
-const entryLines = eligible.map((f) => `  ${toAlias(f)},`);
+
+const readmeImportLines = eligible
+  .filter(hasReadme)
+  .map((f) => `import ${toReadmeAlias(f)} from "${toReadmeImportPath(f)}";`);
+
+// Build array entries — spread README content as `introduction` when available
+const entryLines = eligible.map((f) => {
+  if (hasReadme(f)) {
+    return `  {...${toAlias(f)}, introduction: ${toReadmeAlias(f)}},`;
+  }
+  return `  ${toAlias(f)},`;
+});
 
 const banner = `\
 // ============================================================================
@@ -117,6 +163,10 @@ const banner = `\
 // Source: every src/cards/**/*.example.ts that contains a
 //         \`definePlayground()\` default export.
 //
+// README injection: when a card folder contains a README.md, its content is
+// imported with Vite's \`?raw\` suffix and merged into the definition as the
+// \`introduction\` field (overriding any inline value in the example file).
+//
 // Last generated: ${new Date().toISOString()}
 // ============================================================================
 `;
@@ -125,8 +175,8 @@ const generated =
   banner +
   `
 import type {PlaygroundDef} from "./playground.types";
-${importLines.join("\n")}
-
+${defImportLines.join("\n")}
+${readmeImportLines.length > 0 ? "\n" + readmeImportLines.join("\n") : ""}
 /**
  * Static list of all playground definitions discovered at code-generation time.
  *
@@ -136,6 +186,9 @@ ${importLines.join("\n")}
  *
  * The playground engine can use either this list or the dynamic registry —
  * see \`src/playground/registry.ts\` for the runtime alternative.
+ *
+ * Cards that ship a \`README.md\` alongside their \`*.example.ts\` have their
+ * README content injected automatically as the \`introduction\` field.
  */
 export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
 ${entryLines.join("\n")}
@@ -145,10 +198,13 @@ ${entryLines.join("\n")}
 writeFileSync(OUTPUT_PATH, generated, "utf8");
 
 const rel = (p) => relative(ROOT, p);
+const withReadme = eligible.filter(hasReadme);
 console.log(
   `✓  Generated ${rel(OUTPUT_PATH)} ` +
-    `(${eligible.length} entr${eligible.length === 1 ? "y" : "ies"}):`,
+    `(${eligible.length} entr${eligible.length === 1 ? "y" : "ies"}, ` +
+    `${withReadme.length} with README):`,
 );
 for (const f of eligible) {
-  console.log(`     • ${rel(f)}`);
+  const readme = hasReadme(f) ? " [README]" : "";
+  console.log(`     • ${rel(f)}${readme}`);
 }

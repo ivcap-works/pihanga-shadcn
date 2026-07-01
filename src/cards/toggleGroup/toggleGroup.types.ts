@@ -15,9 +15,12 @@ export const PI_TOGGLE_GROUP_ACTION = registerActions(PI_TOGGLE_GROUP_CARD, [
   "changed",
 ]);
 
-export const onPiToggleGroupChanged = createOnAction<PiToggleGroupChangedEvent>(
+export const onToggleGroupChanged = createOnAction<PiToggleGroupChangedEvent>(
   PI_TOGGLE_GROUP_ACTION.CHANGED,
 );
+
+/** @deprecated Use `onToggleGroupChanged` instead. */
+export const onPiToggleGroupChanged = onToggleGroupChanged;
 
 // ---------------------------------------------------------------------------
 // Item type

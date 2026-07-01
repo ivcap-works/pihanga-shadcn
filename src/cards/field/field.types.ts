@@ -1,4 +1,4 @@
-import {createCardDeclaration, PiCardRef} from "@pihanga2/core";
+import {createCardDeclaration, type PiCardRef} from "@pihanga2/core";
 
 export const PI_FIELD_CARD = "pi/field";
 

@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from "react";
-import {PiCardProps} from "@pihanga2/core";
+import type {PiCardProps} from "@pihanga2/core";
 import {Graphin, useGraphin} from "@antv/graphin";
 import {type GraphOptions} from "@antv/g6";
 
@@ -99,6 +99,7 @@ export const GraphinComponent = (
   const _style = {
     display: "flex",
     width: "100%",
+    height: "100%",
     // Prevent the G6 WebGL/Canvas element from bleeding outside its container
     // and painting over sibling elements (controls panel, JSON viewer, etc.).
     overflow: "hidden",
@@ -281,7 +282,10 @@ export const GraphinComponent = (
       className={clsx(_cls("root"), className)}
       data-pihanga={cardName}
     >
-      <Graphin options={mergedOptions} style={{width: "inherit"}}>
+      <Graphin
+        options={mergedOptions}
+        style={{width: "inherit", height: "inherit"}}
+      >
         {/* Hover tooltip — pointer-events: none floating card */}
         {tooltip && (
           <TooltipComponent

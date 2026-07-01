@@ -25,28 +25,7 @@ const MULTI_SERIES = [
 
 export default definePlayground<PiChartGraphProps>({
   cardId: "shad/chart-graph",
-  title: "Chart Graph",
-
-  introduction: `
-A chart card wrapping [shadcn/ui Charts](https://ui.shadcn.com/charts) (built on [Recharts](https://recharts.org)).
-Supports **area** and **line** chart types with optional multi-series, stacking, legend, and grid lines.
-
-### Key props
-
-| Prop | Default | Purpose |
-|------|---------|---------|
-| \`chartType\` | — | \`"area"\` or \`"line"\` |
-| \`data\` | — | Array of data-point objects |
-| \`series\` | — | Maps data keys → label + colour |
-| \`xDataKey\` | — | Key used for x-axis tick labels |
-| \`title\` / \`description\` | — | When provided the chart is wrapped in a shadcn \`<Card>\` |
-| \`stacked\` | \`false\` | Stack area series (area only) |
-| \`fillOpacity\` | \`0.4\` | Fill transparency for area series |
-| \`showLegend\` / \`showGrid\` | \`true\` | Toggle legend and grid lines |
-
-Colours fall back to the shadcn chart CSS variables (\`--chart-1\` … \`--chart-5\`)
-when not explicitly set on a series.
-  `.trim(),
+  title: "Chart",
 
   preview: (props) => ChartGraph(props),
 
@@ -55,11 +34,11 @@ when not explicitly set on a series.
     data: MONTHLY_DATA,
     series: SINGLE_SERIES,
     xDataKey: "month",
-    title: "Monthly Visits",
-    description: "Desktop page views over the last 6 months",
     showLegend: true,
     showGrid: true,
+    showXAxisLabel: true,
     showYAxis: false,
+    showYAxisLabel: false,
     yAxisUnit: "",
     xAxisUnit: "",
     stacked: false,
@@ -204,9 +183,20 @@ when not explicitly set on a series.
       label: "Title",
       placeholder: "e.g. Monthly Visits",
     },
+    {
+      prop: "description",
+      type: "text",
+      label: "Description",
+      placeholder: "e.g. subtitle text",
+    },
     {prop: "showLegend", type: "boolean", label: "Show legend"},
     {prop: "showGrid", type: "boolean", label: "Show grid"},
+    {prop: "showXAxisLabel", type: "boolean", label: "Show X axis"},
     {prop: "showYAxis", type: "boolean", label: "Show Y axis"},
+    {prop: "yAxisMin", type: "number", label: "Y axis min"},
+    {prop: "yAxisMax", type: "number", label: "Y axis max"},
+    {prop: "xAxisMin", type: "number", label: "X axis min"},
+    {prop: "xAxisMax", type: "number", label: "X axis max"},
     {
       prop: "yAxisUnit",
       type: "text",
