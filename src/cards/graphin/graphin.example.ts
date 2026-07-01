@@ -646,7 +646,7 @@ export default definePlayground<GraphinProps>({
     {
       prop: "layout",
       type: "select",
-      displayName: "Layout",
+      label: "Layout",
       options: [
         "force-atlas2",
         "force",
@@ -668,33 +668,33 @@ export default definePlayground<GraphinProps>({
     {
       prop: "zoomLevel",
       type: "number",
-      displayName: "Zoom level",
+      label: "Zoom level",
       placeholder: "0.02–16  (1 = 100 %)",
     },
     {
       prop: "suppressZoom",
       type: "boolean",
-      displayName: "Suppress zoom",
+      label: "Suppress zoom",
     },
     {
       prop: "suppressPan",
       type: "boolean",
-      displayName: "Suppress pan (canvas)",
+      label: "Suppress pan (canvas)",
     },
     {
       prop: "suppressDrag",
       type: "boolean",
-      displayName: "Suppress drag (nodes)",
+      label: "Suppress drag (nodes)",
     },
     {
       prop: "directed",
       type: "boolean",
-      displayName: "Directed (arrows)",
+      label: "Directed (arrows)",
     },
     {
       prop: "className",
       type: "text",
-      displayName: "Extra classes",
+      label: "Extra classes",
       placeholder: "e.g. h-96 border rounded",
     },
   ],
