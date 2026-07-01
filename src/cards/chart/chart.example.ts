@@ -2,7 +2,7 @@
  * Playground definition for the `shad/chart-graph` card.
  */
 import {definePlayground} from "@/playground/definePlayground";
-import {ChartGraph, type PiChartGraphProps} from "./index";
+import {Chart, type PiChartGraphProps} from "./index";
 
 // ---------------------------------------------------------------------------
 // Shared sample datasets
@@ -27,7 +27,7 @@ export default definePlayground<PiChartGraphProps>({
   cardId: "shad/chart-graph",
   title: "Chart",
 
-  preview: (props) => ChartGraph(props),
+  preview: (props) => Chart(props),
 
   defaultProps: {
     chartType: "line",
@@ -220,9 +220,9 @@ export default definePlayground<PiChartGraphProps>({
 
 \`\`\`ts
 import {registerCard} from "@pihanga2/core";
-import {ChartGraph} from "@/cards/chartGraph";
+import {Chart} from "@/cards/chart";
 
-registerCard("myApp/visitsChart", ChartGraph({
+registerCard("myApp/visitsChart", Chart({
   chartType: "line",
   xDataKey: "month",
   data: [
@@ -239,7 +239,7 @@ registerCard("myApp/visitsChart", ChartGraph({
 **Multi-series stacked area chart with custom colours**
 
 \`\`\`ts
-registerCard("myApp/deviceChart", ChartGraph({
+registerCard("myApp/deviceChart", Chart({
   chartType: "area",
   xDataKey: "month",
   data: [
@@ -261,10 +261,10 @@ registerCard("myApp/deviceChart", ChartGraph({
 
 \`\`\`ts
 import {memo, register, registerCard} from "@pihanga2/core";
-import {ChartGraph} from "@/cards/chartGraph";
+import {Chart} from "@/cards/chart";
 import type {AppState} from "@/app.state";
 
-registerCard("myApp/liveChart", ChartGraph({
+registerCard("myApp/liveChart", Chart({
   chartType: "line",
   xDataKey: "ts",
   data:   memo((s: AppState) => s.metrics),

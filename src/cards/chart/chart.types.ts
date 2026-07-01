@@ -3,7 +3,7 @@ import type {ChartConfig} from "@/components/ui/chart";
 
 export const PI_CHART_GRAPH_CARD = "shad/chart-graph";
 
-export const ChartGraph =
+export const Chart =
   createCardDeclaration<PiChartGraphProps>(PI_CHART_GRAPH_CARD);
 
 // Re-export for consumer convenience when building a ChartConfig

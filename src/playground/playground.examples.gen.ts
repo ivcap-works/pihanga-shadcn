@@ -20,7 +20,7 @@ import type {PlaygroundDef} from "./playground.types";
 import badgeDef from "@/cards/badge/badge.example";
 import boxDef from "@/cards/box/box.example";
 import buttonDef from "@/cards/button/button.example";
-import chartGraphDef from "@/cards/chartGraph/chartGraph.example";
+import chartDef from "@/cards/chart/chart.example";
 import checkboxDef from "@/cards/checkbox/checkbox.example";
 import conditionalDef from "@/cards/conditional/conditional.example";
 import dataTableDef from "@/cards/dataTable/dataTable.example";
@@ -58,7 +58,7 @@ import typographyDef from "@/cards/typography/typography.example";
 import badgeReadme from "@/cards/badge/README.md?raw";
 import boxReadme from "@/cards/box/README.md?raw";
 import buttonReadme from "@/cards/button/README.md?raw";
-import chartGraphReadme from "@/cards/chartGraph/README.md?raw";
+import chartReadme from "@/cards/chart/README.md?raw";
 import checkboxReadme from "@/cards/checkbox/README.md?raw";
 import conditionalReadme from "@/cards/conditional/README.md?raw";
 import dataTableReadme from "@/cards/dataTable/README.md?raw";
@@ -109,7 +109,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...badgeDef, introduction: badgeReadme},
   {...boxDef, introduction: boxReadme},
   {...buttonDef, introduction: buttonReadme},
-  {...chartGraphDef, introduction: chartGraphReadme},
+  {...chartDef, introduction: chartReadme},
   {...checkboxDef, introduction: checkboxReadme},
   {...conditionalDef, introduction: conditionalReadme},
   {...dataTableDef, introduction: dataTableReadme},

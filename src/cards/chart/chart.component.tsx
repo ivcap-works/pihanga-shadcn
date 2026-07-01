@@ -24,7 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type {PiChartGraphProps} from "./chartGraph.types";
+import type {PiChartGraphProps} from "./chart.types";
 
 /** Cycle through the five shadcn chart palette CSS variables. */
 const DEFAULT_COLORS = [
