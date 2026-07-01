@@ -32,6 +32,10 @@
       "type": "registry:hook"
     },
     {
+      "name": "pihanga-ui-button",
+      "type": "registry:ui"
+    },
+    {
       "name": "pihanga-ui-extras",
       "type": "registry:ui"
     },
@@ -48,7 +52,7 @@
       "type": "registry:component"
     },
     {
-      "name": "chartGraph",
+      "name": "chart",
       "type": "registry:component"
     },
     {
