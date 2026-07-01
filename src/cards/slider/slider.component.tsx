@@ -34,15 +34,30 @@ export const SliderComponent = (
     defaultValue ?? propValue ?? min,
   );
 
-  const value = useFormData
+  // The "canonical" value from props / form / self-managed state.
+  const canonicalValue = useFormData
     ? ((form.formData[name!] as number | undefined) ?? min)
     : selfManaged
       ? managedValue
       : (propValue ?? min);
 
+  // Keep a ref to the latest canonical value so event handlers always see
+  // the most up-to-date external value even if it changed during a drag.
+  const canonicalValueRef = useRef(canonicalValue);
+  canonicalValueRef.current = canonicalValue;
+
+  // "Interactive" drag state — tracks knob position independently while the
+  // user is actively dragging so we don't need an external value round-trip.
+  const isDragging = useRef(false);
+  const [interactiveValue, setInteractiveValue] =
+    useState<number>(canonicalValue);
+
+  // While dragging the knob follows pointer; otherwise it reflects the canonical value.
+  const displayValue = isDragging.current ? interactiveValue : canonicalValue;
+
   // Refs for debounce: timer handle + latest pending value.
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingValue = useRef<number>(value);
+  const pendingValue = useRef<number>(canonicalValue);
 
   // Clean up any pending debounce timer on unmount.
   useEffect(() => {
@@ -62,8 +77,20 @@ export const SliderComponent = (
     }
   }
 
+  // Called on pointer/touch down — enter interactive mode so the knob can
+  // move freely without waiting for an external state update.
+  function handlePointerDown() {
+    isDragging.current = true;
+    setInteractiveValue(canonicalValueRef.current);
+  }
+
   function handleValueChange(newValues: number[]) {
     const newValue = newValues[0] ?? min;
+
+    // Guard: only update interactive display when actively dragging.
+    if (!isDragging.current) return;
+
+    setInteractiveValue(newValue);
 
     // Update internal state immediately so the thumb moves without lag.
     if (selfManaged && !useFormData) {
@@ -85,6 +112,11 @@ export const SliderComponent = (
 
   function handleValueCommit(newValues: number[]) {
     const newValue = newValues[0] ?? min;
+
+    // Leave interactive mode — on next render displayValue reverts to canonicalValue,
+    // snapping the knob back to whatever the external state currently says.
+    isDragging.current = false;
+    setInteractiveValue(canonicalValueRef.current);
 
     // Cancel any pending debounced onChanged — the committed event supersedes it.
     if (debounceTimer.current != null) {
@@ -110,16 +142,17 @@ export const SliderComponent = (
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium leading-none">{label}</span>
           <span className="text-sm text-muted-foreground tabular-nums">
-            {value}
+            {displayValue}
           </span>
         </div>
       )}
       <SliderUI
-        value={[value]}
+        value={[displayValue]}
         min={min}
         max={max}
         step={step}
         disabled={disabled}
+        onPointerDown={handlePointerDown}
         onValueChange={handleValueChange}
         onValueCommit={handleValueCommit}
         className="w-full"
