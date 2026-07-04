@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
+  ReferenceLine,
 } from "recharts";
 import {
   ChartContainer,
@@ -61,8 +62,22 @@ export const ChartGraphComponent = (
     yAxisUnit,
     xAxisUnit,
     suppressAnimation = false,
+    referenceLines,
     className,
   } = props;
+
+  /** Render all reference lines — shared by both chart types. */
+  const referenceLineEls = referenceLines?.map((rl, i) => (
+    <ReferenceLine
+      key={i}
+      x={rl.x}
+      y={rl.y}
+      label={rl.label as string | undefined}
+      stroke={rl.stroke ?? "var(--border)"}
+      strokeDasharray={rl.strokeDasharray}
+      strokeWidth={rl.strokeWidth ?? 1}
+    />
+  ));
 
   // Build the ChartConfig object that powers the tooltip / legend labels and
   // injects per-series CSS custom properties (--color-<dataKey>).
@@ -114,6 +129,7 @@ export const ChartGraphComponent = (
             {...(stacked ? {stackId: "stacked"} : {})}
           />
         ))}
+        {referenceLineEls}
       </AreaChart>
     ) : (
       <LineChart data={data} accessibilityLayer>
@@ -151,6 +167,7 @@ export const ChartGraphComponent = (
             isAnimationActive={!suppressAnimation}
           />
         ))}
+        {referenceLineEls}
       </LineChart>
     );
 

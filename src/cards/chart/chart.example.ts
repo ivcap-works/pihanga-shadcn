@@ -157,6 +157,30 @@ export default definePlayground<PiChartGraphProps>({
       },
     },
     {
+      id: "reference-lines",
+      title: "Reference lines",
+      description:
+        "Use `referenceLines` to overlay horizontal or vertical markers on the chart — thresholds, targets, event markers, etc.",
+      props: {
+        chartType: "line",
+        data: MONTHLY_DATA,
+        series: MULTI_SERIES,
+        xDataKey: "month",
+        title: "Visits by Device",
+        description: "With threshold and event markers",
+        showYAxis: true,
+        referenceLines: [
+          {
+            y: 200,
+            label: "Target",
+            stroke: "var(--chart-3)",
+            strokeDasharray: "4 4",
+          },
+          {x: "Mar", label: "Launch", stroke: "var(--chart-4)"},
+        ],
+      },
+    },
+    {
       id: "bare",
       title: "Bare (no card)",
       description:
@@ -270,6 +294,28 @@ registerCard("myApp/liveChart", Chart({
   data:   memo((s: AppState) => s.metrics),
   series: [{dataKey: "value", label: "Value"}],
   title:  memo((s: AppState) => \`Metric: \${s.selectedMetric}\`),
+}));
+\`\`\`
+
+**Reference lines — threshold and event markers**
+
+\`\`\`ts
+import {Chart} from "@/cards/chart";
+
+registerCard("myApp/thresholdChart", Chart({
+  chartType: "line",
+  xDataKey: "month",
+  data: [...],
+  series: [{dataKey: "value", label: "Value"}],
+  showYAxis: true,
+  referenceLines: [
+    // Horizontal threshold (dashed)
+    {y: 250, label: "Limit", stroke: "red", strokeDasharray: "4 4"},
+    // Vertical event marker (solid)
+    {x: "Mar", label: "Launch", stroke: "var(--chart-2)"},
+    // Object-form label for full positioning control
+    {y: 100, stroke: "orange", label: {value: "Min", position: "insideRight", fill: "orange"}},
+  ],
 }));
 \`\`\`
   `.trim(),

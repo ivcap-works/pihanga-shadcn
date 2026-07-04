@@ -26,6 +26,54 @@ export type PiChartSeries = {
   color?: string;
 };
 
+/**
+ * A single recharts `<ReferenceLine>` to overlay on the chart.
+ * Specify either `x` (vertical line) or `y` (horizontal line).
+ *
+ * @example
+ * ```ts
+ * // Horizontal threshold at y = 100
+ * { y: 100, label: "Limit", stroke: "red", strokeDasharray: "4 4" }
+ *
+ * // Vertical marker at a specific x value
+ * { x: "Mar", label: "Launch", stroke: "var(--chart-2)" }
+ * ```
+ */
+export type PiChartReferenceLine = {
+  /**
+   * Value on the **x-axis** where a vertical reference line is drawn.
+   * Omit when drawing a horizontal line.
+   */
+  x?: string | number;
+
+  /**
+   * Value on the **y-axis** where a horizontal reference line is drawn.
+   * Omit when drawing a vertical line.
+   */
+  y?: number;
+
+  /**
+   * Label rendered beside the line.  Pass a plain string for the recharts
+   * default positioning, or a `{ value, position, fill, fontSize }` object
+   * for full control (recharts `LabelProps`).
+   */
+  label?:
+    | string
+    | {value: string; position?: string; fill?: string; fontSize?: number};
+
+  /** CSS colour for the line stroke.  Defaults to `"var(--border)"`. */
+  stroke?: string;
+
+  /**
+   * SVG `stroke-dasharray` value for the line style.
+   * `"4 4"` → short dashes, `"8 4"` → long dashes, `undefined` → solid.
+   */
+  strokeDasharray?: string;
+
+  /** Line stroke width in pixels.  Defaults to `1`. */
+  strokeWidth?: number;
+};
+
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
@@ -163,6 +211,20 @@ export type PiChartGraphProps = {
    * Defaults to `false` (animation enabled).
    */
   suppressAnimation?: boolean;
+
+  /**
+   * One or more reference lines to overlay on the chart.
+   * Each entry maps directly to a recharts `<ReferenceLine>`.
+   *
+   * @example
+   * ```ts
+   * referenceLines: [
+   *   { y: 100, label: "Threshold", stroke: "red",   strokeDasharray: "4 4" },
+   *   { x: "Mar", label: "Launch",  stroke: "var(--chart-2)" },
+   * ]
+   * ```
+   */
+  referenceLines?: PiChartReferenceLine[];
 
   /** Extra Tailwind / CSS classes forwarded to the outermost element. */
   className?: string;
