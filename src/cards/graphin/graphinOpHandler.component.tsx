@@ -63,7 +63,7 @@ export function GraphinOpHandler({
       try {
         const key = nodeStyleKeyRef.current;
         const updates = Object.entries(
-          a.nodeStyles as Record<string, string>,
+          a.nodeStyles as Record<string, string | string[]>,
         ).map(([id, styleName]) => ({id, data: {[key]: styleName}}));
         g.updateNodeData(updates);
         void g.draw();

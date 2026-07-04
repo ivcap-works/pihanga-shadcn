@@ -402,10 +402,13 @@ export const GRAPHIN_OP_ACTION = registerActions("graphin/op", [
 export type GraphinSetNodeStylesAction = {
   cardName: string;
   /**
-   * Map of `nodeId` → style name (must be a key in the card's `nodeStyles` map).
-   * @example { n1: "failed", n2: "degraded", n3: "ok" }
+   * Map of `nodeId` → style name or ordered list of style names to merge
+   * (each must be a key in the card's `nodeStyles` map).
+   * When an array is given, styles are merged left-to-right with later entries
+   * overriding duplicate properties from earlier ones.
+   * @example { n1: "failed", n2: ["base", "degraded"], n3: "ok" }
    */
-  nodeStyles: Record<string, string>;
+  nodeStyles: Record<string, string | string[]>;
 };
 
 /**

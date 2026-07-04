@@ -224,8 +224,15 @@ export const GraphinComponent = (
     if (nodeStyles !== undefined) {
       const getSpec = (d: {id?: string; data?: Record<string, unknown>}) => {
         const key = nodeStyleKeyRef.current;
-        const name = d.data?.[key] as string | undefined;
-        return name ? nodeStylesRef.current[name] : undefined;
+        const name = d.data?.[key] as string | string[] | undefined;
+        if (!name) return undefined;
+        if (Array.isArray(name)) {
+          return Object.assign(
+            {},
+            ...name.map((k) => nodeStylesRef.current[k] ?? {}),
+          );
+        }
+        return nodeStylesRef.current[name];
       };
 
       const baseStyle = (merged.node?.style ?? {}) as Record<string, unknown>;
