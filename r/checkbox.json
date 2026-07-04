@@ -26,6 +26,12 @@
       "content": "import {actionTypesToEvents, registerCardComponent} from \"@pihanga2/core\";\n\nimport {CheckboxComponent} from \"./checkbox.component\";\nimport {PI_CHECKBOX_ACTION, PI_CHECKBOX_CARD} from \"./checkbox.types\";\n\nexport * from \"./checkbox.types\";\n\nregisterCardComponent({\n  name: PI_CHECKBOX_CARD,\n  component: CheckboxComponent,\n  events: actionTypesToEvents(PI_CHECKBOX_ACTION),\n});\n",
       "type": "registry:component",
       "target": "src/cards/checkbox/index.ts"
+    },
+    {
+      "path": "cards/checkbox/README.md",
+      "content": "A binary checked/unchecked input rendered as a shadcn `<Checkbox>`.\n\nUse it inside a `pi/form` card (with `name`) to bind it to form state, or\nstandalone (with `checked`) for independently controlled boolean flags.\n\nProvide an optional `label` to display descriptive text beside the checkbox.\nSet `disabled` to make it non-interactive.\n",
+      "type": "registry:file",
+      "target": "src/cards/checkbox/README.md"
     }
   ]
 }

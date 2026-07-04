@@ -34,6 +34,12 @@
       "content": "import {createCardDeclaration, type PiCardRef} from \"@pihanga2/core\";\n\nexport const LOADING_OVERLAY_CARD = \"loading-overlay\";\n\nexport type LoadingOverlayProps = {\n  content: PiCardRef;\n  isLoading?: boolean;\n  label?: string;\n  fillParent?: boolean;\n  viewportCentered?: boolean;\n  className?: string;\n  contentClassName?: string;\n  overlayClassName?: string;\n};\n\nexport const LoadingOverlay = createCardDeclaration<LoadingOverlayProps>(\n  LOADING_OVERLAY_CARD,\n);\n",
       "type": "registry:component",
       "target": "src/cards/loadingOverlay/loadingOverlay.types.ts"
+    },
+    {
+      "path": "cards/loadingOverlay/README.md",
+      "content": "Wraps any content card with a translucent loading spinner overlay.\n\nWhen `isLoading` is `true`, the spinner appears over the content card (the\ncontent remains mounted and visible beneath the overlay).  When `false`, the\noverlay is hidden and the content is fully interactive.\n\nUse it to block interaction during async operations such as data fetches,\nform submissions, or file uploads — without unmounting the underlying UI.\n\nSet `fillParent: true` to fill the parent container, or `viewportCentered: true`\nto center the spinner in the viewport regardless of the parent layout.\n",
+      "type": "registry:file",
+      "target": "src/cards/loadingOverlay/README.md"
     }
   ]
 }

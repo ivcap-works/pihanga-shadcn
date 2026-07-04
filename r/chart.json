@@ -29,6 +29,12 @@
       "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {ChartGraphComponent} from \"./chart.component\";\nimport {PI_CHART_GRAPH_CARD} from \"./chart.types\";\n\nexport * from \"./chart.types\";\n\nregisterCardComponent({\n  name: PI_CHART_GRAPH_CARD,\n  component: ChartGraphComponent,\n});\n",
       "type": "registry:component",
       "target": "src/cards/chart/index.ts"
+    },
+    {
+      "path": "cards/chart/README.md",
+      "content": "A chart card wrapping [shadcn/ui Charts](https://ui.shadcn.com/charts) (built on [Recharts](https://recharts.org)).\nSupports **area** and **line** chart types with optional multi-series, stacking, legend, and grid lines.\n\n### Key props\n\n| Prop | Default | Purpose |\n|------|---------|---------|\n| `chartType` | — | `\"area\"` or `\"line\"` |\n| `data` | — | Array of data-point objects |\n| `series` | — | Maps data keys → label + colour |\n| `xDataKey` | — | Key used for x-axis tick labels |\n| `title` / `description` | — | When provided the chart is wrapped in a shadcn `<Card>` |\n| `stacked` | `false` | Stack area series (area only) |\n| `fillOpacity` | `0.4` | Fill transparency for area series |\n| `showLegend` / `showGrid` | `true` | Toggle legend and grid lines |\n\nColours fall back to the shadcn chart CSS variables (`--chart-1` … `--chart-5`)\nwhen not explicitly set on a series.\n",
+      "type": "registry:file",
+      "target": "src/cards/chart/README.md"
     }
   ]
 }

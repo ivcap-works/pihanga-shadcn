@@ -30,6 +30,12 @@
       "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {BadgeComponent} from \"./badge.component\";\nimport {BADGE_CARD} from \"./badge.types\";\n\nexport * from \"./badge.types\";\n\nregisterCardComponent({\n  name: BADGE_CARD,\n  component: BadgeComponent,\n});\n",
       "type": "registry:component",
       "target": "src/cards/badge/index.ts"
+    },
+    {
+      "path": "cards/badge/README.md",
+      "content": "Badges are compact status descriptors attached to UI elements.\nUse them to communicate the state of an item — its lifecycle phase,\ncategory, or importance — at a glance.\n\nThe four built-in variants map directly to the `BadgeColumn.variants` map\nin `shad/data-table`, so a badge card and a table badge column can always\nbe kept in sync without a translation layer.\n\nWhen the badge label or variant needs to react to application state, wrap\nthe prop in `memo()` inside `app.pihanga.ts` — keep example files\ndata-only.\n",
+      "type": "registry:file",
+      "target": "src/cards/badge/README.md"
     }
   ]
 }

@@ -25,6 +25,12 @@
       "content": "import {createCardDeclaration} from \"@pihanga2/core\";\n\nexport const PI_SLIDER_VALUE_CARD = \"shad/slider-value\";\n\nexport const SliderValue =\n  createCardDeclaration<PiSliderValueProps>(PI_SLIDER_VALUE_CARD);\n\n// ---------------------------------------------------------------------------\n// Props (no events — display-only)\n// ---------------------------------------------------------------------------\n\nexport type PiSliderValueProps = {\n  /**\n   * The numeric value to display on the track.\n   * Clamped between `min` and `max`.\n   */\n  value: number;\n\n  /** Minimum value of the range. Defaults to 0. */\n  min?: number;\n\n  /** Maximum value of the range. Defaults to 100. */\n  max?: number;\n\n  /**\n   * Optional label text rendered above the track.\n   * When provided, the numeric value is shown to the right of the label,\n   * matching the interactive `shad/slider` layout exactly.\n   */\n  label?: string;\n\n  /** Extra Tailwind / CSS classes forwarded to the root wrapper element. */\n  className?: string;\n};\n",
       "type": "registry:component",
       "target": "src/cards/sliderValue/sliderValue.types.ts"
+    },
+    {
+      "path": "cards/sliderValue/README.md",
+      "content": "A read-only companion to the interactive `shad/slider` card.\n\nRenders the same track + filled-range visual as the slider but without a thumb\nand without any user interaction.  The fill width is proportional to `value`\nwithin the `[min, max]` range, so both cards look visually consistent side by\nside or in alternating read/edit contexts.\n\nUse `shad/slider-value` in summary panels, data tables, or anywhere you want\nto display a bounded numeric value at a glance without allowing edits.\n",
+      "type": "registry:file",
+      "target": "src/cards/sliderValue/README.md"
     }
   ]
 }

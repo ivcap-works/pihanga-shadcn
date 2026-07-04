@@ -32,6 +32,12 @@
       "content": "import {actionTypesToEvents, registerCardComponent} from \"@pihanga2/core\";\n\nimport {FormComponent} from \"./form.component\";\nimport {PI_FORM_ACTION, PI_FORM_CARD} from \"./form.types\";\n\nexport * from \"./form.types\";\nexport * from \"./form.context\";\n\nregisterCardComponent({\n  name: PI_FORM_CARD,\n  component: FormComponent,\n  events: actionTypesToEvents(PI_FORM_ACTION),\n});\n",
       "type": "registry:component",
       "target": "src/cards/form/index.ts"
+    },
+    {
+      "path": "cards/form/README.md",
+      "content": "A lightweight form container that provides a shared form context to its child cards.\n\nChild cards (`TextField`, `Checkbox`, `Select`) read from — and write their\nchanges to — the form context when their `name` prop is set. On submit,\n`onPiFormSubmitted` fires with the collected `formData` object.\n\n**Data-flow summary:**\n\n| Scenario | Value source | Change handler |\n|---|---|---|\n| `name` set + inside Form | `form.formData[name]` | Form context (auto) |\n| `name` missing OR outside Form | `props.value` | Pihanga `onChanged` action |\n",
+      "type": "registry:file",
+      "target": "src/cards/form/README.md"
     }
   ]
 }

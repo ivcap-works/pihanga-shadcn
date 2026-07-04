@@ -38,6 +38,12 @@
       "content": "import {actionTypesToEvents, registerCardComponent} from \"@pihanga2/core\";\n\nimport {DataTableComponent} from \"./dataTable.component\";\nimport {DataTableRowDetailComponent} from \"./dataTableRowDetail.component\";\nimport {\n  DATA_TABLE_ACTION,\n  DATA_TABLE_CARD,\n  DATA_TABLE_ROW_DETAIL_CARD,\n} from \"./dataTable.types\";\n\nexport * from \"./dataTable.types\";\n\nregisterCardComponent({\n  name: DATA_TABLE_CARD,\n  component: DataTableComponent,\n  events: actionTypesToEvents(DATA_TABLE_ACTION),\n});\n\nregisterCardComponent({\n  name: DATA_TABLE_ROW_DETAIL_CARD,\n  component: DataTableRowDetailComponent,\n});\n",
       "type": "registry:component",
       "target": "src/cards/dataTable/index.ts"
+    },
+    {
+      "path": "cards/dataTable/README.md",
+      "content": "A Tailwind-styled data table with sorting, expandable rows, pagination, and\nmultiple column types.\n\n**Supported column types:**\n\n| Type | Rendering |\n|---|---|\n| `text` (default) | Plain string value |\n| `number` | Right-aligned; optional `format` function |\n| `date` | Formatted date string |\n| `badge` | `ShadBadge` with per-value variant mapping via `variants` |\n| `boolean` | Checkmark / dash |\n| `card` | Full `PiCardRef` — any Pihanga card as a cell |\n\n**Expandable rows:** set `detailCard` on a row to show a full-width panel below it.\n\n**Pagination:** add `pageSize` to enable client-side pagination.\n",
+      "type": "registry:file",
+      "target": "src/cards/dataTable/README.md"
     }
   ]
 }

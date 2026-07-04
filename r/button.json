@@ -34,6 +34,12 @@
       "content": "import {actionTypesToEvents, registerCardComponent} from \"@pihanga2/core\";\n\nimport {ButtonComponent} from \"./button.component\";\nimport {PI_BUTTON_ACTION, PI_BUTTON_CARD} from \"./button.types\";\n\nexport * from \"./button.types\";\n\n// Optional convenience alias (mirrors older pattern like SdDropDownMenu)\n// export const SdButton = createCardDeclaration<PiButtonProps, PiButtonEvents>(\n//   PI_BUTTON_CARD,\n// );\n\nregisterCardComponent({\n  name: PI_BUTTON_CARD,\n  component: ButtonComponent,\n  events: actionTypesToEvents(PI_BUTTON_ACTION),\n});\n",
       "type": "registry:component",
       "target": "src/cards/button/index.ts"
+    },
+    {
+      "path": "cards/button/README.md",
+      "content": "A versatile, Tailwind-styled button with support for multiple **variants**, **sizes**,\nicons, tooltips, and loading states.\n\nSet `opts.variant` to control the visual style, and `opts.size` to control dimensions.\nUse `iconLabel` for icon-only buttons, or `opts.beforeIcon` / `opts.afterIcon` to\nplace icons alongside text labels.\n\nTooltips accept either a plain string (`tooltip`) or any `PiCardRef` (`tooltipCard`)\nfor rich custom tooltip content.\n",
+      "type": "registry:file",
+      "target": "src/cards/button/README.md"
     }
   ]
 }
