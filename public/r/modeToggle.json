@@ -31,6 +31,12 @@
       "content": "import {\n  createCardDeclaration,\n  createOnAction,\n  registerActions,\n} from \"@pihanga2/core\";\nimport type {VariantT} from \"../types\";\n\nexport const MODE_TOGGLE_CARD = \"shad/mode-toggle\";\nexport const ModeToggle = createCardDeclaration<\n  ModeToggleProps,\n  ModeToggleEvents\n>(MODE_TOGGLE_CARD);\n\nexport const MODE_TOGGLE_ACTION = registerActions(MODE_TOGGLE_CARD, [\n  \"mode_changed\",\n]);\n\nexport const onModeToggleChanged = createOnAction<ModeChangeEvent>(\n  MODE_TOGGLE_ACTION.MODE_CHANGED,\n);\n\n// ---------------------------------------------------------------------------\n// Card props & events\n// ---------------------------------------------------------------------------\n\nexport type ModeToggleProps = {\n  /** Visual variant of the toggle button.  Defaults to `\"outline\"`. */\n  variant?: VariantT;\n  className?: string;\n};\n\nexport type ModeChangeEvent = {\n  mode: \"light\" | \"dark\" | \"system\";\n};\n\nexport type ModeToggleEvents = {\n  onModeChanged: ModeChangeEvent;\n};\n",
       "type": "registry:component",
       "target": "src/cards/modeToggle/mode-toggle.types.ts"
+    },
+    {
+      "path": "cards/modeToggle/README.md",
+      "content": "A dropdown button that switches the application colour scheme between\n**light**, **dark**, and **system** modes.\n\nPlace it once in your app header (e.g. inside `PageWithNavbar`'s\n`headerRightCard`) to give users a global theme selector.\n\nThe button's appearance is controlled by `variant` (defaults to\n`\"outline\"`).  The selected mode is persisted to `localStorage` under the\nkey `\"shadcn-ui-theme\"` by the `ThemeProvider` wrapper in the Framework card.\n",
+      "type": "registry:file",
+      "target": "src/cards/modeToggle/README.md"
     }
   ]
 }

@@ -26,6 +26,12 @@
       "content": "import {\n  createCardDeclaration,\n  createOnAction,\n  registerActions,\n} from \"@pihanga2/core\";\n\nexport const NAVBAR_SEARCH_CARD = \"navbarSearch\";\nexport const NavbarSearch = createCardDeclaration<\n  NavbarSearchProps,\n  NavbarSearchEvents\n>(NAVBAR_SEARCH_CARD);\n\nexport const NAVBAR_SEARCH_ACTION = registerActions(NAVBAR_SEARCH_CARD, [\n  \"search_submit\",\n  \"search_items\",\n  \"search_focus\",\n]);\n\nexport const onNavbarSearchSubmit =\n  createOnAction<NavbarSearchEvent>(NAVBAR_SEARCH_ACTION.SEARCH_SUBMIT);\nexport const onNavbarSearchItems = createOnAction<NavbarSearchInputEvent>(\n  NAVBAR_SEARCH_ACTION.SEARCH_ITEMS,\n);\nexport const onNavbarSearchFocus = createOnAction<NavbarSearchFocusEvent>(\n  NAVBAR_SEARCH_ACTION.SEARCH_FOCUS,\n);\n\nexport type NavbarSearchProps = {\n  searchItems?: string[];\n  placeholder?: string;\n};\n\nexport type NavbarSearchEvent = {search: string};\nexport type NavbarSearchInputEvent = {search: string};\nexport type NavbarSearchFocusEvent = Record<string, never>;\n\nexport type NavbarSearchEvents = {\n  onSearchSubmit: NavbarSearchEvent;\n  onSearchItems?: NavbarSearchInputEvent;\n  onSearchFocus?: NavbarSearchFocusEvent;\n};\n",
       "type": "registry:component",
       "target": "src/cards/navbarSearch/navbarSearch.type.ts"
+    },
+    {
+      "path": "cards/navbarSearch/README.md",
+      "content": "A search input designed to live in an app navbar.\n\nSupports type-ahead suggestions via `searchItems` (an array of strings shown\nas dropdown options as the user types).  The card emits three events:\n\n- `onSearchSubmit` — fired when the user presses Enter or selects a suggestion.\n- `onSearchItems` — fired on every keystroke with the current input value,\n  allowing the host app to update `searchItems` dynamically.\n- `onSearchFocus` — fired when the input receives keyboard focus.\n\nPlace it inside `PageWithNavbar`'s `headerLeftCard` or `headerRightCard`.\n",
+      "type": "registry:file",
+      "target": "src/cards/navbarSearch/README.md"
     }
   ]
 }

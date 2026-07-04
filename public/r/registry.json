@@ -52,7 +52,7 @@
       "type": "registry:component"
     },
     {
-      "name": "chartGraph",
+      "name": "chart",
       "type": "registry:component"
     },
     {

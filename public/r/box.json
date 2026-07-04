@@ -25,6 +25,12 @@
       "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {BoxComponent} from \"./box.component\";\nimport {BOX_CARD} from \"./box.types\";\n\nexport * from \"./box.types\";\n\nregisterCardComponent({\n  name: BOX_CARD,\n  component: BoxComponent,\n});\n",
       "type": "registry:component",
       "target": "src/cards/box/index.ts"
+    },
+    {
+      "path": "cards/box/README.md",
+      "content": "A generic layout container — a `<div>` wrapper with first-class support for\nspacing props (`marginTop`, `paddingLeft`, etc.), fixed `width`/`height`,\nand arbitrary Tailwind `className`.\n\nUse `Box` as a spacing shim, a fixed-size region, or a named logical grouping\nwhen CSS Flexbox / Grid utilities alone are not enough.  Nest `Box` cards\ninside `Stack`, `FlexGrid`, or `Resizable` panels to build complex layouts.\n\nThe `content` array accepts an ordered list of `PiCardRef` strings to render\nas direct children.\n",
+      "type": "registry:file",
+      "target": "src/cards/box/README.md"
     }
   ]
 }

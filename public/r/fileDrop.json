@@ -33,6 +33,12 @@
       "content": "import {actionTypesToEvents, registerCardComponent} from \"@pihanga2/core\";\n\nimport {FileDropComponent} from \"./fileDrop.component\";\nimport {FILE_DROP_ACTION, FILE_DROP_CARD} from \"./fileDrop.types\";\n\nexport * from \"./fileDrop.types\";\nexport {get_last_dropped} from \"./fileDrop.component\";\n\nregisterCardComponent({\n  name: FILE_DROP_CARD,\n  component: FileDropComponent,\n  events: actionTypesToEvents(FILE_DROP_ACTION),\n});\n",
       "type": "registry:component",
       "target": "src/cards/fileDrop/index.ts"
+    },
+    {
+      "path": "cards/fileDrop/README.md",
+      "content": "A drag-and-drop (or click-to-upload) file input zone.\n\nDrop a file onto the highlighted area or click it to open a file picker.\nAccepted file extensions are controlled via `fileTypes`.  While an upload is\nin progress, set `showProgress` to `true` and update `progress` (0–100) to\ndisplay a progress bar in place of the drop zone.\n\nThe card emits `onFileDropped` with `{name, size, type}` when a file is\naccepted, and `onError` when the user drops a file whose extension is not\nin `fileTypes`.\n\nUse `get_last_dropped(name)` to retrieve the raw `File` object immediately\nafter an `onFileDropped` event fires (the reference is cleared after ~2 s).\n",
+      "type": "registry:file",
+      "target": "src/cards/fileDrop/README.md"
     }
   ]
 }

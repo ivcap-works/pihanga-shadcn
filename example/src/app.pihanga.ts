@@ -1,75 +1,37 @@
 /**
- * app.pihanga.ts — classic counter example
+ * app.pihanga.ts — card layout for the counter example
  *
- * Demonstrates two ways to handle card events:
+ * Registers the application's card tree. The UI is intentionally minimal:
  *
  *   ┌─────────────────────────────────────────┐
  *   │  [−]   Count: 0   [+]                   │
  *   └─────────────────────────────────────────┘
  *
- * - `registerFramework` sets the root card (wraps the app in ThemeProvider)
- * - `registerCard` declares a named card — no JSX, just a plain object
- * - [−] uses an INLINE `onClicked` reducer directly on the anonymous card
- * - [+] is a TOP-LEVEL named card; its event is handled externally in
- *       app.reducer.ts via `register()` + `onButtonClicked`
- * - `text: (s) => ...` on Typography re-renders whenever `s.count` changes
+ * - `registerFramework` installs the root `_window` card that wraps the app
+ *   in a ThemeProvider.
+ * - `registerCard("page", Counter(...))` places the `Counter` meta card as
+ *   the sole page content. `Counter` encapsulates all internal layout and
+ *   button wiring; this site only needs to supply the current `value` from
+ *   the Redux state via a resolver function `(s) => s.count`.
+ * - Domain events emitted by `Counter` (e.g. `COUNTER_ACTION.CHANGED`) are
+ *   handled in `app.reducer.ts` — this file has no reducer logic of its own.
  */
 
 import {registerCard, registerFramework} from "@pihanga2/core";
 import {SdFramework} from "@pihanga2/shadcn/cards/framework";
-import {Stack} from "@pihanga2/shadcn/cards/stack";
-import {Button} from "@pihanga2/shadcn/cards/button";
-import {Typography} from "@pihanga2/shadcn/cards/typography";
 
 import type {AppState} from "./app.state";
+import {Counter} from "./counter.card";
 
 export function appPiInit(): void {
   // ── Root framework card ────────────────────────────────────────────────────
   // Registers the single "_window" card that wraps the app in ThemeProvider.
-  registerFramework(SdFramework({page: "counter/page", theme: "light"}));
+  registerFramework(SdFramework({page: "page", theme: "light"}));
 
-  // ── Counter page ──────────────────────────────────────────────────────────
-  // A horizontal Stack containing two Buttons and a live count display.
-  //
-  // Inline `onClicked` handlers are Immer reducers: mutate `state` directly.
-  // The Typography `text` prop is a state-selector — it re-runs whenever the
-  // Redux state changes and returns a new string.
   registerCard(
-    "counter/page",
-    Stack<AppState>({
-      direction: "row",
-      alignItems: "center",
-      spacing: 4,
-      className: "p-16 justify-center",
-      content: [
-        // Decrement button
-        Button<AppState>({
-          label: "−",
-          opts: {size: "lg"},
-          onClicked: (state) => {
-            state.count -= 1;
-          },
-        }),
-
-        // Live count display — re-renders on every state change
-        Typography<AppState>({
-          text: (s) => `Count: ${s.count}`,
-          level: "h2",
-          className: "min-w-[120px] text-center",
-        }),
-
-        // Increment button
-        "counter/plus",
-      ],
-    }),
-  );
-
-  // Increment button — event handled externally in app.reducer.ts
-  registerCard(
-    "counter/plus",
-    Button({
-      label: "+",
-      opts: {size: "lg"},
+    "page",
+    Counter<AppState>({
+      value: (s) => s.count,
     }),
   );
 }

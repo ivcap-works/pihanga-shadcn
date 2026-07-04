@@ -42,6 +42,11 @@ export default defineConfig({
     // CJS packages used transitively by @pihanga2/core must be listed in
     // `include` so Vite can still convert them to ESM for the browser.
     exclude: ["@pihanga2/core", "@pihanga2/shadcn"],
-    include: ["deep-equal", "stacktrace-js", "react-dom/client"],
+    include: [
+      "deep-equal",
+      "stacktrace-js",
+      "react-dom/client",
+      "lucide-react",
+    ],
   },
 });

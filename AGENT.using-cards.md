@@ -30,9 +30,16 @@
 > shadcn/ui and Radix UI updates, it won't appear in the playground
 > automatically, and it won't benefit from upstream bug fixes.
 >
-> **If no suitable card exists:**
-> - Confirm the need is genuine and not already covered by composing existing
->   cards (`Conditional`, `FlexGrid`, `Stack`, `Box`).
+> **⭐ If no single card covers your need but existing cards could be combined:**
+> Build a **meta card** — a TypeScript-only mapper that assembles existing cards
+> into a reusable, self-contained widget.  Meta cards require no JSX, no React
+> imports, and no DOM knowledge.  They are easier to maintain, extend, and test
+> than a bespoke React component.  See
+> [Meta cards — building complex UIs by composition](#meta-cards--building-complex-uis-by-composition)
+> below, or the full guide in
+> [`AGENT.building-cards.md`](./AGENT.building-cards.md#meta-cards--composing-new-widgets-from-existing-cards).
+>
+> **If no suitable card or card combination exists:**
 > - Unless the card would expose confidential business logic, please
 >   **open an issue** at
 >   `https://github.com/ivcap-works/pihanga-shadcn/issues` describing what you
@@ -421,6 +428,137 @@ registerCard("myApp/save", Button({
   opts:  {variant: "default"},
 }));
 ```
+
+---
+
+## Meta cards — building complex UIs by composition
+
+> **⭐ This is the recommended approach whenever you need a reusable UI widget
+> that combines several existing cards.**  Prefer a meta card over writing a new
+> React component; meta cards are easier to maintain, extend, test, and port.
+
+A **meta card** is a TypeScript-only module that assembles existing primitive
+cards (or other meta cards) inside a mapper function.  No JSX, no React hooks,
+no DOM knowledge is required.
+
+### Decision guide
+
+```
+Do I need a complex, multi-widget UI?
+    │
+    ├─► Can I build it from existing cards? ──► YES ──► Write a META CARD  ⭐
+    │                                                     (registerMetaCard)
+    └─► NO — needs a DOM API / third-party React hook
+            └─► Only then: write a PRIMITIVE CARD
+                           (registerCardComponent + React component)
+```
+
+### Minimal meta card skeleton
+
+```ts
+// src/myWidget.card.ts
+import {
+  createCardDeclaration, createOnAction, registerActions, registerMetaCard,
+} from "@pihanga2/core";
+import type {PiCardDef, PiMapProps, PiRegisterMetaCard, ReduxState, RegisterCardF} from "@pihanga2/core";
+import {Stack, Button, Typography} from "@pihanga2/shadcn"; // use whatever cards you need
+
+// ── 1. Identity (use "meta/<name>" convention for app-local meta cards) ─────
+const MY_WIDGET_CARD = "meta/my-widget";
+
+// ── 2. Public factory ────────────────────────────────────────────────────────
+export const MyWidget = createCardDeclaration<MyWidgetProps, MyWidgetEvents>(MY_WIDGET_CARD);
+
+// ── 3. Actions ───────────────────────────────────────────────────────────────
+export const MY_WIDGET_ACTION = registerActions(MY_WIDGET_CARD, ["submitted"]);
+export const onMyWidgetSubmitted = createOnAction<MyWidgetSubmitEvent>(MY_WIDGET_ACTION.SUBMITTED);
+
+// ── 4. Types ─────────────────────────────────────────────────────────────────
+type MyWidgetProps  = { label: string; value: string };
+type MyWidgetSubmitEvent = { value: string };
+type MyWidgetEvents = { onSubmit: MyWidgetSubmitEvent };
+type MapperProps = MyWidgetProps & MyWidgetEvents;
+
+// ── 5. Mapper ────────────────────────────────────────────────────────────────
+function MyWidgetMapper(
+  _: string,
+  props: PiMapProps<MapperProps, ReduxState, object>,
+  _registerCard: RegisterCardF,
+): PiCardDef {
+  return Stack({
+    direction: "row",
+    content: [
+      Typography({ text: (_, {resolve}) => resolve(props.label) }),
+      Button({
+        label: "Submit",
+        onClickedMapper: (_, {resolve}) => ({
+          type: MY_WIDGET_ACTION.SUBMITTED,
+          value: resolve(props.value),
+        }),
+      }),
+    ],
+  });
+}
+
+// ── 6. Register ───────────────────────────────────────────────────────────────
+registerMetaCard({
+  type: MY_WIDGET_CARD,
+  mapper: MyWidgetMapper,
+  events: MY_WIDGET_ACTION,
+} satisfies PiRegisterMetaCard);
+```
+
+**Using the meta card in your app:**
+
+```ts
+// src/app.pihanga.ts
+import {MyWidget, onMyWidgetSubmitted} from "./myWidget.card";
+import type {AppState} from "./app.state";
+
+register((r) => {
+  onMyWidgetSubmitted<AppState>(r, (state, {value}) => {
+    state.submittedValue = value;
+  });
+});
+
+registerCard("app/myWidget", MyWidget<AppState>({
+  label: "Enter name",
+  value: (s) => s.currentValue,   // reactive — updates when state changes
+}));
+```
+
+### Key patterns
+
+**`resolve(props.foo)` — unwrap lazy state selectors in child props**
+
+A meta card prop may be a plain value *or* a state selector `(s) => s.foo`.
+Inside child card prop functions, always use `resolve()` to unwrap it:
+
+```ts
+// ✅ Correct
+Typography({ text: (_, {resolve}) => `Hello ${resolve(props.name)}` })
+
+// ❌ Wrong — child sees a function reference, not the resolved string
+Typography({ text: props.name })
+```
+
+**`onXxxMapper` — remap child events into domain actions**
+
+Every event-emitting card supports an `on<Event>Mapper` prop that intercepts
+the raw event and emits a different action (or `null` to suppress):
+
+```ts
+Button({
+  label: "Delete",
+  onClickedMapper: (_, {resolve}) => ({
+    type: MY_WIDGET_ACTION.SUBMITTED,
+    value: resolve(props.value),
+  }),
+})
+```
+
+**Full reference:** See [`AGENT.building-cards.md`](./AGENT.building-cards.md#meta-cards--composing-new-widgets-from-existing-cards)
+and the complete annotated example at [`example/src/counter.card.ts`](./example/src/counter.card.ts).
 
 ---
 
@@ -992,7 +1130,7 @@ project that was bootstrapped without the reference `index.css`:
 Both fixes are now included in the reference `src/index.css` template in
 *Prerequisites step 3*.
 
-### 2026-06 agent evaluation — ViteJS app from scratch (BuhlOS-2)
+### 2026-06 agent evaluation — ViteJS app from scratch
 
 An agent built a new ViteJS + React + TypeScript app from scratch using
 `yarn create vite` and then manually copied pihanga-shadcn cards.  The

@@ -1,13 +1,217 @@
 # AGENT.building-cards.md — creating new pihanga-shadcn cards
 
-> **Scope:** adding a new card *type* to `src/cards/` in this repository.
+> **Scope:** building new cards — either by composing existing cards into a
+> **meta card** (recommended, TypeScript-only) or by adding a brand-new
+> React-based primitive card to `src/cards/`.
 > Read [`AGENT.md`](./AGENT.md) first for orientation and universal rules.
 > If you only need to *use* existing cards in an app, switch to
 > [`AGENT.using-cards.md`](./AGENT.using-cards.md).
 
 ---
 
-## ⚠️ Hard constraints before you write a single line
+## ⭐ Meta cards — composing new widgets from existing cards
+
+> **This is the recommended approach for building any complex or reusable UI
+> widget.**  A meta card is assembled entirely from existing cards using a
+> plain TypeScript mapper function — no JSX, no React imports, no DOM
+> knowledge required.  Read this section before considering a primitive card.
+
+### Why meta cards?
+
+| Concern | Meta card | New primitive card (React component) |
+|---|---|---|
+| Code volume | ~50 lines TypeScript | ~200 lines JSX + hooks |
+| Maintenance | Inherits upstream card fixes automatically | Must track shadcn/Radix updates manually |
+| Reusability | Portable across any Pihanga app unchanged | Tightly coupled to one project |
+| Testability | Pure function — mock props, assert card tree | Requires DOM + Redux environment |
+| Extendibility | Swap any inner card without touching consumers | Requires internal refactoring |
+| Learning curve | Pihanga config patterns only | JSX, React hooks, Pihanga internals |
+
+**Rule of thumb:** if you can describe the widget as *"a layout card containing
+some input and display cards"*, build it as a meta card.  Only drop to a
+primitive React component when the widget genuinely needs a DOM API, a
+third-party React hook, or a non-card rendering strategy.
+
+### How meta cards work
+
+A meta card has three ingredients:
+
+1. **Card declaration + actions** — same as any card; use
+   `createCardDeclaration`, `registerActions`, `createOnAction`.
+2. **Mapper function** — a plain function `(name, props, registerCard) =>
+   PiCardDef` that assembles child cards and returns the root card definition.
+3. **Registration** — `registerMetaCard({type, mapper, events})`.
+
+The Pihanga runtime calls the mapper whenever the meta card needs to be
+rendered or re-evaluated.  Child cards can use `resolve(props.foo)` inside
+their own prop functions to lazily read a value that may itself be a state
+selector.
+
+### Full worked example — `Counter` meta card
+
+The complete, annotated source lives at
+[`example/src/counter.card.ts`](./example/src/counter.card.ts).
+Abbreviated for reference:
+
+```ts
+import {
+  createCardDeclaration, createOnAction, registerActions, registerMetaCard,
+} from "@pihanga2/core";
+import type {PiCardDef, PiMapProps, PiRegisterMetaCard, ReduxState, RegisterCardF} from "@pihanga2/core";
+import {Stack, Button, Typography} from "@pihanga2/shadcn";
+
+// ── 1. Card identity ─────────────────────────────────────────────────────────
+const COUNTER_CARD = "meta/counter";   // convention: "meta/<name>" for app-level
+
+// ── 2. Public factory (consumers call Counter({value: ...})) ────────────────
+export const Counter = createCardDeclaration<CounterProps, CounterEvents>(COUNTER_CARD);
+
+// ── 3. Actions + typed event helper ─────────────────────────────────────────
+export const COUNTER_ACTION = registerActions(COUNTER_CARD, ["changed"]);
+export const onCounterChanged = createOnAction<CounterChangeEvent>(COUNTER_ACTION.CHANGED);
+
+// ── 4. Types ─────────────────────────────────────────────────────────────────
+type CounterProps  = { value: number };
+type CounterChangeEvent = { value: number };
+type CounterEvents = { onChange: CounterChangeEvent };
+type CounterMapperProps = CounterProps & CounterEvents;
+
+// ── 5. Mapper — assembles child cards ────────────────────────────────────────
+function CounterMapper(
+  _: string,
+  props: PiMapProps<CounterMapperProps, ReduxState, object>,
+  registerCard: RegisterCardF,
+): PiCardDef {
+  // Register a child card under a stable name (optional but shown for reference)
+  const plusButton = registerCard("plus", Button({
+    label: "+",
+    opts: {size: "lg"},
+    // Re-map raw click → COUNTER_ACTION.CHANGED { value + 1 }
+    onClickedMapper: (_, {resolve}) => ({
+      type: COUNTER_ACTION.CHANGED,
+      value: resolve(props.value) + 1,   // resolve() unwraps lazy state selectors
+    }),
+  }));
+
+  return Stack({
+    direction: "row", alignItems: "center", spacing: 4,
+    className: "p-16 justify-center",
+    content: [
+      Button({
+        label: "−",
+        opts: {size: "lg"},
+        onClickedMapper: (_, {resolve}) => ({
+          type: COUNTER_ACTION.CHANGED,
+          value: resolve(props.value) - 1,
+        }),
+      }),
+      Typography({
+        text: (_, {resolve}) => `Count: ${resolve(props.value)}`,   // reactive text
+        level: "h2",
+        className: "min-w-[120px] text-center",
+      }),
+      plusButton,
+    ],
+  });
+}
+
+// ── 6. Register ───────────────────────────────────────────────────────────────
+registerMetaCard({
+  type: COUNTER_CARD,
+  mapper: CounterMapper,
+  events: COUNTER_ACTION,
+} satisfies PiRegisterMetaCard);
+```
+
+**Usage at the app level** (`example/src/app.pihanga.ts`):
+
+```ts
+import {Counter} from "./counter.card";
+import type {AppState} from "./app.state";
+
+registerCard("page", Counter<AppState>({
+  value: (s) => s.count,   // state selector — auto-reactive
+}));
+```
+
+**Handling the emitted event** (`example/src/app.reducer.ts`):
+
+```ts
+import {onCounterChanged} from "./counter.card";
+
+register((r) => {
+  onCounterChanged<AppState>(r, (state, {value}) => {
+    state.count = value;   // raw button clicks never surface here — encapsulated
+  });
+});
+```
+
+### Key API reference for meta cards
+
+| Symbol | Source | Purpose |
+|---|---|---|
+| `registerMetaCard(opts)` | `@pihanga2/core` | Registers a mapper as a named card type |
+| `PiRegisterMetaCard` | `@pihanga2/core` | Type for the `opts` object (use `satisfies`) |
+| `MetaCardMapperF` | `@pihanga2/core` | Type of the mapper function |
+| `RegisterCardF` | `@pihanga2/core` | Type of the `registerCard` arg inside the mapper |
+| `PiMapProps<Props, State, Ctx>` | `@pihanga2/core` | Prop type inside the mapper (each prop may be a state selector) |
+| `resolve(prop)` | `StateMapperContext` | Unwraps a lazy prop value inside a child card's prop function |
+| `onClickedMapper` / `on*Mapper` | any card | Event mapper suffix — re-maps a child card's action to a different action type |
+
+### Patterns to know
+
+**Lazy prop propagation with `resolve`**
+
+When a meta card receives `value: (s) => s.count` (a state selector), child
+cards can't use that selector directly — it has to be unwrapped at the time the
+child's own prop function runs:
+
+```ts
+// ❌ Doesn't work — selector is passed as-is; child sees a function, not a number
+Typography({ text: props.value })
+
+// ✅ Correct — resolve() unwraps the selector inside the child's prop function
+Typography({ text: (_, {resolve}) => `Count: ${resolve(props.value)}` })
+```
+
+**Event remapping with `onXxxMapper`**
+
+Every card that emits an event supports an `on<EventName>Mapper` prop.  The
+mapper intercepts the raw event and returns a different action (or `null` to
+suppress):
+
+```ts
+Button({
+  label: "Save",
+  // Re-map generic click → domain-specific action
+  onClickedMapper: (_ev, _ctx) => ({ type: MY_ACTION.SAVED }),
+})
+```
+
+**Registering a stable child card name**
+
+Pass the result of `registerCard(name, def)` as a child in the `content` array.
+This is optional but gives the child a stable registry identity:
+
+```ts
+const saveBtn = registerCard("save-btn", Button({label: "Save", …}));
+return Stack({ content: [saveBtn] });
+```
+
+**Accessing metacard context from a deeply nested child**
+
+Use `metaCtxtProps` in a child card's state mapper when you need the context
+props that were passed to the meta card's top-level card:
+
+```ts
+// Inside a child card declaration within the mapper:
+properties: (s, { metaCtxtProps }) => metaCtxtProps.elementData.properties,
+```
+
+---
+
+## ⚠️ Hard constraints before you write a single line (primitive cards)
+
 
 1. **`src/components/` is read-only.** It is managed exclusively by the shadcn
    CLI (`npx shadcn@latest add <name>`).  Never create or edit files there.
@@ -383,7 +587,8 @@ Rules:
 
 | Need | Card to study |
 |---|---|
-| Minimal card structure | `src/cards/emptyCard.tsx` |
+| **Meta card (composition)** | **`example/src/counter.card.ts`** — fully annotated: Stack + Button × 2 + Typography, event remapping, `resolve()`, stable child names |
+| Minimal primitive card structure | `src/cards/emptyCard.tsx` |
 | Button with variants, icons, tooltip | `src/cards/button/` |
 | Dropdown / context menu | `src/cards/dropDownMenu/` |
 | Form input pattern | `src/cards/textField/`, `src/cards/checkbox/` |

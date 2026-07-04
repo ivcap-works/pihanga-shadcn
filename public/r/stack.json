@@ -27,6 +27,12 @@
       "content": "import {type PiCardRef, createCardDeclaration} from \"@pihanga2/core\";\nimport type {AlignItemsT} from \"../types\";\n\nexport const STACK_CARD = \"pi/stack\";\n\n/**\n * Factory function for declaring a `stack` card instance.\n *\n * ```ts\n * import {registerCard} from \"@pihanga2/core\";\n * import {Stack} from \"@/cards/stack\";\n *\n * registerCard(\"myApp/toolbar\", Stack({\n *   direction:      \"row\",\n *   spacing:        2,\n *   alignItems:     \"center\",\n *   justifyContent: \"space-between\",\n *   content:        [\"myApp/logo\", \"myApp/navLinks\", \"myApp/userMenu\"],\n * }));\n * ```\n */\nexport const Stack = createCardDeclaration<StackProps>(STACK_CARD);\n\n/**\n * CSS `flex-direction` values supported by the Stack card.\n */\nexport type DirectionT = \"column-reverse\" | \"column\" | \"row-reverse\" | \"row\";\n\n/**\n * CSS `justify-content` values supported by the Stack card.\n */\nexport type JustifyContentT =\n  | \"flex-start\"\n  | \"center\"\n  | \"flex-end\"\n  | \"space-between\"\n  | \"space-around\"\n  | \"space-evenly\";\n\nexport type StackProps<S = object> = {\n  /** Ordered list of child card refs to render */\n  content: PiCardRef[];\n\n  /** Flex direction — defaults to `\"column\"` */\n  direction?: DirectionT;\n  /** Optional card ref rendered as a separator between children */\n  divider?: PiCardRef;\n  /** Tailwind gap spacing units between children */\n  spacing?: number;\n\n  justifyContent?: JustifyContentT;\n  alignItems?: AlignItemsT;\n\n  /** Additional Tailwind utility classes */\n  className?: string;\n  /** Card style object (use the `shad` key for Tailwind-compatible overrides) */\n  style?: S;\n};\n",
       "type": "registry:component",
       "target": "src/cards/stack/stack.types.ts"
+    },
+    {
+      "path": "cards/stack/README.md",
+      "content": "A Flexbox layout card that arranges its child cards in a row or column with\nconfigurable gap, alignment, and justification.\n\nUse `Stack` as the primary building block for one-dimensional layouts: vertical\npage sections, horizontal toolbars, button groups, and card grids.\n\nThe `direction` prop switches between row and column layout.  `spacing`\ncontrols the Tailwind gap between children (in spacing units).  `justifyContent`\nand `alignItems` mirror their CSS Flexbox equivalents.\n\nAn optional `divider` card ref is rendered between consecutive children.\n",
+      "type": "registry:file",
+      "target": "src/cards/stack/README.md"
     }
   ]
 }

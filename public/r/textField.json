@@ -27,6 +27,12 @@
       "content": "import {\n  createCardDeclaration,\n  createOnAction,\n  registerActions,\n} from \"@pihanga2/core\";\n\nexport const PI_TEXT_FIELD_CARD = \"pi/text-field\";\n\nexport const TextField = createCardDeclaration<\n  PiTextFieldProps,\n  PiTextFieldEvents\n>(PI_TEXT_FIELD_CARD);\n\nexport const PI_TEXT_FIELD_ACTION = registerActions(PI_TEXT_FIELD_CARD, [\n  \"changed\",\n]);\n\nexport const onTextFieldChanged = createOnAction<PiTextFieldChangedEvent>(\n  PI_TEXT_FIELD_ACTION.CHANGED,\n);\n\n/** @deprecated Use `onTextFieldChanged` instead. */\nexport const onPiTextFieldChanged = onTextFieldChanged;\n\nexport type PiTextFieldProps = {\n  /**\n   * Field name used to bind to FormContext when inside a pi/form card.\n   * When provided the component reads its value from form state and writes\n   * back via form.handleChange.\n   */\n  name?: string;\n\n  /**\n   * Controlled value used in standalone mode (outside a Form).\n   * Ignored when `name` is set and the component is inside a pi/form.\n   */\n  value?: string;\n\n  /** HTML input type (e.g. \"text\", \"email\", \"password\", \"number\"). */\n  type?: string;\n\n  /** Placeholder text shown when the input is empty. */\n  placeholder?: string;\n\n  /** When true, the input is disabled and non-interactive. */\n  disabled?: boolean;\n};\n\nexport type PiTextFieldChangedEvent = {\n  /** Field name, mirrors the `name` prop if provided. */\n  name?: string;\n  /** New value after the change. */\n  value: string;\n};\n\nexport type PiTextFieldEvents = {\n  onChanged: PiTextFieldChangedEvent;\n};\n",
       "type": "registry:component",
       "target": "src/cards/textField/textField.types.ts"
+    },
+    {
+      "path": "cards/textField/README.md",
+      "content": "A minimal single-line text input rendered as a shadcn `<Input>`.\n\nUse it inside a `pi/form` card (with `name`) to bind it to form state, or\nstandalone (with `value`) for directly controlled string inputs.\n\nSet `type` to `\"email\"`, `\"password\"`, `\"number\"`, etc. for semantic HTML\ninput types.  Set `disabled` to make the field non-interactive.\n\n> For a richer, self-contained input with a built-in label and description,\n> prefer the `pi/input` card.  Use `pi/text-field` when you need a bare\n> control that a `pi/field` wrapper will label externally.\n",
+      "type": "registry:file",
+      "target": "src/cards/textField/README.md"
     }
   ]
 }

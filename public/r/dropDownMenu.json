@@ -42,6 +42,12 @@
       "content": "import {actionTypesToEvents, registerCardComponent} from \"@pihanga2/core\";\n\nimport {DROP_DOWN_MENU_ACTION, DROP_DOWN_MENU_CARD} from \"./drop-down.types\";\nimport {Component} from \"./drop-down.component\";\n\nexport * from \"./drop-down.types\";\n\nregisterCardComponent({\n  name: DROP_DOWN_MENU_CARD,\n  component: Component,\n  events: actionTypesToEvents(DROP_DOWN_MENU_ACTION),\n});\n",
       "type": "registry:component",
       "target": "src/cards/dropDownMenu/index.ts"
+    },
+    {
+      "path": "cards/dropDownMenu/README.md",
+      "content": "A dropdown menu backed by Radix UI's DropdownMenu primitive.\n\n**Supported item types:**\n\n| Type | Behaviour |\n|---|---|\n| `item` | Regular action with optional keyboard shortcut |\n| `checkbox` | Toggleable item with optional keep-open delay |\n| `radio-group` | Single-select group |\n| `submenu` | Nested menu level |\n| `label` | Non-interactive header |\n| `separator` | Visual divider |\n\nThe `trigger` prop accepts any `PiCardRef` — typically a `Button` card.\n",
+      "type": "registry:file",
+      "target": "src/cards/dropDownMenu/README.md"
     }
   ]
 }

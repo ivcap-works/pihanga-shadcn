@@ -187,17 +187,20 @@ export const MarkdownViewerComponent = (
       style={style}
       data-pihanga={cardName}
     >
-      <ReactMarkdown
-        remarkPlugins={remarkPlugins}
-        rehypePlugins={
-          rehypePlugins as Parameters<typeof ReactMarkdown>[0]["rehypePlugins"]
-        }
-        remarkRehypeOptions={remarkRehypeOptions}
-        components={mergedComponents}
-        className={`${_cls("inner")} md-prose`}
-      >
-        {content}
-      </ReactMarkdown>
+      <div className={`${_cls("inner")} md-prose`}>
+        <ReactMarkdown
+          remarkPlugins={remarkPlugins}
+          rehypePlugins={
+            rehypePlugins as Parameters<
+              typeof ReactMarkdown
+            >[0]["rehypePlugins"]
+          }
+          remarkRehypeOptions={remarkRehypeOptions}
+          components={mergedComponents}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
     </div>
   );
 };

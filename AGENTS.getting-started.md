@@ -495,7 +495,12 @@ export default defineConfig({
     // CJS packages used transitively by @pihanga2/core must still be listed in
     // `include` so Vite can convert them to ESM for the browser.
     exclude: ["@pihanga2/core", "@pihanga2/shadcn"],
-    include: ["deep-equal", "stacktrace-js", "react-dom/client"],
+    // ⚠️ lucide-react MUST be in include: excluding @pihanga2/shadcn causes
+    // Vite to serve lucide-react as raw ESM too (it's a transitive dep).
+    // That triggers ~1000 individual icon requests in the browser — one per
+    // icon file — and adblockers will block requests matching "fingerprint.js".
+    // Listing lucide-react here pre-bundles it into a single dev chunk.
+    include: ["deep-equal", "stacktrace-js", "react-dom/client", "lucide-react"],
   },
 });
 ```

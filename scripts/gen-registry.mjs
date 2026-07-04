@@ -618,6 +618,17 @@ function genCard(cardDir) {
     target: `src/cards/${cardName}/${f.name}`,
   }));
 
+  // Include README.md if present
+  const readmePath = join(cardDir, "README.md");
+  if (existsSync(readmePath)) {
+    files.push({
+      path: `cards/${cardName}/README.md`,
+      content: readFileSync(readmePath, "utf-8"),
+      type: "registry:file",
+      target: `src/cards/${cardName}/README.md`,
+    });
+  }
+
   return {
     $schema: "https://ui.shadcn.com/schema/registry-item.json",
     name: cardName,

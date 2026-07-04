@@ -31,6 +31,12 @@
       "content": "import {actionTypesToEvents, registerCardComponent} from \"@pihanga2/core\";\n\nimport {DialogComponent} from \"./dialog.component\";\nimport {PI_DIALOG_ACTION, PI_DIALOG_CARD} from \"./dialog.types\";\n\nexport * from \"./dialog.types\";\n\nregisterCardComponent({\n  name: PI_DIALOG_CARD,\n  component: DialogComponent,\n  events: actionTypesToEvents(PI_DIALOG_ACTION),\n});\n",
       "type": "registry:component",
       "target": "src/cards/dialog/index.ts"
+    },
+    {
+      "path": "cards/dialog/README.md",
+      "content": "A modal / drawer dialog backed by Radix UI's Dialog primitive.\n\n**Usage modes:**\n\n| Mode | How to open |\n|---|---|\n| Trigger | Pass a `trigger` card — dialog opens on interaction |\n| Controlled | Pass `open` prop + handle `onClosed` to manage from state |\n| Programmatic | No trigger — open/close purely via the `open` prop |\n\nSupports multiple size variants (`xs` through `4xl`), a responsive drawer\nvariant on mobile (`mobileVariant: \"drawer\"`), and optional custom footer\nor close-button text.\n",
+      "type": "registry:file",
+      "target": "src/cards/dialog/README.md"
     }
   ]
 }

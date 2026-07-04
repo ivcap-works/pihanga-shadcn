@@ -26,6 +26,12 @@
       "content": "import {registerCardComponent} from \"@pihanga2/core\";\nimport {ConditionalComponent} from \"./conditional.component\";\nimport {CONDITIONAL_CARD} from \"./conditional.types\";\n\nexport * from \"./conditional.types\";\n\n// No events — this card is purely structural.\nregisterCardComponent({\n  name: CONDITIONAL_CARD,\n  component: ConditionalComponent,\n});\n",
       "type": "registry:component",
       "target": "src/cards/conditional/index.ts"
+    },
+    {
+      "path": "cards/conditional/README.md",
+      "content": "Renders a child card only when a boolean predicate and/or a viewport-width (or\ncontainer-width) breakpoint condition is satisfied.\n\nUse `shad/conditional` to show or hide any card based on application state\n**or window/container width** without reaching for CSS `hidden` / `display:none`\nhacks.  The content card is **mounted and unmounted** from the React tree — not\njust visually hidden — so subscriptions, side-effects, and focus state inside it\nare fully reset when the condition changes.\n\n| Prop | Purpose |\n|---|---|\n| `show` | Optional boolean gate (default `true`); drive with `memo()` for reactive mount/unmount |\n| `showOn` | Optional breakpoint selector; mounts content only when the width condition is met |\n| `containerQuery` | When `true`, `showOn` is evaluated against the **enclosing container** width (via `ResizeObserver`) instead of the viewport (via `matchMedia`) |\n| `content` | The card to render when the visibility condition is met |\n\nWhen **both** `show` and `showOn` are provided the card is visible only when\nboth conditions are satisfied (logical AND).\n\n### `showOn` selector formats\n\n| Value | Meaning |\n|---|---|\n| `sm` | width ≥ 640 px (Tailwind `sm`) |\n| `md` | width ≥ 768 px |\n| `lg` | width ≥ 1024 px |\n| `xl` | width ≥ 1280 px |\n| `2xl` | width ≥ 1536 px |\n| `400px` | width ≥ 400 px (bare value = min-width) |\n| `>=640px` | width ≥ 640 px |\n| `>640px` | width > 640 px |\n| `<=1024px` | width ≤ 1024 px |\n| `<768px` | width < 768 px |\n\nCommon use-cases: auth-gating a dashboard, showing an empty-state hint when a\nlist has no items, swapping an edit form in/out of a read-only view, showing a\ndesktop sidebar only on large screens, showing a mobile drawer only on small\nscreens, or adapting a panel's content to its own rendered width.\n",
+      "type": "registry:file",
+      "target": "src/cards/conditional/README.md"
     }
   ]
 }

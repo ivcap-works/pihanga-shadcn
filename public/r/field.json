@@ -30,6 +30,12 @@
       "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {FieldCardComponent} from \"./field.component\";\nimport {PI_FIELD_CARD} from \"./field.types\";\n\nexport * from \"./field.types\";\n\n// pi/field has no events of its own; events fire from the inner fieldCard.\nregisterCardComponent({\n  name: PI_FIELD_CARD,\n  component: FieldCardComponent,\n});\n",
       "type": "registry:component",
       "target": "src/cards/field/index.ts"
+    },
+    {
+      "path": "cards/field/README.md",
+      "content": "A labelled form-field wrapper that pairs any input card with a visible\n`<label>`, optional description text, and an inline error message.\n\nUse it to wrap bare input controls (`pi/text-field`, `pi/select`,\n`pi/checkbox`, etc.) when you need consistent label / error presentation\nacross a form, without each control needing to manage its own label markup.\n\nWhen the `name` prop is provided and the field is inside a `pi/form` card,\nthe error is driven automatically by the form's validation state.  Outside\na form, use the `error` prop to show a static error message.\n",
+      "type": "registry:file",
+      "target": "src/cards/field/README.md"
     }
   ]
 }

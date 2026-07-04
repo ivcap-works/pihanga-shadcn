@@ -46,6 +46,12 @@
       "content": "import {createCardDeclaration} from \"@pihanga2/core\";\nimport type {CSSProperties} from \"react\";\nimport type {PluggableList} from \"unified\";\nimport type {Components} from \"react-markdown\";\n\nexport const MARKDOWN_CARD = \"markdown-viewer\";\n\nexport const MarkdownViewer =\n  createCardDeclaration<MarkdownViewerProps>(MARKDOWN_CARD);\n\nexport type MarkdownViewerProps = {\n  /** Markdown source string to render directly. */\n  source?: string;\n  /** URL/path to a file whose text content will be fetched and rendered. */\n  path?: string;\n  /**\n   * Truncate rendered text to approximately this many characters (word boundary).\n   * A negative value (default: -1) disables truncation.\n   */\n  maxBodyLength?: number;\n\n  remarkPlugins?: PluggableList;\n  rehypePlugins?: PluggableList;\n  remarkRehypeOptions?: object;\n\n  /**\n   * Custom element renderers passed directly to `react-markdown`.\n   * Merged on top of the card's built-in defaults (code/pre styling).\n   * Use this to override how individual HTML elements are rendered.\n   */\n  components?: Components;\n\n  /** Additional CSS class to apply to the outer wrapper div. */\n  className?: string;\n  style?: CSSProperties;\n};\n",
       "type": "registry:component",
       "target": "src/cards/markdownViewer/markdownViewer.types.ts"
+    },
+    {
+      "path": "cards/markdownViewer/README.md",
+      "content": "Renders a markdown string (or remotely-fetched markdown file) as styled HTML.\n\nPowered by `react-markdown` with:\n\n- **GFM** (GitHub Flavoured Markdown) via `remark-gfm` — tables, strikethrough,\n  task lists, auto-links, etc.\n- **Math** via `remark-math` + `rehype-katex` — inline `$...$` and block `$$...$$`\n  LaTeX expressions.\n\nProvide content via `source` (inline string) or `path` (URL to fetch at runtime).\n",
+      "type": "registry:file",
+      "target": "src/cards/markdownViewer/README.md"
     }
   ]
 }
