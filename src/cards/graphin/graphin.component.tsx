@@ -248,8 +248,10 @@ export const GraphinComponent = (
             getSpec(d)?.fill ?? "#4793AF",
           stroke: (d: {id?: string; data?: Record<string, unknown>}) =>
             getSpec(d)?.stroke ?? "#d2dde8",
-          lineWidth: (d: {id?: string; data?: Record<string, unknown>}) =>
-            getSpec(d)?.lineWidth ?? 1,
+          lineWidth: (d: {id?: string; data?: Record<string, unknown>}) => {
+            const s = getSpec(d);
+            return s?.strokeWidth ?? s?.lineWidth ?? 1;
+          },
           size: (d: {id?: string; data?: Record<string, unknown>}) =>
             getSpec(d)?.size ?? 24,
           opacity: (d: {id?: string; data?: Record<string, unknown>}) =>

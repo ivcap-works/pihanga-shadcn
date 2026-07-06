@@ -283,6 +283,20 @@ export type GraphinTooltip = {
    * @default 4
    */
   offset?: number | [number, number];
+  /**
+   * Extra CSS class name(s) applied to the tooltip wrapper `<div>`.
+   * Use this to override the default background / border / shadow via
+   * Tailwind utilities or your own CSS classes.
+   *
+   * @example "rounded-xl shadow-lg border-primary"
+   */
+  className?: string;
+  /**
+   * Inline style overrides for the tooltip wrapper `<div>`.
+   * Merged on top of the built-in positioning / pointer-events styles so
+   * you can safely override individual properties (e.g. `padding`, `zIndex`).
+   */
+  style?: React.CSSProperties;
 };
 
 export type GraphinContextMenu = {
@@ -297,6 +311,20 @@ export type GraphinContextMenu = {
    * @default 4
    */
   offset?: number | [number, number];
+  /**
+   * Extra CSS class name(s) applied to the context-menu wrapper `<div>`.
+   * Use this to override the default background / border / shadow via
+   * Tailwind utilities or your own CSS classes.
+   *
+   * @example "rounded-xl shadow-lg border-primary"
+   */
+  className?: string;
+  /**
+   * Inline style overrides for the context-menu wrapper `<div>`.
+   * Merged on top of the built-in positioning / pointer-events styles so
+   * you can safely override individual properties (e.g. `padding`, `zIndex`).
+   */
+  style?: React.CSSProperties;
 };
 
 // ---------------------------------------------------------------------------
@@ -327,8 +355,10 @@ export type GraphinNodeStyleDef = {
   fill?: string;
   /** Border colour. */
   stroke?: string;
-  /** Border thickness in pixels. */
+  /** Border thickness in pixels. Alias: `strokeWidth` (takes precedence). */
   lineWidth?: number;
+  /** Border thickness in pixels. Takes precedence over `lineWidth`. */
+  strokeWidth?: number;
   /**
    * Node size in pixels.
    * Pass a number for a square/circle; pass `[width, height]` for a rectangle.

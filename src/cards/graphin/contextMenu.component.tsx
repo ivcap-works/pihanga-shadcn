@@ -212,13 +212,20 @@ export function ContextMenuComponent(props: {
   return (
     <div
       ref={containerRef}
+      className={contentCards.className}
       style={{
         position: "absolute",
         left: x + ox,
         top: y + oy,
-        zIndex: 1000,
+        backgroundColor: "var(--color-card, white)",
+        border: "1px solid hsl(var(--border, 214 32% 91%))",
+        padding: "12px",
+        borderRadius: "var(--radius, 4px)",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
         // Panel is fully interactive
         pointerEvents: "auto",
+        zIndex: 1000,
+        ...contentCards.style,
       }}
       // Prevent clicks inside the panel from bubbling to the outside-click handler
       onMouseDown={(e) => e.stopPropagation()}

@@ -120,11 +120,14 @@ export const ChartGraphComponent = (
         {series.map((s) => (
           <Area
             key={s.dataKey}
-            type="natural"
+            type={s.curveType ?? "natural"}
             dataKey={s.dataKey}
-            fill={`var(--color-${s.dataKey})`}
             stroke={`var(--color-${s.dataKey})`}
-            fillOpacity={fillOpacity}
+            strokeWidth={s.strokeWidth ?? 2}
+            strokeDasharray={s.strokeDasharray}
+            fill={s.fillColor ?? `var(--color-${s.dataKey})`}
+            fillOpacity={s.fillOpacity ?? fillOpacity}
+            dot={s.dot ?? false}
             isAnimationActive={!suppressAnimation}
             {...(stacked ? {stackId: "stacked"} : {})}
           />
@@ -159,11 +162,12 @@ export const ChartGraphComponent = (
         {series.map((s) => (
           <Line
             key={s.dataKey}
-            type="natural"
+            type={s.curveType ?? "natural"}
             dataKey={s.dataKey}
             stroke={`var(--color-${s.dataKey})`}
-            strokeWidth={2}
-            dot={false}
+            strokeWidth={s.strokeWidth ?? 2}
+            strokeDasharray={s.strokeDasharray}
+            dot={s.dot ?? false}
             isAnimationActive={!suppressAnimation}
           />
         ))}

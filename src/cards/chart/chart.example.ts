@@ -17,10 +17,76 @@ const MONTHLY_DATA = [
   {month: "Jun", desktop: 214, mobile: 140},
 ];
 
-const SINGLE_SERIES = [{dataKey: "desktop", label: "Desktop"}];
-const MULTI_SERIES = [
-  {dataKey: "desktop", label: "Desktop"},
-  {dataKey: "mobile", label: "Mobile"},
+const SINGLE_LINE_SERIES = [
+  {
+    dataKey: "desktop",
+    label: "Desktop",
+    color: "var(--chart-1)",
+    curveType: "natural" as const,
+    strokeWidth: 2,
+    strokeDasharray: undefined,
+    dot: false,
+  },
+];
+
+const SINGLE_AREA_SERIES = [
+  {
+    dataKey: "desktop",
+    label: "Desktop",
+    color: "var(--chart-1)",
+    curveType: "natural" as const,
+    strokeWidth: 2,
+    strokeDasharray: undefined,
+    dot: false,
+    fillColor: "var(--chart-1)",
+    fillOpacity: 0.4,
+  },
+];
+
+const MULTI_LINE_SERIES = [
+  {
+    dataKey: "desktop",
+    label: "Desktop",
+    color: "var(--chart-1)",
+    curveType: "natural" as const,
+    strokeWidth: 2,
+    strokeDasharray: undefined,
+    dot: false,
+  },
+  {
+    dataKey: "mobile",
+    label: "Mobile",
+    color: "var(--chart-2)",
+    curveType: "natural" as const,
+    strokeWidth: 2,
+    strokeDasharray: undefined,
+    dot: false,
+  },
+];
+
+const MULTI_AREA_SERIES = [
+  {
+    dataKey: "desktop",
+    label: "Desktop",
+    color: "var(--chart-1)",
+    curveType: "natural" as const,
+    strokeWidth: 2,
+    strokeDasharray: undefined,
+    dot: false,
+    fillColor: "var(--chart-1)",
+    fillOpacity: 0.4,
+  },
+  {
+    dataKey: "mobile",
+    label: "Mobile",
+    color: "var(--chart-2)",
+    curveType: "natural" as const,
+    strokeWidth: 2,
+    strokeDasharray: undefined,
+    dot: false,
+    fillColor: "var(--chart-2)",
+    fillOpacity: 0.4,
+  },
 ];
 
 export default definePlayground<PiChartGraphProps>({
@@ -32,7 +98,7 @@ export default definePlayground<PiChartGraphProps>({
   defaultProps: {
     chartType: "line",
     data: MONTHLY_DATA,
-    series: SINGLE_SERIES,
+    series: SINGLE_LINE_SERIES,
     xDataKey: "month",
     showLegend: true,
     showGrid: true,
@@ -56,7 +122,7 @@ export default definePlayground<PiChartGraphProps>({
       props: {
         chartType: "line",
         data: MONTHLY_DATA,
-        series: SINGLE_SERIES,
+        series: SINGLE_LINE_SERIES,
         xDataKey: "month",
         title: "Desktop Visits",
         description: "Monthly desktop page views",
@@ -70,11 +136,10 @@ export default definePlayground<PiChartGraphProps>({
       props: {
         chartType: "area",
         data: MONTHLY_DATA,
-        series: SINGLE_SERIES,
+        series: SINGLE_AREA_SERIES,
         xDataKey: "month",
         title: "Desktop Visits",
         description: "Monthly desktop page views",
-        fillOpacity: 0.4,
       },
     },
     {
@@ -85,7 +150,7 @@ export default definePlayground<PiChartGraphProps>({
       props: {
         chartType: "line",
         data: MONTHLY_DATA,
-        series: MULTI_SERIES,
+        series: MULTI_LINE_SERIES,
         xDataKey: "month",
         title: "Visits by Device",
         description: "Desktop vs mobile page views",
@@ -99,11 +164,10 @@ export default definePlayground<PiChartGraphProps>({
       props: {
         chartType: "area",
         data: MONTHLY_DATA,
-        series: MULTI_SERIES,
+        series: MULTI_AREA_SERIES,
         xDataKey: "month",
         title: "Visits by Device",
         description: "Desktop vs mobile page views",
-        fillOpacity: 0.35,
         stacked: false,
       },
     },
@@ -115,12 +179,11 @@ export default definePlayground<PiChartGraphProps>({
       props: {
         chartType: "area",
         data: MONTHLY_DATA,
-        series: MULTI_SERIES,
+        series: MULTI_AREA_SERIES,
         xDataKey: "month",
         title: "Total Visits",
         description: "Desktop + mobile (stacked)",
         stacked: true,
-        fillOpacity: 0.5,
       },
     },
     {
@@ -131,7 +194,7 @@ export default definePlayground<PiChartGraphProps>({
       props: {
         chartType: "line",
         data: MONTHLY_DATA,
-        series: MULTI_SERIES,
+        series: MULTI_LINE_SERIES,
         xDataKey: "month",
         title: "Visits by Device",
         description: "With y-axis labels",
@@ -146,14 +209,13 @@ export default definePlayground<PiChartGraphProps>({
       props: {
         chartType: "area",
         data: MONTHLY_DATA,
-        series: MULTI_SERIES,
+        series: MULTI_AREA_SERIES,
         xDataKey: "month",
         title: "Visits by Device",
         description: 'Y axis with " views" unit suffix',
         showYAxis: true,
         yAxisUnit: " k",
         stacked: false,
-        fillOpacity: 0.4,
       },
     },
     {
@@ -164,7 +226,7 @@ export default definePlayground<PiChartGraphProps>({
       props: {
         chartType: "line",
         data: MONTHLY_DATA,
-        series: MULTI_SERIES,
+        series: MULTI_LINE_SERIES,
         xDataKey: "month",
         title: "Visits by Device",
         description: "With threshold and event markers",
@@ -188,7 +250,7 @@ export default definePlayground<PiChartGraphProps>({
       props: {
         chartType: "line",
         data: MONTHLY_DATA,
-        series: MULTI_SERIES,
+        series: MULTI_LINE_SERIES,
         xDataKey: "month",
       },
     },
@@ -272,8 +334,8 @@ registerCard("myApp/deviceChart", Chart({
     {month: "Mar", desktop: 237, mobile: 120},
   ],
   series: [
-    {dataKey: "desktop", label: "Desktop", color: "hsl(var(--chart-1))"},
-    {dataKey: "mobile",  label: "Mobile",  color: "hsl(var(--chart-2))"},
+    {dataKey: "desktop", label: "Desktop", color: "var(--chart-1)"},
+    {dataKey: "mobile",  label: "Mobile",  color: "var(--chart-2)"},
   ],
   stacked: true,
   fillOpacity: 0.5,

@@ -192,18 +192,20 @@ export function TooltipComponent(props: {
 
   return (
     <div
+      className={contentCards.className}
       style={{
         position: "absolute",
         left: x + ox,
         top: y + oy,
-        background: "hsl(var(--background))",
-        border: "1px solid hsl(var(--border))",
+        backgroundColor: "var(--color-card, white)",
+        border: "1px solid hsl(var(--border, 214 32% 91%))",
         padding: "12px",
         borderRadius: "var(--radius, 4px)",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         // Tooltip must never block graph interaction
         pointerEvents: "none",
         zIndex: 1000,
+        ...contentCards.style,
       }}
     >
       <Card

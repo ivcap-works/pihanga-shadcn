@@ -24,6 +24,55 @@ export type PiChartSeries = {
    * (`hsl(var(--chart-1))`, `hsl(var(--chart-2))`, …) in order.
    */
   color?: string;
+
+  // ── Line styling ──────────────────────────────────────────────────────────
+
+  /**
+   * Recharts curve interpolation type.
+   * Common values: `"natural"` (smooth, default), `"linear"`, `"step"`,
+   * `"stepBefore"`, `"stepAfter"`, `"monotone"`.
+   */
+  curveType?:
+    | "natural"
+    | "linear"
+    | "monotone"
+    | "step"
+    | "stepBefore"
+    | "stepAfter";
+
+  /** Stroke width in pixels.  Defaults to `2`. */
+  strokeWidth?: number;
+
+  /**
+   * SVG `stroke-dasharray` value for a dashed/dotted line.
+   * e.g. `"4 4"` → short dashes, `"8 4"` → long dashes, `undefined` → solid.
+   */
+  strokeDasharray?: string;
+
+  /**
+   * Show a dot at each data point.
+   * `false` (default) hides dots; `true` shows them with the recharts defaults;
+   * pass an object (e.g. `{ r: 4, fill: "white" }`) for full SVG circle control.
+   */
+  dot?: boolean | Record<string, unknown>;
+
+  // ── Area fill styling ─────────────────────────────────────────────────────
+
+  /**
+   * CSS colour override for the filled area (`chartType: "area"` only).
+   * Defaults to the same value as `color` so the fill matches the stroke.
+   *
+   * @example `fillColor: "hsl(var(--chart-3))"` — fill with a different palette colour.
+   * @example `fillColor: "transparent"` — stroke-only appearance inside an AreaChart.
+   */
+  fillColor?: string;
+
+  /**
+   * Per-series fill opacity (`chartType: "area"` only).
+   * Overrides the chart-level `fillOpacity` prop for this series.
+   * Range 0–1.
+   */
+  fillOpacity?: number;
 };
 
 /**
