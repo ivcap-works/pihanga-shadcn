@@ -1,0 +1,41 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "select",
+  "type": "registry:component",
+  "description": "Pihanga select card component",
+  "dependencies": [
+    "@radix-ui/react-select@^2.2.6",
+    "lucide-react@^0.513.0"
+  ],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "select",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/form.json"
+  ],
+  "files": [
+    {
+      "path": "cards/select/index.ts",
+      "content": "import {actionTypesToEvents, registerCardComponent} from \"@pihanga2/core\";\n\nimport {SelectComponent} from \"./select.component\";\nimport {PI_SELECT_ACTION, PI_SELECT_CARD} from \"./select.types\";\n\nexport * from \"./select.types\";\n\nregisterCardComponent({\n  name: PI_SELECT_CARD,\n  component: SelectComponent,\n  events: actionTypesToEvents(PI_SELECT_ACTION),\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/select/index.ts"
+    },
+    {
+      "path": "cards/select/select.component.tsx",
+      "content": "import React, {useState} from \"react\";\nimport {type PiCardProps} from \"@pihanga2/core\";\nimport {\n  Select as RadixSelect,\n  SelectContent,\n  SelectGroup,\n  SelectItem,\n  SelectTrigger,\n  SelectValue,\n} from \"@/components/ui/select\";\nimport {useFormContext} from \"@/cards/form/form.context\";\nimport type {PiSelectEvents, PiSelectProps} from \"./select.types\";\n\nexport const SelectComponent = (\n  props: PiCardProps<PiSelectProps, PiSelectEvents>,\n): React.ReactNode => {\n  const {\n    name,\n    value: propValue = \"\",\n    defaultValue,\n    selfManaged = false,\n    options,\n    placeholder,\n    required,\n    disabled,\n    ariaLabel,\n    cardName,\n    onChanged,\n    onOpened,\n    onClosed,\n  } = props;\n\n  // `id` and `invalid` may be injected by a parent pi/field card via\n  // Pihanga's extra-prop forwarding.  They are not in the official type so\n  // we read them through an escape hatch.\n  const injectedId = (props as {id?: string}).id;\n  const invalid = Boolean((props as {invalid?: boolean}).invalid);\n\n  // Detect if we are inside a pi/form card via React context.\n  const form = useFormContext();\n  const useFormData = form.isInForm && Boolean(name);\n\n  // Internal state used only when selfManaged=true and not bound to a form.\n  const [managedValue, setManagedValue] = useState<string>(\n    defaultValue ?? propValue,\n  );\n\n  const value = useFormData\n    ? ((form.formData[name!] as string | undefined) ?? \"\")\n    : selfManaged\n      ? managedValue\n      : propValue;\n\n  function handleChange(newValue: string) {\n    if (useFormData) {\n      form.handleChange(name!, newValue);\n    } else {\n      if (selfManaged) {\n        setManagedValue(newValue);\n      }\n      onChanged({name, value: newValue});\n    }\n  }\n\n  function handleOpenChange(open: boolean) {\n    if (open) {\n      onOpened({});\n    } else {\n      onClosed({});\n    }\n  }\n\n  // Use the id injected by pi/field; fall back to a local id when standalone.\n  const selfId = `${cardName}-${name ?? \"select\"}`;\n  const fieldId = injectedId ?? selfId;\n\n  return (\n    <RadixSelect\n      value={value}\n      defaultValue={defaultValue}\n      onValueChange={handleChange}\n      onOpenChange={handleOpenChange}\n      disabled={disabled}\n      required={required}\n      aria-label={ariaLabel}\n    >\n      <SelectTrigger\n        id={fieldId}\n        aria-invalid={invalid || undefined}\n        data-pihanga={cardName}\n      >\n        <SelectValue placeholder={placeholder ?? \"Select…\"} />\n      </SelectTrigger>\n      <SelectContent>\n        <SelectGroup>\n          {options.map((opt) => (\n            <SelectItem\n              key={opt.value}\n              value={opt.value}\n              disabled={opt.disabled}\n            >\n              {opt.label}\n            </SelectItem>\n          ))}\n        </SelectGroup>\n      </SelectContent>\n    </RadixSelect>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/select/select.component.tsx"
+    },
+    {
+      "path": "cards/select/select.types.ts",
+      "content": "import {\n  createCardDeclaration,\n  createOnAction,\n  registerActions,\n} from \"@pihanga2/core\";\n\nexport const PI_SELECT_CARD = \"pi/select\";\n\nexport const Select = createCardDeclaration<PiSelectProps, PiSelectEvents>(\n  PI_SELECT_CARD,\n);\n\nexport const PI_SELECT_ACTION = registerActions(PI_SELECT_CARD, [\n  \"changed\",\n  \"opened\",\n  \"closed\",\n]);\n\nexport const onSelectChanged = createOnAction<PiSelectChangedEvent>(\n  PI_SELECT_ACTION.CHANGED,\n);\n\n/** @deprecated Use `onSelectChanged` instead. */\nexport const onPiSelectChanged = onSelectChanged;\n\nexport const onSelectOpened = createOnAction<PiSelectOpenedEvent>(\n  PI_SELECT_ACTION.OPENED,\n);\n\n/** @deprecated Use `onSelectOpened` instead. */\nexport const onPiSelectOpened = onSelectOpened;\n\nexport const onSelectClosed = createOnAction<PiSelectClosedEvent>(\n  PI_SELECT_ACTION.CLOSED,\n);\n\n/** @deprecated Use `onSelectClosed` instead. */\nexport const onPiSelectClosed = onSelectClosed;\n\nexport type PiSelectOption = {\n  /** The value stored in form state / dispatched in events. */\n  value: string;\n  /** Human-readable label shown in the dropdown. */\n  label: string;\n  /** When true, the option is shown but cannot be selected. */\n  disabled?: boolean;\n};\n\nexport type PiSelectProps = {\n  /**\n   * Field name used to bind to FormContext when inside a pi/form card.\n   * When provided the component reads its selected value from form data and\n   * writes back via form.handleChange.\n   */\n  name?: string;\n\n  /**\n   * Controlled value used in standalone mode (outside a Form).\n   * Ignored when `name` is set and the component is inside a pi/form.\n   */\n  value?: string;\n\n  /**\n   * When true the component manages its own selected-value state internally.\n   * Selecting an item will still dispatch the normal `onChanged` action, but\n   * the UI will immediately reflect the new selection without waiting for the\n   * host application to update `value` via a reducer.\n   *\n   * Has no effect when the component is bound to a pi/form via `name`.\n   */\n  selfManaged?: boolean;\n\n  /**\n   * Default (uncontrolled) value. Mirrors Radix `defaultValue`.\n   */\n  defaultValue?: string;\n\n  /** Available options to display in the dropdown. */\n  options: PiSelectOption[];\n\n  /** Placeholder text shown when no option is selected. */\n  placeholder?: string;\n\n  /** When true, the select is required (HTML form attribute). */\n  required?: boolean;\n\n  /** When true, the select is disabled and non-interactive. */\n  disabled?: boolean;\n\n  /** Accessible label for screen readers. */\n  ariaLabel?: string;\n};\n\nexport type PiSelectChangedEvent = {\n  /** Field name, mirrors the `name` prop if provided. */\n  name?: string;\n  /** The value of the newly selected option. */\n  value: string;\n};\n\nexport type PiSelectOpenedEvent = Record<string, never>;\n\nexport type PiSelectClosedEvent = Record<string, never>;\n\nexport type PiSelectEvents = {\n  onChanged: PiSelectChangedEvent;\n  onOpened: PiSelectOpenedEvent;\n  onClosed: PiSelectClosedEvent;\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/select/select.types.ts"
+    },
+    {
+      "path": "cards/select/README.md",
+      "content": "A dropdown select input backed by Radix UI's `<Select>` primitive.\n\nUse it inside a `pi/form` card (with `name`) to bind it to form state, or\nstandalone (with `value`) for directly controlled single-selection.\n\nSet `selfManaged: true` to have the component update its own display immediately\non selection without waiting for the host app to update `value` via a reducer.\n\nProvide `placeholder` text to show when no option is selected.\n",
+      "type": "registry:file",
+      "target": "src/cards/select/README.md"
+    }
+  ]
+}
