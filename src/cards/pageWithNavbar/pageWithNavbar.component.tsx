@@ -23,13 +23,11 @@ import "./pageWithNavbar.css";
 // ---------------------------------------------------------------------------
 
 export type ShadStyle = {
-  shad?: {
-    window?: string;
-    page?: string;
-    header?: string;
-    main?: string;
-    footer?: string;
-  };
+  window?: string;
+  page?: string;
+  header?: string;
+  main?: string;
+  footer?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -116,7 +114,7 @@ export const Component = (
   } = props;
 
   const screenSize = useScreenSize();
-  const cl = style?.shad ?? {};
+  const cl = style ?? {};
   const mainRef = useRef<HTMLElement | null>(null);
 
   // Scroll main back to top when the logical "page" changes

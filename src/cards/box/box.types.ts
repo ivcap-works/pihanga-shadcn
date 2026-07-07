@@ -1,5 +1,4 @@
 import {type PiCardRef, createCardDeclaration} from "@pihanga2/core";
-import type {AlignItemsT} from "../types";
 
 export const BOX_CARD = "shad/box";
 
@@ -44,14 +43,6 @@ export type BoxProps<S = object> = {
   paddingBottom?: number;
   paddingLeft?: number;
   paddingRight?: number;
-
-  alignItems?: AlignItemsT;
-  /** Tailwind gap spacing units */
-  gap?: number;
-  /** Uniform padding in pixels */
-  padding?: number;
-  /** Responsive display grid breakpoints */
-  display?: DisplayGridT;
 
   /** Card style object (use the `shad` key for Tailwind-compatible overrides) */
   style?: S;

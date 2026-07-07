@@ -18,11 +18,9 @@ export const ResizableComponent = (
 ): React.ReactNode => {
   const {content, handles, direction, className, style, cardName} = props;
 
-  // `style` may carry Shadcn-specific class overrides in a `shad` sub-key.
-  const shadStyle = style as
-    | {shad?: {root?: string; panel?: string; handle?: string}}
-    | undefined;
-  const sy = shadStyle?.shad ?? {};
+  const sy =
+    (style as {root?: string; panel?: string; handle?: string} | undefined) ??
+    {};
 
   const _handles: PiResizableHandle[] = Array.isArray(handles)
     ? handles

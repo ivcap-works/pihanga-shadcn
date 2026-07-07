@@ -7,7 +7,7 @@ export const BoxComponent = (props: PiCardProps<BoxProps>): React.ReactNode => {
   const {content, className, style, cardName} = props;
 
   const sy: Record<string, string | number> = {
-    ...(style as {shad?: Record<string, string | number>} | undefined)?.shad,
+    ...(style as Record<string, string | number> | undefined),
   };
   if (props.height) sy.height = `${props.height}px`;
   if (props.width) sy.width = `${props.width}px`;

@@ -21,7 +21,7 @@ export const Component = (props: PiCardProps<StackProps>): React.ReactNode => {
     style,
     cardName,
   } = props;
-  const sd: SelectSD = (style as {shad?: SelectSD} | undefined)?.shad || {};
+  const sd: SelectSD = (style as SelectSD | undefined) ?? {};
 
   const cn = [className, sd.root, "flex"];
   if (direction) {

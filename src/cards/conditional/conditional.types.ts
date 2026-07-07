@@ -13,15 +13,19 @@ export const Conditional =
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 /**
- * Named Tailwind-compatible breakpoints or a custom pixel expression.
+ * Named Tailwind-compatible breakpoints.
  *
- * Named breakpoints (Tailwind CSS defaults)
- * ─────────────────────────────────────────
+ *  `xs`   → viewport  < 640 px (mobile-first default)
  *  `sm`   → viewport ≥ 640 px
  *  `md`   → viewport ≥ 768 px
  *  `lg`   → viewport ≥ 1024 px
  *  `xl`   → viewport ≥ 1280 px
  *  `2xl`  → viewport ≥ 1536 px
+ */
+export type BreakpointName = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
+
+/**
+ * A `BreakpointName` **or** a custom pixel expression.
  *
  * Pixel expressions
  * ─────────────────
@@ -32,12 +36,21 @@ export const Conditional =
  *  `<1024px`  → viewport <  1024 px (max-width: 1023px)
  */
 export type BreakpointSelector =
-  | "sm"
-  | "md"
-  | "lg"
-  | "xl"
-  | "2xl"
+  | BreakpointName
   | (string & Record<never, never>); // allows arbitrary strings with IDE hints
+
+/**
+ * A partial map from each named breakpoint to a value of type `T`.
+ *
+ * Useful for props that need per-breakpoint configuration — e.g. the CSS
+ * `display` value to apply at each viewport width.
+ *
+ * @example
+ * ```ts
+ * const display: BreakpointMap = { xs: "none", md: "flex" };
+ * ```
+ */
+export type BreakpointMap<T = string> = Partial<Record<BreakpointName, T>>;
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -112,7 +125,7 @@ export type ConditionalProps = {
    * to `window.matchMedia` and reactively shows/hides the content card
    * whenever the viewport crosses the breakpoint.
    *
-   * Supported values: `sm` | `md` | `lg` | `xl` | `2xl` (Tailwind),
+   * Supported values: `xs` | `sm` | `md` | `lg` | `xl` | `2xl` (Tailwind),
    * or pixel expressions such as `>400px`, `>=640px`, `<768px`, `<=1024px`,
    * `400px`.
    *
