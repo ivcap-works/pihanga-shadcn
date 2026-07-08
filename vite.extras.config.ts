@@ -2,9 +2,9 @@
  * vite.extras.config.ts
  *
  * Vite library-mode config for building individual "extra" card packages:
- *   @pihanga2/shadcn-graphin   (PIHANGA_EXTRA_KEY=graphin)
- *   @pihanga2/shadcn-chart     (PIHANGA_EXTRA_KEY=chart)
- *   @pihanga2/shadcn-markdown  (PIHANGA_EXTRA_KEY=markdown)
+ *   @pihanga2/graphin   (PIHANGA_EXTRA_KEY=graphin)
+ *   @pihanga2/chart     (PIHANGA_EXTRA_KEY=chart)
+ *   @pihanga2/markdown  (PIHANGA_EXTRA_KEY=markdown)
  *
  * Invoked exclusively by scripts/build-extras.mjs — do not call directly.
  *
@@ -116,7 +116,8 @@ export default defineConfig({
     react(),
     dts({
       include: [
-        "src/cards",
+        // Only the cards in THIS package — not every card in src/cards/
+        ...pkg.cards.map((c) => `src/cards/${c}`),
         "src/lib",
         "src/components/theme-provider",
         "src/components/hooks",
