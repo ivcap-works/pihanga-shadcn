@@ -243,6 +243,31 @@ export default definePlayground<PiChartGraphProps>({
       },
     },
     {
+      id: "reference-areas",
+      title: "Reference areas",
+      description:
+        "Use `referenceAreas` to highlight rectangular regions — y-bands for value ranges, x-bands for time windows, or a combined rectangle.",
+      props: {
+        chartType: "line",
+        data: MONTHLY_DATA,
+        series: MULTI_LINE_SERIES,
+        xDataKey: "month",
+        title: "Visits by Device",
+        description: "With highlighted target range and period",
+        showYAxis: true,
+        referenceAreas: [
+          {
+            y1: 180,
+            y2: 280,
+            fill: "var(--chart-3)",
+            fillOpacity: 0.15,
+            label: "Target",
+          },
+          {x1: "Feb", x2: "Apr", fill: "var(--chart-4)", fillOpacity: 0.1},
+        ],
+      },
+    },
+    {
       id: "bare",
       title: "Bare (no card)",
       description:
@@ -377,6 +402,26 @@ registerCard("myApp/thresholdChart", Chart({
     {x: "Mar", label: "Launch", stroke: "var(--chart-2)"},
     // Object-form label for full positioning control
     {y: 100, stroke: "orange", label: {value: "Min", position: "insideRight", fill: "orange"}},
+  ],
+}));
+\`\`\`
+
+**Reference areas — highlighted bands and regions**
+
+\`\`\`ts
+registerCard("myApp/bandChart", Chart({
+  chartType: "line",
+  xDataKey: "month",
+  data: [...],
+  series: [{dataKey: "value", label: "Value"}],
+  showYAxis: true,
+  referenceAreas: [
+    // Horizontal y-band (target range)
+    {y1: 100, y2: 200, fill: "var(--chart-3)", fillOpacity: 0.15, label: "Target"},
+    // Vertical x-band (highlight a time window)
+    {x1: "Feb", x2: "Apr", fill: "var(--chart-4)", fillOpacity: 0.1},
+    // Combined rectangle with a border
+    {x1: "May", x2: "Jun", y1: 150, y2: 300, fill: "var(--chart-5)", stroke: "var(--chart-5)", strokeWidth: 1},
   ],
 }));
 \`\`\`

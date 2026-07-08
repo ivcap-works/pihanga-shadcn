@@ -76,6 +76,60 @@ export type PiChartSeries = {
 };
 
 /**
+ * A single recharts `<ReferenceArea>` to overlay on the chart.
+ * Highlights a rectangular region between two x or y coordinates.
+ *
+ * @example
+ * ```ts
+ * // Highlight a y-range (horizontal band)
+ * { y1: 100, y2: 200, fill: "var(--chart-3)", fillOpacity: 0.2, label: "Target zone" }
+ *
+ * // Highlight an x-range (vertical band)
+ * { x1: "Feb", x2: "Apr", fill: "var(--chart-2)", fillOpacity: 0.15 }
+ * ```
+ */
+export type PiChartReferenceArea = {
+  /** Start value on the **x-axis**.  Omit for a y-only band. */
+  x1?: string | number;
+  /** End value on the **x-axis**.  Omit for a y-only band. */
+  x2?: string | number;
+  /** Start value on the **y-axis**.  Omit for an x-only band. */
+  y1?: number;
+  /** End value on the **y-axis**.  Omit for an x-only band. */
+  y2?: number;
+
+  /**
+   * Label rendered inside the area.  Pass a plain string or a
+   * `{ value, position, fill, fontSize }` object for full control.
+   */
+  label?:
+    | string
+    | {value: string; position?: string; fill?: string; fontSize?: number};
+
+  /** CSS fill colour.  Defaults to `"var(--chart-1)"`. */
+  fill?: string;
+
+  /** Fill opacity, 0–1.  Defaults to `0.2`. */
+  fillOpacity?: number;
+
+  /** CSS colour for the area border stroke. */
+  stroke?: string;
+
+  /** SVG `stroke-dasharray` for the area border. */
+  strokeDasharray?: string;
+
+  /** Area border width in pixels. */
+  strokeWidth?: number;
+
+  /**
+   * Behaviour when the area extends beyond the chart boundary.
+   * `"discard"` | `"hidden"` | `"visible"` | `"extendDomain"`.
+   * Defaults to `"discard"`.
+   */
+  ifOverflow?: "discard" | "hidden" | "visible" | "extendDomain";
+};
+
+/**
  * A single recharts `<ReferenceLine>` to overlay on the chart.
  * Specify either `x` (vertical line) or `y` (horizontal line).
  *
@@ -274,6 +328,21 @@ export type PiChartGraphProps = {
    * ```
    */
   referenceLines?: PiChartReferenceLine[];
+
+  /**
+   * One or more reference areas to overlay on the chart.
+   * Each entry maps directly to a recharts `<ReferenceArea>` and highlights
+   * a rectangular region (x-band, y-band, or both).
+   *
+   * @example
+   * ```ts
+   * referenceAreas: [
+   *   { y1: 100, y2: 200, fill: "var(--chart-3)", fillOpacity: 0.15, label: "Target" },
+   *   { x1: "Feb", x2: "Apr", fill: "var(--chart-4)", fillOpacity: 0.1 },
+   * ]
+   * ```
+   */
+  referenceAreas?: PiChartReferenceArea[];
 
   /** Extra Tailwind / CSS classes forwarded to the outermost element. */
   className?: string;

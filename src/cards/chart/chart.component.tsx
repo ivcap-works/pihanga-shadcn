@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
   ReferenceLine,
+  ReferenceArea,
 } from "recharts";
 import {
   ChartContainer,
@@ -63,8 +64,27 @@ export const ChartGraphComponent = (
     xAxisUnit,
     suppressAnimation = false,
     referenceLines,
+    referenceAreas,
     className,
   } = props;
+
+  /** Render all reference areas — rendered before lines so lines appear on top. */
+  const referenceAreaEls = referenceAreas?.map((ra, i) => (
+    <ReferenceArea
+      key={i}
+      x1={ra.x1}
+      x2={ra.x2}
+      y1={ra.y1}
+      y2={ra.y2}
+      label={ra.label as string | undefined}
+      fill={ra.fill ?? "var(--chart-1)"}
+      fillOpacity={ra.fillOpacity ?? 0.2}
+      stroke={ra.stroke}
+      strokeDasharray={ra.strokeDasharray}
+      strokeWidth={ra.strokeWidth}
+      ifOverflow={ra.ifOverflow ?? "discard"}
+    />
+  ));
 
   /** Render all reference lines — shared by both chart types. */
   const referenceLineEls = referenceLines?.map((rl, i) => (
@@ -117,6 +137,7 @@ export const ChartGraphComponent = (
         />
         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
         {showLegend && <ChartLegend content={<ChartLegendContent />} />}
+        {referenceAreaEls}
         {series.map((s) => (
           <Area
             key={s.dataKey}
@@ -159,6 +180,7 @@ export const ChartGraphComponent = (
         />
         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
         {showLegend && <ChartLegend content={<ChartLegendContent />} />}
+        {referenceAreaEls}
         {series.map((s) => (
           <Line
             key={s.dataKey}
