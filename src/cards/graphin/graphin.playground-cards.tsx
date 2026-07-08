@@ -164,3 +164,95 @@ registerCardComponent({
     typeof registerCardComponent
   >[0]["component"],
 });
+
+// ---------------------------------------------------------------------------
+// Demo custom-legend card
+// ---------------------------------------------------------------------------
+
+type DemoLegendProps = {
+  cardName: string;
+  parentCard: string;
+};
+
+/**
+ * Example of a fully custom pihanga-card legend.
+ *
+ * In a real app you would derive the legend entries from Redux state —
+ * e.g. to show only the node types actually present in the current graph.
+ * This demo renders a hard-coded list using the same colours as the
+ * "styled-nodes" / "legend" playground facets.
+ */
+function DemoLegendCard(_props: DemoLegendProps): React.ReactNode {
+  const items = [
+    {label: "Gateway", fill: "#e67e22", shape: "star"},
+    {label: "Service", fill: "#2980b9", shape: "circle"},
+    {label: "Database", fill: "#8e44ad", shape: "rect"},
+    {label: "Connection", fill: "#555", shape: "line"},
+  ] as const;
+
+  return (
+    <div style={{minWidth: 130}}>
+      <p
+        style={{
+          margin: "0 0 8px",
+          fontWeight: 600,
+          fontSize: 11,
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+          opacity: 0.55,
+        }}
+      >
+        Legend
+      </p>
+      {items.map(({label, fill, shape}) => (
+        <div
+          key={label}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 5,
+          }}
+        >
+          <svg
+            width={14}
+            height={14}
+            style={{flexShrink: 0, overflow: "visible"}}
+          >
+            {shape === "star" ? (
+              <polygon
+                points={Array.from({length: 10}, (_, i) => {
+                  const a = (Math.PI * i) / 5 - Math.PI / 2;
+                  const r = i % 2 === 0 ? 6 : 2.5;
+                  return `${7 + r * Math.cos(a)},${7 + r * Math.sin(a)}`;
+                }).join(" ")}
+                fill={fill}
+              />
+            ) : shape === "rect" ? (
+              <rect x={1} y={1} width={12} height={12} fill={fill} rx={1} />
+            ) : shape === "line" ? (
+              <line
+                x1={0}
+                y1={7}
+                x2={14}
+                y2={7}
+                stroke={fill}
+                strokeWidth={2}
+              />
+            ) : (
+              <circle cx={7} cy={7} r={6} fill={fill} />
+            )}
+          </svg>
+          <span style={{fontSize: 12}}>{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+registerCardComponent({
+  name: "pg/graphin/demo-legend",
+  component: DemoLegendCard as Parameters<
+    typeof registerCardComponent
+  >[0]["component"],
+});

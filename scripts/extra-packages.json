@@ -1,0 +1,31 @@
+{
+  "packages": [
+    {
+      "name": "@pihanga2/graphin",
+      "key": "graphin",
+      "cards": [
+        "graphin"
+      ],
+      "outDir": "dist-lib-graphin",
+      "description": "Pihanga graphin card — network graph visualisation built on @antv/graphin"
+    },
+    {
+      "name": "@pihanga2/chart",
+      "key": "chart",
+      "cards": [
+        "chart"
+      ],
+      "outDir": "dist-lib-chart",
+      "description": "Pihanga chart card — recharts-based data visualisation"
+    },
+    {
+      "name": "@pihanga2/markdown",
+      "key": "markdown",
+      "cards": [
+        "markdownViewer"
+      ],
+      "outDir": "dist-lib-markdown",
+      "description": "Pihanga markdown viewer card — rich markdown with mermaid, math, and syntax highlighting"
+    }
+  ]
+}

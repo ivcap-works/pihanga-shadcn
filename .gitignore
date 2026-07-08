@@ -29,3 +29,4 @@ src/cards/core-index.ts
 
 /coverage
 *.tgz
+/dist*

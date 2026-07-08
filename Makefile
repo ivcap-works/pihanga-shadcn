@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+s which are NOT covered by any of hte SHELL := /bin/bash
 
 DOMAIN=pihanga-shadcn
 
@@ -13,6 +13,8 @@ TAR_FILE=${ROOT_DIR}/${DOMAIN}-${GIT_SHORT}-$(shell echo ${GIT_BRANCH} | sed -e 
 
 .PHONY: help install dev build build-preview gen-playground gen-registry \
         build-core build-core-dry publish \
+        build-extras build-extras-dry build-graphin build-chart build-markdown \
+        publish-graphin publish-chart publish-markdown publish-all \
         check lint lint-fix type-check \
         test test-run test-ui test-coverage \
         clean src-dist tar tar-echo
@@ -54,6 +56,32 @@ build-core-dry: ## Preview @pihanga2/shadcn build without writing files (dry-run
 
 publish: build-core ## Build and publish @pihanga2/shadcn to npm
 	cd ${ROOT_DIR}/dist-lib && npm publish --access public
+
+build-extras: install ## Build all extra card packages (graphin, chart, markdown)
+	node scripts/build-extras.mjs
+
+build-extras-dry: ## Preview all extra package builds without writing files
+	node scripts/build-extras.mjs --dry-run
+
+build-graphin: install ## Build @pihanga2/graphin into dist-lib-graphin/
+	node scripts/build-extras.mjs --pkg graphin
+
+build-chart: install ## Build @pihanga2/chart into dist-lib-chart/
+	node scripts/build-extras.mjs --pkg chart
+
+build-markdown: install ## Build @pihanga2/markdown into dist-lib-markdown/
+	node scripts/build-extras.mjs --pkg markdown
+
+publish-all: publish publish-graphin publish-chart publish-markdown ## Build and publish all four packages to npm
+
+publish-graphin: build-graphin ## Build and publish @pihanga2/graphin to npm
+	cd ${ROOT_DIR}/dist-lib-graphin && npm publish --access public
+
+publish-chart: build-chart ## Build and publish @pihanga2/chart to npm
+	cd ${ROOT_DIR}/dist-lib-chart && npm publish --access public
+
+publish-markdown: build-markdown ## Build and publish @pihanga2/markdown to npm
+	cd ${ROOT_DIR}/dist-lib-markdown && npm publish --access public
 
 ##@ Code Quality
 
@@ -102,5 +130,7 @@ tar-echo: ## Print the deployment tarball filename
 
 ##@ Cleanup
 
-clean: ## Remove build artefacts (dist, dist-lib, coverage)
-	rm -rf ${ROOT_DIR}/dist ${ROOT_DIR}/dist-lib ${ROOT_DIR}/coverage
+clean: ## Remove build artefacts (dist, dist-lib, dist-lib-*, coverage)
+	rm -rf ${ROOT_DIR}/dist ${ROOT_DIR}/dist-lib \
+	       ${ROOT_DIR}/dist-lib-graphin ${ROOT_DIR}/dist-lib-chart \
+	       ${ROOT_DIR}/dist-lib-markdown ${ROOT_DIR}/coverage

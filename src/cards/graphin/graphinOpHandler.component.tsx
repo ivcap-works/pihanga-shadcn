@@ -20,6 +20,7 @@ import {
   type GraphinClearNodeStylesAction,
   type GraphinZoomToNodeAction,
   type GraphinUpdateNodeStyleMapAction,
+  type GraphinFitViewAction,
   type ReduxAction,
 } from "./graphin.types";
 
@@ -164,6 +165,33 @@ export function GraphinOpHandler({
           };
         }
         void g.draw();
+      } catch {
+        // noop
+      }
+    },
+    cardName,
+  );
+
+  // ── OP: fitView ──────────────────────────────────────────────────────────
+  // Fit the entire graph into the visible canvas area.
+  // mode "view"   → graph.fitView()   : zoom + pan so all nodes are visible
+  // mode "center" → graph.fitCenter() : pan to centroid, keep current zoom
+  //
+  // Example dispatch:
+  //   dispatchGraphinFitView(dispatch, { cardName: "myGraph" });
+  //   dispatchGraphinFitView(dispatch, { cardName: "myGraph", mode: "center" });
+  usePiReducer<ReduxState, GraphinFitViewAction & ReduxAction>(
+    GRAPHIN_OP_ACTION.FIT_VIEW,
+    (_, a) => {
+      if (a.cardName !== cardName) return;
+      const g = graphRef.current;
+      if (!isReadyRef.current || !g) return;
+      try {
+        if (a.mode === "center") {
+          void g.fitCenter();
+        } else {
+          void g.fitView();
+        }
       } catch {
         // noop
       }

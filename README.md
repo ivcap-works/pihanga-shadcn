@@ -2,7 +2,14 @@
 
 A collection of **Pihanga cards** built on top of [shadcn/ui](https://ui.shadcn.com/) and
 [Radix UI](https://radix-ui.com/), distributed through two channels: a
-**shadcn copy-on-install registry** and a traditional **`@pihanga2/shadcn` npm package**.
+**shadcn copy-on-install registry** and traditional **npm packages**.
+
+| npm package | Contents | Install |
+|---|---|---|
+| `@pihanga2/shadcn` | Core cards (Radix UI + light deps only) | `npm install @pihanga2/shadcn` |
+| `@pihanga2/graphin` | Network graph card (`@antv/graphin`) | `npm install @pihanga2/graphin` |
+| `@pihanga2/chart` | Chart card (`recharts`) | `npm install @pihanga2/chart` |
+| `@pihanga2/markdown` | Markdown viewer (mermaid, remark, rehype) | `npm install @pihanga2/markdown` |
 
 **New here? Start with the getting-started guide:**
 → [AGENTS.getting-started.md](./AGENTS.getting-started.md) — scaffold a new app from scratch (Vite, shadcn/ui, pihanga-core, initial file layout)
@@ -26,7 +33,8 @@ A collection of **Pihanga cards** built on top of [shadcn/ui](https://ui.shadcn.
 - [Development commands](#development-commands)
 - [Distribution channels](#distribution-channels)
   - [Registry (Option D) — `make gen-registry`](#registry-option-d--make-gen-registry)
-  - [npm package (Option A) — `make build-core`](#npm-package-option-a--make-build-core)
+  - [npm package — `@pihanga2/shadcn` (core)](#npm-package--pihanga2shadcn-core)
+  - [Extra npm packages — graphin, chart, markdown](#extra-npm-packages--graphin-chart-markdown)
 - [Managing the core-cards allowlist](#managing-the-core-cards-allowlist)
   - [When to include a card in the npm package](#when-to-include-a-card-in-the-npm-package)
   - [When to keep a card registry-only](#when-to-keep-a-card-registry-only)
@@ -141,6 +149,7 @@ flowchart LR
     SRC --> PG
     SRC --> REG
     SRC --> NPM
+    SRC --> EXT["extra npm packages\ndist-lib-graphin/ etc.\n→ @pihanga2/graphin\n→ @pihanga2/chart\n→ @pihanga2/markdown"]
 ```
 
 | Concern | Lives in | Relevant to |
@@ -231,28 +240,66 @@ Run this whenever you:
 
 All cards (including the heavy ones) are included in the registry.
 
-### npm package (Option A) — `make build-core`
+### npm package — `@pihanga2/shadcn` (core)
 
 Builds `@pihanga2/shadcn` into `dist-lib/` using Vite library mode.
 Only the **core cards subset** (defined in `scripts/core-cards.json`) is included.
 
 ```sh
-make build-core          # full build → dist-lib/ (generates barrel + runs Vite + writes package.json)
+make build-core          # full build → dist-lib/
 make build-core-dry      # dry-run: preview generated files without writing
+make publish             # build-core + npm publish --access public
 ```
 
-To publish:
-```sh
-make publish          # build-core + npm publish --access public
-```
-
-The build pipeline (all orchestrated by `scripts/build-core.mjs`):
+The build pipeline (orchestrated by `scripts/build-core.mjs`):
 1. Reads `scripts/core-cards.json` for the card allowlist
 2. Generates `src/cards/core-index.ts` (auto-generated barrel — do not commit)
 3. Runs `vite build --config vite.lib.config.ts` → `dist-lib/cards/*/index.js`
 4. Aggregates dependencies from each core card's `dependencies.json`
 5. Writes `dist-lib/package.json` with full exports map and `sideEffects` list
 6. Writes `dist-lib/README.md`
+
+---
+
+### Extra npm packages — graphin, chart, markdown
+
+Cards with heavy optional dependencies are published as **separate packages** so
+consumers who don't use them avoid the install overhead.
+
+| Package | Output dir | Key deps |
+|---|---|---|
+| `@pihanga2/graphin` | `dist-lib-graphin/` | `@antv/g`, `@antv/g6`, `@antv/graphin` |
+| `@pihanga2/chart` | `dist-lib-chart/` | `recharts` |
+| `@pihanga2/markdown` | `dist-lib-markdown/` | `mermaid`, `react-markdown`, `remark-*`, `rehype-*` |
+
+All three are built by the same orchestration script (`scripts/build-extras.mjs`) using
+a single parameterised Vite config (`vite.extras.config.ts`). The package registry is
+`scripts/extra-packages.json` — add an entry there to define a new extra package.
+
+```sh
+# Build all three extra packages at once
+make build-extras
+
+# Build and preview without writing files (dry-run)
+make build-extras-dry
+
+# Build a single extra package
+make build-graphin
+make build-chart
+make build-markdown
+
+# Publish a single extra package
+make publish-graphin
+make publish-chart
+make publish-markdown
+```
+
+Usage in a consumer app:
+```ts
+import "@pihanga2/graphin/cards/graphin";
+import "@pihanga2/chart/cards/chart";
+import "@pihanga2/markdown/cards/markdownViewer";
+```
 
 ---
 
@@ -347,19 +394,20 @@ its `dependencies.json` stays accurate.
 | flexGrid | `/r/flexGrid` | `/cards/flexGrid` | |
 | form | `/r/form` | `/cards/form` | |
 | framework | `/r/framework` | `/cards/framework` | App root |
-| graphin | `/r/graphin` | registry only | ⚠️ Heavy AntV deps |
+| graphin | `/r/graphin` | `@pihanga2/graphin/cards/graphin` | ⚠️ Separate package |
 | input | `/r/input` | `/cards/input` | |
-| jsonViewer | `/r/jsonViewer` | registry only | |
+| jsonViewer | `/r/jsonViewer` | `/cards/jsonViewer` | |
+| chart | `/r/chart` | `@pihanga2/chart/cards/chart` | ⚠️ Separate package |
 | list | `/r/list` | `/cards/list` | |
 | loadingOverlay | `/r/loadingOverlay` | `/cards/loadingOverlay` | |
 | loadingSkeleton | `/r/loadingSkeleton` | `/cards/loadingSkeleton` | |
-| markdownViewer | `/r/markdownViewer` | registry only | ⚠️ Heavy markdown deps |
+| markdownViewer | `/r/markdownViewer` | `@pihanga2/markdown/cards/markdownViewer` | ⚠️ Separate package |
 | menu | `/r/menu` | `/cards/menu` | |
 | modeToggle | `/r/modeToggle` | `/cards/modeToggle` | |
 | navbarSearch | `/r/navbarSearch` | `/cards/navbarSearch` | |
 | pageWithNavbar | `/r/pageWithNavbar` | `/cards/pageWithNavbar` | |
 | pasteTarget | `/r/pasteTarget` | `/cards/pasteTarget` | |
-| resizable | `/r/resizable` | registry only | |
+| resizable | `/r/resizable` | `/cards/resizable` | |
 | select | `/r/select` | `/cards/select` | |
 | stack | `/r/stack` | `/cards/stack` | |
 | stepper | `/r/stepper` | `/cards/stepper` | |
@@ -371,13 +419,18 @@ its `dependencies.json` stays accurate.
 | typography | `/r/typography` | `/cards/typography` | |
 
 Registry base URL: `https://ivcap-works.github.io/pihanga-shadcn/r`
-npm package: `@pihanga2/shadcn` (npm sub-path: `@pihanga2/shadcn/cards/<name>`)
+
+npm packages:
+- `@pihanga2/shadcn` — core cards (`@pihanga2/shadcn/cards/<name>`)
+- `@pihanga2/graphin` — graph card (`@pihanga2/graphin/cards/graphin`)
+- `@pihanga2/chart` — chart card (`@pihanga2/chart/cards/chart`)
+- `@pihanga2/markdown` — markdown card (`@pihanga2/markdown/cards/markdownViewer`)
 
 ---
 
 ## Publishing to npm
 
-The build pipeline for `@pihanga2/shadcn` is **fully implemented**. Follow these
+The build pipelines for all packages are **fully implemented**. Follow these
 steps whenever you need to publish a new release to https://www.npmjs.com/.
 
 ### Step 1 — Create the @pihanga2 npm organisation
@@ -414,17 +467,19 @@ Your username should appear with a `developer` or `owner` role.
 
 ### Step 4 — Dry run
 
-Preview exactly what will be built and what the generated `dist-lib/package.json`
+Preview exactly what will be built and what the generated `package.json` files
 will contain — without writing any files or touching npm:
 
 ```sh
-make build-core-dry
+make build-core-dry      # preview @pihanga2/shadcn
+make build-extras-dry    # preview all three extra packages at once
 ```
 
 ### Step 5 — Build and publish
 
+**Core package:**
 ```sh
-make publish
+make publish             # build + npm publish @pihanga2/shadcn
 ```
 
 This single command:
@@ -436,8 +491,23 @@ This single command:
 6. Writes `dist-lib/README.md`
 7. Runs `cd dist-lib && npm publish --access public`
 
-The published package will be **`@pihanga2/shadcn`** at the version declared in
-the root `package.json`.
+**Extra packages (graphin / chart / markdown):**
+```sh
+make publish-graphin     # build + publish @pihanga2/graphin
+make publish-chart       # build + publish @pihanga2/chart
+make publish-markdown    # build + publish @pihanga2/markdown
+```
+
+Or to publish all extras sequentially:
+```sh
+make build-extras && \
+  cd dist-lib-graphin && npm publish --access public && cd .. && \
+  cd dist-lib-chart   && npm publish --access public && cd .. && \
+  cd dist-lib-markdown && npm publish --access public && cd ..
+```
+
+The published packages are at the version declared in the root `package.json`
+(all packages share the same version number).
 
 ### Bumping the version
 
@@ -466,6 +536,7 @@ npm version patch && make publish
 
 ```sh
 npm info @pihanga2/shadcn
+npm info @pihanga2/graphin
+npm info @pihanga2/chart
+npm info @pihanga2/markdown
 ```
-
-Or visit: https://www.npmjs.com/package/@pihanga2/shadcn

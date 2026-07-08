@@ -624,6 +624,143 @@ export default definePlayground<GraphinProps>({
         className: "h-96 border rounded",
       },
     },
+    // ── Legend ────────────────────────────────────────────────────────────
+    {
+      id: "legend-builtin",
+      title: "Legend (built-in)",
+      description:
+        "Pass `legend.items` with `{ label, fill, shape }` entries to render an " +
+        "automatically positioned swatch list over the graph.  All eight node " +
+        'shapes are supported, plus `shape: "line"` for edge entries.  ' +
+        "Use `legend.position` to anchor the panel to any corner.",
+      props: {
+        data: {
+          nodes: [
+            {id: "gw", data: {displayName: "API Gateway", role: "gateway"}},
+            {id: "auth", data: {displayName: "Auth", role: "service"}},
+            {id: "users", data: {displayName: "Users", role: "service"}},
+            {id: "orders", data: {displayName: "Orders", role: "service"}},
+            {id: "db-u", data: {displayName: "User DB", role: "db"}},
+            {id: "db-o", data: {displayName: "Order DB", role: "db"}},
+          ],
+          edges: [
+            {id: "gw-a", source: "gw", target: "auth"},
+            {id: "gw-u", source: "gw", target: "users"},
+            {id: "gw-o", source: "gw", target: "orders"},
+            {id: "u-db", source: "users", target: "db-u"},
+            {id: "o-db", source: "orders", target: "db-o"},
+          ],
+        },
+        layout: "dagre",
+        directed: true,
+        nodeStyleKey: "role",
+        nodeStyles: {
+          gateway: {
+            type: "star",
+            fill: "#e67e22",
+            stroke: "#ca6f1e",
+            size: 48,
+            labelFill: "#fff",
+            lineWidth: 2,
+          },
+          service: {
+            type: "circle",
+            fill: "#2980b9",
+            stroke: "#1a6fa5",
+            size: 32,
+            labelFill: "#fff",
+            lineWidth: 2,
+          },
+          db: {
+            type: "rect",
+            fill: "#8e44ad",
+            stroke: "#7d3c98",
+            size: 22,
+            labelFill: "#fff",
+            lineWidth: 2,
+          },
+        },
+        options: {
+          layout: {type: "dagre", rankdir: "TB", nodesep: 30, ranksep: 60},
+        },
+        legend: {
+          position: "bottom-left",
+          items: [
+            {label: "Gateway", fill: "#e67e22", shape: "star"},
+            {label: "Service", fill: "#2980b9", shape: "circle"},
+            {label: "Database", fill: "#8e44ad", shape: "rect"},
+            {label: "Connection", fill: "#555", shape: "line"},
+          ],
+        },
+        className: "h-96 border rounded",
+      },
+    },
+    {
+      id: "legend-custom",
+      title: "Legend (custom pihanga card)",
+      description:
+        "Set `legend.cardName` to any registered Pihanga card to use it as a " +
+        "fully custom legend — useful for interactive filters, images, or layouts " +
+        "that the built-in swatch list cannot express.  The card receives no " +
+        "special context; source its data from Redux state as normal.  " +
+        'Register a card with name `"pg/graphin/demo-legend"` to see it here.',
+      props: {
+        data: {
+          nodes: [
+            {id: "gw", data: {displayName: "API Gateway", role: "gateway"}},
+            {id: "auth", data: {displayName: "Auth", role: "service"}},
+            {id: "users", data: {displayName: "Users", role: "service"}},
+            {id: "orders", data: {displayName: "Orders", role: "service"}},
+            {id: "db-u", data: {displayName: "User DB", role: "db"}},
+            {id: "db-o", data: {displayName: "Order DB", role: "db"}},
+          ],
+          edges: [
+            {id: "gw-a", source: "gw", target: "auth"},
+            {id: "gw-u", source: "gw", target: "users"},
+            {id: "gw-o", source: "gw", target: "orders"},
+            {id: "u-db", source: "users", target: "db-u"},
+            {id: "o-db", source: "orders", target: "db-o"},
+          ],
+        },
+        layout: "dagre",
+        directed: true,
+        nodeStyleKey: "role",
+        nodeStyles: {
+          gateway: {
+            type: "star",
+            fill: "#e67e22",
+            stroke: "#ca6f1e",
+            size: 48,
+            labelFill: "#fff",
+            lineWidth: 2,
+          },
+          service: {
+            type: "circle",
+            fill: "#2980b9",
+            stroke: "#1a6fa5",
+            size: 32,
+            labelFill: "#fff",
+            lineWidth: 2,
+          },
+          db: {
+            type: "rect",
+            fill: "#8e44ad",
+            stroke: "#7d3c98",
+            size: 22,
+            labelFill: "#fff",
+            lineWidth: 2,
+          },
+        },
+        options: {
+          layout: {type: "dagre", rankdir: "TB", nodesep: 30, ranksep: 60},
+        },
+        legend: {
+          position: "bottom-right",
+          cardName: "pg/graphin/demo-legend",
+        },
+        className: "h-96 border rounded",
+      },
+    },
     // ── Events ────────────────────────────────────────────────────────────
     {
       id: "events",

@@ -14,6 +14,7 @@
     "form",
     "framework",
     "input",
+    "jsonViewer",
     "list",
     "loadingOverlay",
     "loadingSkeleton",
@@ -22,6 +23,7 @@
     "navbarSearch",
     "pageWithNavbar",
     "pasteTarget",
+    "resizable",
     "select",
     "slider",
     "sliderValue",
@@ -35,10 +37,8 @@
     "typography"
   ],
   "excludeReason": {
-    "chartGraph": "recharts dependency (~200-300 KB gzipped) — optional charting, not universally needed",
-    "graphin": "heavy AntV deps (@antv/g, @antv/g6, @antv/graphin — ~5 MB install)",
-    "jsonViewer": "react-json-view-lite — optional viewer, not universally needed",
-    "markdownViewer": "mermaid + remark/rehype stack — heavy markdown rendering pipeline",
-    "resizable": "react-resizable-panels — optional layout primitive"
+    "chartGraph": "recharts dependency (~200-300 KB gzipped) — published as @pihanga2/chart",
+    "graphin": "heavy AntV deps (@antv/g, @antv/g6, @antv/graphin — ~5 MB install) — published as @pihanga2/graphin",
+    "markdownViewer": "mermaid + remark/rehype stack — heavy markdown rendering pipeline — published as @pihanga2/markdown"
   }
 }

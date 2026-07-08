@@ -264,11 +264,105 @@ export type GraphinProps = {
    */
   nodeStyleKey?: string;
 
+  /**
+   * Legend overlay rendered as an absolutely-positioned panel over the graph.
+   *
+   * Two content modes:
+   * - **`items`** — built-in swatch list (colour + shape + label).
+   * - **`cardName`** — any registered Pihanga card used as a fully custom legend.
+   *
+   * @example
+   * ```ts
+   * legend: {
+   *   position: "bottom-left",
+   *   items: [
+   *     { label: "Gateway", fill: "#e67e22", shape: "star" },
+   *     { label: "Service",  fill: "#2980b9", shape: "circle" },
+   *     { label: "Database", fill: "#8e44ad", shape: "rect" },
+   *   ],
+   * }
+   * ```
+   */
+  legend?: GraphinLegend;
+
   style?: {
     root?: React.CSSProperties;
     item?: React.CSSProperties;
   };
   className?: string;
+};
+
+// ---------------------------------------------------------------------------
+// Legend
+// ---------------------------------------------------------------------------
+
+/**
+ * A single item in the built-in legend.
+ */
+export type GraphinLegendItem = {
+  /** Text label displayed beside the shape swatch. */
+  label: string;
+  /** Fill colour of the swatch.  Defaults to `"#4793AF"`. */
+  fill?: string;
+  /** Stroke / border colour of the swatch. */
+  stroke?: string;
+  /**
+   * Shape of the swatch marker.  Mirrors the values accepted by `nodeStyles`.
+   * Use `"line"` for edge/connector legend entries.
+   * @default "circle"
+   */
+  shape?:
+    | "circle"
+    | "rect"
+    | "diamond"
+    | "star"
+    | "triangle"
+    | "hexagon"
+    | "ellipse"
+    | "line";
+};
+
+/**
+ * Legend overlay configuration.
+ *
+ * Two mutually-exclusive content modes:
+ * - **`items`** — serialisable list of `{ label, fill, stroke, shape }` entries
+ *   rendered as a built-in swatch list.
+ * - **`cardName`** — name of any registered Pihanga card whose component is
+ *   rendered as the legend body.  Takes priority over `items` when both are set.
+ *   Use this for fully custom legends (images, interactive filters, etc.).
+ */
+export type GraphinLegend = {
+  /**
+   * Built-in legend items — each rendered as a small SVG shape swatch + label.
+   * Ignored when `cardName` is also provided.
+   */
+  items?: GraphinLegendItem[];
+
+  /**
+   * Registered pihanga card name to use as the legend body.
+   * The card is rendered inside the legend wrapper div; it receives no special
+   * context props — source its data from Redux state as usual.
+   */
+  cardName?: string;
+
+  /**
+   * Corner of the graph container where the legend is anchored.
+   * @default "bottom-left"
+   */
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+  /**
+   * Extra CSS class name(s) applied to the legend wrapper `<div>`.
+   * @example "rounded-xl shadow-lg"
+   */
+  className?: string;
+
+  /**
+   * Inline style overrides for the legend wrapper `<div>`.
+   * Merged on top of the built-in positioning styles.
+   */
+  style?: React.CSSProperties;
 };
 
 export type GraphinTooltip = {
@@ -408,6 +502,7 @@ export const GRAPHIN_OP_ACTION = registerActions("graphin/op", [
   "clear_node_styles",
   "zoom_to_node",
   "update_node_style_map",
+  "fit_view",
 ]);
 
 // ── Action payloads ────────────────────────────────────────────────────────
@@ -571,6 +666,45 @@ export const dispatchGraphinUpdateNodeStyleMap = (
   dispatch: DispatchF,
   payload: GraphinUpdateNodeStyleMapAction,
 ) => dispatch({...payload, type: GRAPHIN_OP_ACTION.UPDATE_NODE_STYLE_MAP});
+
+// ---------------------------------------------------------------------------
+// OP: fitView
+// ---------------------------------------------------------------------------
+
+/**
+ * Payload for `GRAPHIN_OP_ACTION.FIT_VIEW`.
+ *
+ * Fits (and optionally re-centres) the entire graph within the visible
+ * container — the same effect as the initial `autoFit: 'view'`.
+ */
+export type GraphinFitViewAction = {
+  cardName: string;
+  /**
+   * - `"view"` — zoom + pan so all nodes fit inside the viewport (default).
+   * - `"center"` — pan to centre the graph without changing the zoom level.
+   */
+  mode?: "view" | "center";
+};
+
+/**
+ * Fit the entire graph into the available canvas area.
+ *
+ * - `mode: "view"` (default) — zoom + pan so every node is visible.
+ * - `mode: "center"` — pan to the graph centroid without changing zoom.
+ *
+ * @example
+ * ```ts
+ * // Zoom-to-fit after the user has panned/zoomed away
+ * dispatchGraphinFitView(dispatch, { cardName: "myGraph" });
+ *
+ * // Re-centre without changing zoom
+ * dispatchGraphinFitView(dispatch, { cardName: "myGraph", mode: "center" });
+ * ```
+ */
+export const dispatchGraphinFitView = (
+  dispatch: DispatchF,
+  payload: GraphinFitViewAction,
+) => dispatch({...payload, type: GRAPHIN_OP_ACTION.FIT_VIEW});
 
 // Re-export ReduxAction so the Op handler can import it from here.
 export type {ReduxAction};

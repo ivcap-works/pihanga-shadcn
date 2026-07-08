@@ -14,6 +14,7 @@ import {TooltipComponent} from "./tooltip.component";
 import {ContextMenuComponent} from "./contextMenu.component";
 import {GraphinEventDispatcher} from "./eventDispatcher.component";
 import {GraphinOpHandler} from "./graphinOpHandler.component";
+import {LegendOverlay} from "./legend.component";
 
 /**
  * Renderless child (must live inside a <Graphin> tree).
@@ -83,6 +84,7 @@ export const GraphinComponent = (
     onContextMenuClose,
     nodeStyles,
     nodeStyleKey,
+    legend,
   } = props;
 
   // ── nodeStyles ref ───────────────────────────────────────────────────────
@@ -341,6 +343,9 @@ export const GraphinComponent = (
           onNodeDblClicked={onNodeDblClicked}
         />
       </Graphin>
+
+      {/* Legend overlay — sibling of <Graphin>, absolutely positioned over canvas */}
+      {legend && <LegendOverlay legend={legend} parentCard={cardName} />}
     </div>
   );
 };
