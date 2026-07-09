@@ -40,6 +40,10 @@
       "type": "registry:ui"
     },
     {
+      "name": "avatar",
+      "type": "registry:component"
+    },
+    {
       "name": "badge",
       "type": "registry:component"
     },
@@ -69,6 +73,10 @@
     },
     {
       "name": "dialog",
+      "type": "registry:component"
+    },
+    {
+      "name": "drawer",
       "type": "registry:component"
     },
     {
@@ -137,6 +145,10 @@
     },
     {
       "name": "pageWithNavbar",
+      "type": "registry:component"
+    },
+    {
+      "name": "pageWithNavbarMeta",
       "type": "registry:component"
     },
     {

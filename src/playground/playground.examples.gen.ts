@@ -13,7 +13,7 @@
 // imported with Vite's `?raw` suffix and merged into the definition as the
 // `introduction` field (overriding any inline value in the example file).
 //
-// Last generated: 2026-06-30T23:44:34.877Z
+// Last generated: 2026-07-09T04:35:34.822Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
@@ -26,6 +26,7 @@ import checkboxDef from "@/cards/checkbox/checkbox.example";
 import conditionalDef from "@/cards/conditional/conditional.example";
 import dataTableDef from "@/cards/dataTable/dataTable.example";
 import dialogDef from "@/cards/dialog/dialog.example";
+import drawerDef from "@/cards/drawer/drawer.example";
 import dropDownMenuDef from "@/cards/dropDownMenu/drop-down.example";
 import fieldDef from "@/cards/field/field.example";
 import fileDropDef from "@/cards/fileDrop/fileDrop.example";
@@ -42,6 +43,7 @@ import menuDef from "@/cards/menu/menu.example";
 import modeToggleDef from "@/cards/modeToggle/modeToggle.example";
 import navbarSearchDef from "@/cards/navbarSearch/navbarSearch.example";
 import pageWithNavbarDef from "@/cards/pageWithNavbar/pageWithNavbar.example";
+import pageWithNavbarMetaDef from "@/cards/pageWithNavbarMeta/pageWithNavbarMeta.example";
 import pasteTargetDef from "@/cards/pasteTarget/pasteTarget.example";
 import resizableDef from "@/cards/resizable/resizable.example";
 import selectDef from "@/cards/select/select.example";
@@ -65,6 +67,7 @@ import checkboxReadme from "@/cards/checkbox/README.md?raw";
 import conditionalReadme from "@/cards/conditional/README.md?raw";
 import dataTableReadme from "@/cards/dataTable/README.md?raw";
 import dialogReadme from "@/cards/dialog/README.md?raw";
+import drawerReadme from "@/cards/drawer/README.md?raw";
 import dropDownMenuReadme from "@/cards/dropDownMenu/README.md?raw";
 import fieldReadme from "@/cards/field/README.md?raw";
 import fileDropReadme from "@/cards/fileDrop/README.md?raw";
@@ -81,6 +84,7 @@ import menuReadme from "@/cards/menu/README.md?raw";
 import modeToggleReadme from "@/cards/modeToggle/README.md?raw";
 import navbarSearchReadme from "@/cards/navbarSearch/README.md?raw";
 import pageWithNavbarReadme from "@/cards/pageWithNavbar/README.md?raw";
+import pageWithNavbarMetaReadme from "@/cards/pageWithNavbarMeta/README.md?raw";
 import pasteTargetReadme from "@/cards/pasteTarget/README.md?raw";
 import resizableReadme from "@/cards/resizable/README.md?raw";
 import selectReadme from "@/cards/select/README.md?raw";
@@ -117,6 +121,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...conditionalDef, introduction: conditionalReadme},
   {...dataTableDef, introduction: dataTableReadme},
   {...dialogDef, introduction: dialogReadme},
+  {...drawerDef, introduction: drawerReadme},
   {...dropDownMenuDef, introduction: dropDownMenuReadme},
   {...fieldDef, introduction: fieldReadme},
   {...fileDropDef, introduction: fileDropReadme},
@@ -133,6 +138,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...modeToggleDef, introduction: modeToggleReadme},
   {...navbarSearchDef, introduction: navbarSearchReadme},
   {...pageWithNavbarDef, introduction: pageWithNavbarReadme},
+  {...pageWithNavbarMetaDef, introduction: pageWithNavbarMetaReadme},
   {...pasteTargetDef, introduction: pasteTargetReadme},
   {...resizableDef, introduction: resizableReadme},
   {...selectDef, introduction: selectReadme},

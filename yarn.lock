@@ -625,10 +625,10 @@
   resolved "https://registry.yarnpkg.com/@oxc-project/types/-/types-0.132.0.tgz#d77243df4fe1a0a1e60e12ac6240fa898d2363ff"
   integrity sha512-FESMOxil5Se014ui/Eq8fT5uHJo6nIRwH0PfJrZJXs6Gek3ZVFOrpUv3YIZT20m+extU98Hg1Ym72U58rlsxUQ==
 
-"@pihanga2/core@*":
-  version "0.3.17"
-  resolved "https://registry.yarnpkg.com/@pihanga2/core/-/core-0.3.17.tgz#60c1f6505a07a15fed795197c020f3665fbddd5d"
-  integrity sha512-JTW1MUOVO7Vgrd4b/7/5l22kxJpz2k+tB7AHV0v7kBIrJm6cH9zcgTk99i754AfAwEiABk0nDzK0Q4NoqwwmsQ==
+"@pihanga2/core@^0.3.21":
+  version "0.3.21"
+  resolved "https://registry.yarnpkg.com/@pihanga2/core/-/core-0.3.21.tgz#1a0394432f17a15a74f8709e184d39172062c91a"
+  integrity sha512-BPq20naO8K07oHSLU39/8SN0o6n6NVtKip/kjD15ub8aP3Sk9bxWSMN6AQ6g6OhBSEX7cWZ/HOibuAnv7b+jhQ==
   dependencies:
     "@reduxjs/toolkit" "^2.2.6"
     deep-equal "^2.2.3"
