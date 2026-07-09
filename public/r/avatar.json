@@ -1,0 +1,40 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "avatar",
+  "type": "registry:component",
+  "description": "Pihanga avatar card — image with lettered fallback, built on shadcn Avatar (Radix UI)",
+  "dependencies": [
+    "radix-ui@^1.4.3"
+  ],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "avatar",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-lib-utils.json"
+  ],
+  "files": [
+    {
+      "path": "cards/avatar/avatar.component.tsx",
+      "content": "import * as React from \"react\";\nimport {type PiCardProps} from \"@pihanga2/core\";\nimport {Avatar, AvatarFallback, AvatarImage} from \"@/components/ui/avatar\";\nimport {cn} from \"@/lib/utils\";\nimport type {AvatarCardProps, AvatarSize} from \"./avatar.types\";\n\nconst SIZE_CLASS: Record<AvatarSize, string> = {\n  sm: \"size-6 text-xs\",\n  md: \"size-8 text-xs\",\n  lg: \"size-12 text-sm\",\n  xl: \"size-16 text-base\",\n};\n\nexport const AvatarComponent = (\n  props: PiCardProps<AvatarCardProps>,\n): React.ReactNode => {\n  const {src, alt = \"\", fallback, size = \"md\", className, cardName} = props;\n\n  return (\n    <Avatar className={cn(SIZE_CLASS[size], className)} data-pihanga={cardName}>\n      {src && <AvatarImage src={src} alt={alt} />}\n      <AvatarFallback>\n        {fallback ?? alt.slice(0, 2).toUpperCase()}\n      </AvatarFallback>\n    </Avatar>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/avatar/avatar.component.tsx"
+    },
+    {
+      "path": "cards/avatar/avatar.types.ts",
+      "content": "import {createCardDeclaration} from \"@pihanga2/core\";\n\nexport const AVATAR_CARD = \"shad/avatar\";\n\nexport type AvatarSize = \"sm\" | \"md\" | \"lg\" | \"xl\";\n\nexport type AvatarCardProps = {\n  src?: string;\n  alt?: string;\n  fallback?: string;\n  size?: AvatarSize;\n  className?: string;\n};\n\nexport const ShadAvatar = createCardDeclaration<AvatarCardProps>(AVATAR_CARD);\n",
+      "type": "registry:component",
+      "target": "src/cards/avatar/avatar.types.ts"
+    },
+    {
+      "path": "cards/avatar/index.ts",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {AvatarComponent} from \"./avatar.component\";\nimport {AVATAR_CARD} from \"./avatar.types\";\n\nexport * from \"./avatar.types\";\n\nregisterCardComponent({\n  name: AVATAR_CARD,\n  component: AvatarComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/avatar/index.ts"
+    },
+    {
+      "path": "cards/avatar/README.md",
+      "content": "Displays a user avatar — either an image or a lettered fallback circle.\n\nBuilt on the [shadcn Avatar](https://ui.shadcn.com/docs/components/avatar)\nprimitive (Radix UI `Avatar`).\n\n**Graceful degradation:** if `src` is absent or the image fails to load the\n`fallback` text (typically one or two initials) is shown inside a muted circle\nof the same size.\n",
+      "type": "registry:file",
+      "target": "src/cards/avatar/README.md"
+    }
+  ]
+}

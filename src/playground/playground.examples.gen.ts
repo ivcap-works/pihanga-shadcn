@@ -17,6 +17,7 @@
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
+import avatarDef from "@/cards/avatar/avatar.example";
 import badgeDef from "@/cards/badge/badge.example";
 import boxDef from "@/cards/box/box.example";
 import buttonDef from "@/cards/button/button.example";
@@ -55,6 +56,7 @@ import toastDef from "@/cards/toast/toast.example";
 import toggleGroupDef from "@/cards/toggleGroup/toggleGroup.example";
 import typographyDef from "@/cards/typography/typography.example";
 
+import avatarReadme from "@/cards/avatar/README.md?raw";
 import badgeReadme from "@/cards/badge/README.md?raw";
 import boxReadme from "@/cards/box/README.md?raw";
 import buttonReadme from "@/cards/button/README.md?raw";
@@ -106,6 +108,7 @@ import typographyReadme from "@/cards/typography/README.md?raw";
  * README content injected automatically as the `introduction` field.
  */
 export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
+  {...avatarDef, introduction: avatarReadme},
   {...badgeDef, introduction: badgeReadme},
   {...boxDef, introduction: boxReadme},
   {...buttonDef, introduction: buttonReadme},
