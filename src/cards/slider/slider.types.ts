@@ -115,6 +115,42 @@ export type PiSliderProps = {
    */
   label?: string;
 
+  /**
+   * When true, tick marks are rendered below the slider track.
+   */
+  showTicks?: boolean;
+
+  /**
+   * Spacing between consecutive **minor** tick marks in value units.
+   * Defaults to `step`.
+   * Set to `0` to hide minor ticks only — major ticks are still shown
+   * if `majorTickStep` is non-zero.
+   */
+  tickStep?: number;
+
+  /**
+   * Interval (in value units) between **major** (tall, labelled) ticks.
+   * Defaults to `(max - min) / 5` rounded to the nearest `tickStep`.
+   * Set to `0` to hide major ticks only — minor ticks are still shown
+   * if `tickStep` is non-zero.
+   */
+  majorTickStep?: number;
+
+  /**
+   * When true, no tick labels are rendered at all (only the tick marks).
+   * Overrides `tickLabels` and the default numeric labels.
+   */
+  suppressTickLabels?: boolean;
+
+  /**
+   * Custom labels keyed by value.  When provided for a value, the custom
+   * string is shown instead of the numeric value.  Pass `""` to suppress the
+   * label for a specific tick.
+   *
+   * @example { 0: "Min", 50: "Mid", 100: "Max" }
+   */
+  tickLabels?: Record<number, string>;
+
   /** Extra Tailwind / CSS classes forwarded to the root wrapper element. */
   className?: string;
 };

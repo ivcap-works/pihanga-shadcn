@@ -78,6 +78,7 @@ export const GraphinComponent = (
     onNodeHoverEnd,
     onNodeClicked,
     onNodeDblClicked,
+    onAfterLayout,
     onTooltipOpen,
     onTooltipClose,
     onContextMenuOpen,
@@ -341,6 +342,7 @@ export const GraphinComponent = (
           onNodeHoverEnd={onNodeHoverEnd}
           onNodeClicked={onNodeClicked}
           onNodeDblClicked={onNodeDblClicked}
+          onAfterLayout={onAfterLayout}
         />
       </Graphin>
 

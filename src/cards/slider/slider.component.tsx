@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {type PiCardProps} from "@pihanga2/core";
 import {Slider as SliderUI} from "@/components/ui/slider";
 import {useFormContext} from "@/cards/form/form.context";
+import {cn} from "@/lib/utils";
 import type {PiSliderEvents, PiSliderProps} from "./slider.types";
 
 export const SliderComponent = (
@@ -19,6 +20,11 @@ export const SliderComponent = (
     debounceMs = 0,
     suppressChangedEvents = false,
     label,
+    showTicks = false,
+    tickStep,
+    majorTickStep,
+    suppressTickLabels = false,
+    tickLabels,
     className,
     cardName,
     onChanged,
@@ -133,10 +139,44 @@ export const SliderComponent = (
     onCommitted({name, value: newValue});
   }
 
+  // --- Tick calculations ---
+  // tickStep=0  → hide minor ticks only  (major still shown if majorTickStep > 0)
+  // majorTickStep=0 → hide major ticks only (minor still shown if tickStep > 0)
+  // Both 0 → nothing shown
+  const effectiveMinorStep = tickStep !== undefined ? tickStep : step;
+  const showMinorTicks = effectiveMinorStep > 0;
+
+  // Auto major step: use minor step as base when minor ticks are on;
+  // fall back to `step` when minor ticks are off (tickStep=0) so that
+  // major ticks can still be auto-calculated from the slider's step.
+  const autoMajorBase = showMinorTicks ? effectiveMinorStep : step;
+  const autoMajorStep =
+    autoMajorBase > 0
+      ? Math.max(
+          autoMajorBase,
+          Math.round((max - min) / 5 / autoMajorBase) * autoMajorBase,
+        )
+      : 0;
+  // majorTickStep undefined → auto; 0 → no major ticks; >0 → explicit value
+  const resolvedMajorStep =
+    majorTickStep !== undefined ? majorTickStep : autoMajorStep;
+  const showMajorTicks = resolvedMajorStep > 0;
+
+  const renderTicks = showTicks && (showMinorTicks || showMajorTicks);
+
+  // Use minor spacing as base when available; fall back to major spacing.
+  const baseStep = showMinorTicks ? effectiveMinorStep : resolvedMajorStep;
+  const ticks = renderTicks
+    ? Array.from(
+        {length: Math.round((max - min) / baseStep) + 1},
+        (_, i) => min + i * baseStep,
+      )
+    : [];
+
   return (
     <div
       data-pihanga={cardName}
-      className={`flex flex-col gap-2 ${className ?? ""}`}
+      className={cn("flex flex-col gap-2", className)}
     >
       {label && (
         <div className="flex items-center justify-between">
@@ -157,6 +197,50 @@ export const SliderComponent = (
         onValueCommit={handleValueCommit}
         className="w-full"
       />
+      {renderTicks && (
+        <div
+          aria-hidden="true"
+          className="flex w-full items-baseline justify-between px-0.5"
+        >
+          {ticks.map((tick) => {
+            const isMajor =
+              showMajorTicks && (tick - min) % resolvedMajorStep === 0;
+            const isActive = tick <= displayValue;
+            // Show label when:
+            //  • suppressTickLabels is false, AND
+            //  • tick is major  OR  there are no major ticks (label every minor tick)
+            const showLabel =
+              !suppressTickLabels && (isMajor || !showMajorTicks);
+            const labelText = showLabel
+              ? tickLabels && tick in tickLabels
+                ? tickLabels[tick]
+                : String(tick)
+              : "";
+
+            return (
+              <div key={tick} className="flex flex-col items-center gap-1">
+                <div
+                  className={cn(
+                    "w-0.5 rounded-full transition-all duration-300",
+                    isActive ? "bg-primary" : "bg-primary/20",
+                    isMajor ? "h-3" : "h-1.5",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-xs font-medium transition-colors",
+                    showLabel
+                      ? "text-muted-foreground opacity-100"
+                      : "opacity-0",
+                  )}
+                >
+                  {labelText}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

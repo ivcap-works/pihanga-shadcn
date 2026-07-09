@@ -1,3 +1,4 @@
+import React from "react";
 import {
   type PiCardRef,
   createCardDeclaration,
@@ -56,8 +57,35 @@ export type DataTableColumnBase = {
   sortable?: boolean;
   /** Extra CSS class applied to the `<th>` header cell */
   headerClassName?: string;
-  /** Extra CSS class applied to every `<td>` data cell in this column */
-  cellClassName?: string;
+  /**
+   * Extra CSS class applied to every `<td>` data cell in this column.
+   * May be a static string **or** a function called per-cell:
+   * `(value, row) => "bg-red-500 text-white"`.
+   */
+  cellClassName?:
+    | string
+    | ((value: unknown, row: DataTableRow) => string | undefined);
+  /**
+   * Inline style applied to every `<td>` data cell in this column.
+   * May be a static `React.CSSProperties` object **or** a function called
+   * per-cell: `(value, row) => ({ backgroundColor: "blue", color: "white" })`.
+   *
+   * @example
+   * ```ts
+   * cellStyle: (value) => {
+   *   const map: Record<string, React.CSSProperties> = {
+   *     Superior:          { backgroundColor: "#4472C4", color: "#fff" },
+   *     Satisfactory:      { backgroundColor: "#70AD47", color: "#fff" },
+   *     "Needs Improvement": { backgroundColor: "#FFC000", color: "#fff" },
+   *     Unsatisfactory:    { backgroundColor: "#FF0000", color: "#fff" },
+   *   };
+   *   return map[String(value)];
+   * }
+   * ```
+   */
+  cellStyle?:
+    | React.CSSProperties
+    | ((value: unknown, row: DataTableRow) => React.CSSProperties | undefined);
 };
 
 /** Plain text column — cell value rendered as a string */

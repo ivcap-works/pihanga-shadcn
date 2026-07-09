@@ -387,6 +387,14 @@ export const DataTableComponent = (
                       const value = (row.data as Record<string, unknown>)[
                         col.key
                       ];
+                      const resolvedClassName =
+                        typeof col.cellClassName === "function"
+                          ? col.cellClassName(value, row)
+                          : col.cellClassName;
+                      const resolvedStyle =
+                        typeof col.cellStyle === "function"
+                          ? col.cellStyle(value, row)
+                          : col.cellStyle;
                       return (
                         <TableCell
                           key={col.key}
@@ -394,8 +402,9 @@ export const DataTableComponent = (
                             cellPad,
                             col.align === "center" && "text-center",
                             col.align === "right" && "text-right",
-                            col.cellClassName,
+                            resolvedClassName,
                           )}
+                          style={resolvedStyle}
                         >
                           {renderCell(col, value, cardName)}
                         </TableCell>

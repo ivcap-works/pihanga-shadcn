@@ -14,13 +14,17 @@ import {useGraphin} from "@antv/graphin";
 import type {IPointerEvent} from "@antv/g6";
 import type {DisplayObject} from "@antv/g";
 import type {Target} from "@antv/g6/lib/types";
-import type {GraphinNodeEventContext} from "./graphin.types";
+import type {
+  GraphinAfterLayoutContext,
+  GraphinNodeEventContext,
+} from "./graphin.types";
 
 export type GraphinEventDispatcherProps = {
   onNodeHovered?: (ctx: GraphinNodeEventContext) => void;
   onNodeHoverEnd?: (ctx: GraphinNodeEventContext) => void;
   onNodeClicked?: (ctx: GraphinNodeEventContext) => void;
   onNodeDblClicked?: (ctx: GraphinNodeEventContext) => void;
+  onAfterLayout?: (ctx: GraphinAfterLayoutContext) => void;
 };
 
 export function GraphinEventDispatcher(
@@ -83,16 +87,22 @@ export function GraphinEventDispatcher(
       if (ctx) handlersRef.current.onNodeDblClicked?.(ctx);
     };
 
+    const handleAfterLayout = () => {
+      handlersRef.current.onAfterLayout?.({});
+    };
+
     graph.on("node:pointerenter", handleNodePointerEnter);
     graph.on("node:pointerleave", handleNodePointerLeave);
     graph.on("node:click", handleNodeClick);
     graph.on("node:dblclick", handleNodeDblClick);
+    graph.on("afterlayout", handleAfterLayout);
 
     return () => {
       graph.off("node:pointerenter", handleNodePointerEnter);
       graph.off("node:pointerleave", handleNodePointerLeave);
       graph.off("node:click", handleNodeClick);
       graph.off("node:dblclick", handleNodeDblClick);
+      graph.off("afterlayout", handleAfterLayout);
     };
   }, [graph, isReady]);
 

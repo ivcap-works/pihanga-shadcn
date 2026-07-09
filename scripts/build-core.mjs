@@ -40,11 +40,15 @@ const DRY_RUN = args.includes("--dry-run");
 // Config
 // ---------------------------------------------------------------------------
 
-const {cards: CORE_CARDS} = JSON.parse(
+const coreConfig = JSON.parse(
   readFileSync(join(__dirname, "core-cards.json"), "utf-8"),
 );
+const CORE_CARDS = coreConfig.cards;
 
 const rootPkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf-8"));
+
+/** Use the per-package version from core-cards.json if set, else root package.json */
+const PKG_VERSION = coreConfig.version ?? rootPkg.version;
 
 const PKG_NAME = "@pihanga2/shadcn";
 const DIST_DIR = join(ROOT, "dist-lib");
@@ -142,6 +146,10 @@ exportsMap["./cards/icons"] = {
   import: "./cards/icons.js",
   types: "./cards/icons.d.ts",
 };
+exportsMap["./lib/utils"] = {
+  import: "./lib/utils.js",
+  types: "./lib/utils.d.ts",
+};
 
 // ---------------------------------------------------------------------------
 // Step 4 — Write dist-lib/package.json
@@ -149,7 +157,7 @@ exportsMap["./cards/icons"] = {
 
 const publishPkg = {
   name: PKG_NAME,
-  version: rootPkg.version,
+  version: PKG_VERSION,
   description:
     "Pihanga core card components built on shadcn/ui and Radix UI — " +
     "the npm distribution of pihanga-shadcn.",
@@ -315,7 +323,7 @@ if (!DRY_RUN) {
 // ---------------------------------------------------------------------------
 
 const dryTag = DRY_RUN ? "  (dry-run — files not written)" : "";
-console.log(`\n✅  ${PKG_NAME}@${rootPkg.version} build complete${dryTag}`);
+console.log(`\n✅  ${PKG_NAME}@${PKG_VERSION} build complete${dryTag}`);
 console.log(`   Cards:        ${CORE_CARDS.length}`);
 console.log(`   Dependencies: ${Object.keys(sortedDeps).length}`);
 console.log(`   Output dir:   dist-lib/`);

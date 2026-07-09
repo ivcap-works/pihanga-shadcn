@@ -511,8 +511,9 @@ The published packages are at the version declared in the root `package.json`
 
 ### Bumping the version
 
-The published version is read from the root `package.json`. Bump it before
-publishing:
+#### All packages at once
+
+The default version for all packages is read from the root `package.json`:
 
 ```sh
 npm version patch   # e.g. 0.1.0 → 0.1.1 (bug fixes)
@@ -531,6 +532,38 @@ Or as a one-liner for patch releases:
 ```sh
 npm version patch && make publish
 ```
+
+#### Per-package versions
+
+Each package can carry its own version independently of the root.
+
+**Core package** — add an optional `"version"` field to `scripts/core-cards.json`:
+
+```json
+{
+  "version": "1.0.0",
+  "cards": ["badge", "button", ...]
+}
+```
+
+**Extra packages** — add an optional `"version"` field to the entry in
+`scripts/extra-packages.json`:
+
+```json
+{
+  "packages": [
+    {
+      "key": "graphin",
+      "name": "@pihanga2/graphin",
+      "version": "0.3.0",
+      ...
+    }
+  ]
+}
+```
+
+When `"version"` is absent the build scripts fall back to the root
+`package.json` version, so you only need to set it when a package diverges.
 
 ### Verifying the release
 

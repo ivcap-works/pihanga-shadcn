@@ -148,9 +148,12 @@ for (const target of targets) {
 
   // ── Step 4: Write package.json ────────────────────────────────────────
 
+  /** Per-package version if set in extra-packages.json, else root package.json */
+  const pkgVersion = target.version ?? rootPkg.version;
+
   const publishPkg = {
     name: target.name,
-    version: rootPkg.version,
+    version: pkgVersion,
     description: target.description,
     type: "module",
     exports: exportsMap,
@@ -206,7 +209,7 @@ for (const target of targets) {
   // ── Summary ───────────────────────────────────────────────────────────
 
   const dryTag = DRY_RUN ? "  (dry-run — files not written)" : "";
-  console.log(`\n✅  ${target.name}@${rootPkg.version} complete${dryTag}`);
+  console.log(`\n✅  ${target.name}@${pkgVersion} complete${dryTag}`);
   console.log(`   Cards:      ${target.cards.join(", ")}`);
   console.log(`   Deps:       ${Object.keys(sortedDeps).length}`);
   console.log(`   Output dir: ${target.outDir}/`);

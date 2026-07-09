@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "pihanga-lib-utils",
   "type": "registry:lib",
-  "description": "Tailwind CSS utility helper — the cn() function (delegates to shadcn built-in utils)",
+  "description": "Tailwind CSS utility helpers — cn() for class merging and contrastColor() for WCAG-compliant text contrast",
   "dependencies": [],
   "registryDependencies": [
     "utils"

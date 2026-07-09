@@ -3,6 +3,7 @@
     {
       "name": "@pihanga2/graphin",
       "key": "graphin",
+      "version": "0.2.5",
       "cards": [
         "graphin"
       ],
@@ -12,6 +13,7 @@
     {
       "name": "@pihanga2/chart",
       "key": "chart",
+      "version": "0.2.5",
       "cards": [
         "chart"
       ],
@@ -21,6 +23,7 @@
     {
       "name": "@pihanga2/markdown",
       "key": "markdown",
+      "version": "0.2.5",
       "cards": [
         "markdownViewer"
       ],

@@ -26,6 +26,7 @@ export const GRAPHIN_ACTION = registerActions(GRAPHIN_CARD, [
   "tooltip_close",
   "context_menu_open",
   "context_menu_close",
+  "after_layout",
 ]);
 
 export const onGraphinNodeHovered = createOnAction<GraphinNodeEventContext>(
@@ -51,10 +52,20 @@ export const onGraphinContextMenuOpen = createOnAction<GraphinNodeEventContext>(
 );
 export const onGraphinContextMenuClose =
   createOnAction<GraphinNodeEventContext>(GRAPHIN_ACTION.CONTEXT_MENU_CLOSE);
+export const onGraphinAfterLayout = createOnAction<GraphinAfterLayoutContext>(
+  GRAPHIN_ACTION.AFTER_LAYOUT,
+);
 
 // ---------------------------------------------------------------------------
 // Event context
 // ---------------------------------------------------------------------------
+
+/**
+ * Payload carried by the `afterlayout` lifecycle event.
+ */
+export type GraphinAfterLayoutContext = Record<string, unknown> & {
+  cardID: string;
+};
 
 /**
  * Payload carried by all node interaction events.
@@ -730,4 +741,6 @@ export type GraphinEvents = {
   onContextMenuOpen: GraphinNodeEventContext;
   /** Fired when the context-menu panel closes */
   onContextMenuClose: GraphinNodeEventContext;
+  /** Fired when the G6 layout engine finishes positioning all nodes */
+  onAfterLayout: GraphinAfterLayoutContext;
 };
