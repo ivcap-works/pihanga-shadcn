@@ -29,6 +29,16 @@
       ],
       "outDir": "dist-lib-markdown",
       "description": "Pihanga markdown viewer card — rich markdown with mermaid, math, and syntax highlighting"
+    },
+    {
+      "name": "@pihanga2/codemirror",
+      "key": "codemirror",
+      "version": "0.2.5",
+      "cards": [
+        "codeMirror"
+      ],
+      "outDir": "dist-lib-codemirror",
+      "description": "Pihanga CodeMirror card — code editor with StreamLanguage plugin extension mechanism"
     }
   ]
 }

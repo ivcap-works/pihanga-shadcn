@@ -22,6 +22,7 @@ import {readFileSync} from "fs";
 import {fileURLToPath} from "url";
 import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
+import {libInjectCss} from "vite-plugin-lib-inject-css";
 import {defineConfig} from "vite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -80,8 +81,8 @@ const external = [
   "clsx",
   "tailwind-merge",
   "sonner",
+  "react-drag-drop-files", // used by fileDrop card — in dependencies.json, not bundled
   // ── Excluded-card deps (guard; should never appear in core source) ─────────
-  "react-drag-drop-files",
   "lodash",
   /^@antv\//,
   "react-resizable-panels",
@@ -101,6 +102,7 @@ const external = [
 export default defineConfig({
   plugins: [
     react(),
+    libInjectCss(),
     dts({
       include: [
         "src/cards",

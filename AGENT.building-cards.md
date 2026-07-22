@@ -268,6 +268,93 @@ This string must match the `name` passed to `registerCardComponent` and the
 
 ### 2 — Define Props and Events (`*.types.ts`)
 
+> **Rule: Card Props must only contain basic data types.**
+>
+> All props in a `CardProps` type must be JSON-serialisable primitives
+> (`string`, `number`, `boolean`, `null`) or plain objects / arrays composed
+> exclusively of those primitives.  **Never put library interfaces, class
+> instances, or opaque objects (e.g. `StreamParser`, `Extension[]`, `RegExp`,
+> `Date`) directly in a props type.**  Pihanga serialises card state through
+> Redux; non-serialisable values break time-travel debugging, HMR, and the
+> playground.
+>
+> When a card genuinely needs a complex third-party value (a parser, a theme
+> extension, a set of keymaps…) use the **registry pattern** described below.
+
+#### Registry pattern for complex prop values
+
+1. **Create a module-level registry** (a plain `Map`) keyed by a `string`.
+2. **Export a `register*` function** so callers can inject their value before
+   mounting the card.
+3. **Use the string key as the prop** — the component looks the value up at
+   render time.
+
+**Example — `StreamParser` for the CodeMirror card:**
+
+```ts
+// codeMirror.types.ts  (public API)
+
+/** Keys are arbitrary caller-chosen strings; values are StreamParsers. */
+const streamParserRegistry = new Map<string, StreamParser<unknown>>();
+
+/** Call this once at app initialisation time, before the card is rendered. */
+export function registerStreamParser(key: string, parser: StreamParser<unknown>) {
+  streamParserRegistry.set(key, parser);
+}
+
+/** Internal — used only by the component. */
+export function resolveStreamParser(key: string): StreamParser<unknown> | undefined {
+  return streamParserRegistry.get(key);
+}
+
+export type CodeMirrorCardProps = {
+  value?: string;
+  readOnly?: boolean;
+  /**
+   * Key of a StreamParser previously registered with `registerStreamParser()`.
+   * @example
+   * import { python } from "@codemirror/legacy-modes/mode/python";
+   * registerStreamParser("python", python);
+   * CodeMirrorCard({ streamLanguage: "python", value: "print('hello')" });
+   */
+  streamLanguage?: string;    // ✅ plain string — not StreamParser<unknown>
+  extensionsKey?: string;     // ✅ plain string — not Extension[]
+};
+```
+
+```ts
+// At app initialisation (e.g. app.pihanga.ts or a dedicated setup file):
+import { python } from "@codemirror/legacy-modes/mode/python";
+import { registerStreamParser } from "@pihanga2/shadcn/codeMirror";
+
+registerStreamParser("python", python);
+```
+
+```tsx
+// codeMirror.component.tsx — look up at render time:
+import { resolveStreamParser } from "./codeMirror.types";
+
+const parser = props.streamLanguage
+  ? resolveStreamParser(props.streamLanguage)
+  : undefined;
+const extensions = parser ? [StreamLanguage.define(parser)] : [];
+```
+
+The same pattern applies to **`Extension[]`** or any other opaque type.
+Register a named bundle of extensions once; reference it by key in props.
+
+**Quick checklist:**
+
+| Prop value | Allowed directly in Props? | Alternative |
+|---|---|---|
+| `string`, `number`, `boolean` | ✅ | — |
+| Plain `Record<string, string>` | ✅ | — |
+| `StreamParser<T>`, `Extension` | ❌ | Registry pattern (string key) |
+| `RegExp` | ❌ | Pass `string`; compile inside component |
+| `Date` | ❌ | Pass ISO string; parse inside component |
+| React component / function | ❌ | Reference an existing card type string |
+
+
 A typical types file has five parts:
 
 #### a) Card declaration factory

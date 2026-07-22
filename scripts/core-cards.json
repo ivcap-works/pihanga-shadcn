@@ -27,6 +27,7 @@
     "pageWithNavbarMeta",
     "pasteTarget",
     "resizable",
+    "scrollbarWithAnnotations",
     "select",
     "slider",
     "sliderValue",

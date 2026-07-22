@@ -13,7 +13,7 @@
 // imported with Vite's `?raw` suffix and merged into the definition as the
 // `introduction` field (overriding any inline value in the example file).
 //
-// Last generated: 2026-07-09T04:35:34.822Z
+// Last generated: 2026-07-20T07:14:02.837Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
@@ -23,6 +23,7 @@ import boxDef from "@/cards/box/box.example";
 import buttonDef from "@/cards/button/button.example";
 import chartDef from "@/cards/chart/chart.example";
 import checkboxDef from "@/cards/checkbox/checkbox.example";
+import codeMirrorDef from "@/cards/codeMirror/codeMirror.example";
 import conditionalDef from "@/cards/conditional/conditional.example";
 import dataTableDef from "@/cards/dataTable/dataTable.example";
 import dialogDef from "@/cards/dialog/dialog.example";
@@ -46,6 +47,7 @@ import pageWithNavbarDef from "@/cards/pageWithNavbar/pageWithNavbar.example";
 import pageWithNavbarMetaDef from "@/cards/pageWithNavbarMeta/pageWithNavbarMeta.example";
 import pasteTargetDef from "@/cards/pasteTarget/pasteTarget.example";
 import resizableDef from "@/cards/resizable/resizable.example";
+import scrollbarWithAnnotationsDef from "@/cards/scrollbarWithAnnotations/scrollbarWithAnnotations.example";
 import selectDef from "@/cards/select/select.example";
 import sliderDef from "@/cards/slider/slider.example";
 import sliderValueDef from "@/cards/sliderValue/sliderValue.example";
@@ -64,6 +66,7 @@ import boxReadme from "@/cards/box/README.md?raw";
 import buttonReadme from "@/cards/button/README.md?raw";
 import chartReadme from "@/cards/chart/README.md?raw";
 import checkboxReadme from "@/cards/checkbox/README.md?raw";
+import codeMirrorReadme from "@/cards/codeMirror/README.md?raw";
 import conditionalReadme from "@/cards/conditional/README.md?raw";
 import dataTableReadme from "@/cards/dataTable/README.md?raw";
 import dialogReadme from "@/cards/dialog/README.md?raw";
@@ -87,6 +90,7 @@ import pageWithNavbarReadme from "@/cards/pageWithNavbar/README.md?raw";
 import pageWithNavbarMetaReadme from "@/cards/pageWithNavbarMeta/README.md?raw";
 import pasteTargetReadme from "@/cards/pasteTarget/README.md?raw";
 import resizableReadme from "@/cards/resizable/README.md?raw";
+import scrollbarWithAnnotationsReadme from "@/cards/scrollbarWithAnnotations/README.md?raw";
 import selectReadme from "@/cards/select/README.md?raw";
 import sliderReadme from "@/cards/slider/README.md?raw";
 import sliderValueReadme from "@/cards/sliderValue/README.md?raw";
@@ -118,6 +122,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...buttonDef, introduction: buttonReadme},
   {...chartDef, introduction: chartReadme},
   {...checkboxDef, introduction: checkboxReadme},
+  {...codeMirrorDef, introduction: codeMirrorReadme},
   {...conditionalDef, introduction: conditionalReadme},
   {...dataTableDef, introduction: dataTableReadme},
   {...dialogDef, introduction: dialogReadme},
@@ -141,6 +146,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...pageWithNavbarMetaDef, introduction: pageWithNavbarMetaReadme},
   {...pasteTargetDef, introduction: pasteTargetReadme},
   {...resizableDef, introduction: resizableReadme},
+  {...scrollbarWithAnnotationsDef, introduction: scrollbarWithAnnotationsReadme},
   {...selectDef, introduction: selectReadme},
   {...sliderDef, introduction: sliderReadme},
   {...sliderValueDef, introduction: sliderValueReadme},

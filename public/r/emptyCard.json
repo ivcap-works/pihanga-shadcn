@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "emptyCard",
+  "type": "registry:component",
+  "description": "Pihanga emptyCard card component",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json"
+  ],
+  "files": [
+    {
+      "path": "cards/emptyCard/index.ts",
+      "content": "import * as React from \"react\";\n\nimport {\n  createCardDeclaration,\n  registerCardComponent,\n  type PiCardProps,\n} from \"@pihanga2/core\";\n\nconst CARD_NAME = \"empty-card\";\nexport const EmptyCard = createCardDeclaration<EmptyProps>(CARD_NAME);\n\nexport type EmptyProps = {\n  style?: React.CSSProperties;\n};\n\nconst DEF_STYLE = {\n  height: \"100%\",\n  backgroundColor: \"var(--border)\",\n};\n\nexport const EmptyComponent = (\n  props: PiCardProps<EmptyProps>,\n): React.ReactNode => {\n  const style = props.style || DEF_STYLE;\n  return <div style={style} data-pihanga={props.cardName} />;\n};\n\nregisterCardComponent({\n  name: CARD_NAME,\n  component: EmptyComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/emptyCard/index.ts"
+    },
+    {
+      "path": "cards/emptyCard/index.tsx",
+      "content": "import * as React from \"react\";\n\nimport {\n  createCardDeclaration,\n  registerCardComponent,\n  type PiCardProps,\n} from \"@pihanga2/core\";\n\nconst CARD_NAME = \"empty-card\";\nexport const EmptyCard = createCardDeclaration<EmptyProps>(CARD_NAME);\n\nexport type EmptyProps = {\n  style?: React.CSSProperties;\n};\n\nconst DEF_STYLE = {\n  height: \"100%\",\n  backgroundColor: \"var(--border)\",\n};\n\nexport const EmptyComponent = (\n  props: PiCardProps<EmptyProps>,\n): React.ReactNode => {\n  const style = props.style || DEF_STYLE;\n  return <div style={style} data-pihanga={props.cardName} />;\n};\n\nregisterCardComponent({\n  name: CARD_NAME,\n  component: EmptyComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/emptyCard/index.tsx"
+    }
+  ]
+}

@@ -64,6 +64,10 @@
       "type": "registry:component"
     },
     {
+      "name": "codeMirror",
+      "type": "registry:component"
+    },
+    {
       "name": "conditional",
       "type": "registry:component"
     },
@@ -81,6 +85,10 @@
     },
     {
       "name": "dropDownMenu",
+      "type": "registry:component"
+    },
+    {
+      "name": "emptyCard",
       "type": "registry:component"
     },
     {
@@ -157,6 +165,10 @@
     },
     {
       "name": "resizable",
+      "type": "registry:component"
+    },
+    {
+      "name": "scrollbarWithAnnotations",
       "type": "registry:component"
     },
     {

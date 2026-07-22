@@ -1,0 +1,193 @@
+/* ============================================================
+   ScrollbarWithAnnotations – component styles
+   ============================================================
+   All visual knobs are expressed as CSS custom properties on :root
+   so they can be overridden per-page or per-theme without touching
+   any JavaScript.
+   ============================================================ */
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+/* Root container – no built-in height; size it from outside via className
+   (e.g. className="h-96 h-full") or a parent flex/grid layout. */
+.swa-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Inner wrapper holds the scroll container + the overlay in the same
+   stacking context so the overlay can be positioned absolutely over the
+   scrollbar track. */
+.swa-content-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ── Scrollable content area ────────────────────────────────────────────── */
+
+.swa-scroll-container {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* Style the native scrollbar so markers are clearly visible on top of it. */
+.swa-scroll-container::-webkit-scrollbar {
+  width: 14px;
+}
+
+.swa-scroll-container::-webkit-scrollbar-track {
+  background: var(--color-background-tertiary, #f5f5f5);
+}
+
+.swa-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary, #ccc);
+  border-radius: 6px;
+  border: 2px solid var(--color-background-primary, #fff);
+}
+
+/* ── Overlay track ──────────────────────────────────────────────────────── */
+
+/* Positioned over the scrollbar track; pointer-events are disabled on the
+   container itself so only individual markers are interactive. */
+.swa-overlay {
+  position: absolute;
+  right: 2px;
+  top: 0;
+  width: 12px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Shared marker base ──────────────────────────────────────────────────── */
+
+.swa-marker {
+  position: absolute;
+  left: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* ── Point marker ────────────────────────────────────────────────────────── */
+/*
+ * A circular dot centred on the annotation position.
+ * Override --swa-point-size to change the diameter.
+ */
+:root {
+  --swa-point-size: 10px;
+}
+
+.swa-marker-point {
+  width: var(--swa-point-size);
+  height: var(--swa-point-size);
+  border-radius: 50%;
+  border: 2px solid white;
+  left: 2px;
+  transform: translateY(-50%);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.swa-marker-point.swa-marker--hover {
+  transform: translateY(-50%) scale(1.5);
+}
+
+/* ── Bar marker ──────────────────────────────────────────────────────────── */
+/*
+ * A short rectangle with an absolute fixed height, useful for discrete events
+ * that have a position but no meaningful extent.
+ * Override --swa-bar-width / --swa-bar-height to resize.
+ */
+:root {
+  --swa-bar-width: 10px;
+  --swa-bar-height: 10px;
+}
+
+.swa-marker-bar {
+  width: var(--swa-bar-width);
+  height: var(--swa-bar-height);
+  border-radius: 1px;
+  opacity: 0.8;
+  transform: translateY(-50%);
+}
+
+.swa-marker-bar.swa-marker--hover {
+  opacity: 1;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Range marker ────────────────────────────────────────────────────────── */
+/*
+ * A rectangle whose height is set proportionally by JS (based on the
+ * annotation's `extent` relative to the scroll height).
+ *
+ * --swa-range-min-height ensures the marker remains visible and clickable
+ * even when the proportional height would be smaller than this value.
+ * Override --swa-range-width / --swa-range-min-height to customise.
+ */
+:root {
+  --swa-range-width: 8px;
+  --swa-range-min-height: 8px;
+}
+
+.swa-marker-range {
+  width: var(--swa-range-width);
+  /* JS sets height proportionally; this guarantees a minimum regardless of ratio. */
+  min-height: var(--swa-range-min-height);
+  opacity: 0.4;
+  border-left: 2px solid white;
+  border-radius: 2px;
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+.swa-marker-range.swa-marker--hover {
+  opacity: 0.65;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Per-type colours ────────────────────────────────────────────────────── */
+/*
+ * Background colour for each annotation type.
+ * Override the CSS variables below to retheme all markers for a given type
+ * without touching any JavaScript.
+ */
+:root {
+  --swa-color-error: #e24b4a;
+  --swa-color-warning: #f39c12;
+  --swa-color-todo: #378add;
+  --swa-color-comment: #95a5a6;
+  --swa-color-review: #888780;
+  --swa-color-fixme: #ba7517;
+}
+
+.swa-type-error {
+  background: var(--swa-color-error);
+}
+
+.swa-type-warning {
+  background: var(--swa-color-warning);
+}
+
+.swa-type-todo {
+  background: var(--swa-color-todo);
+}
+
+.swa-type-comment {
+  background: var(--swa-color-comment);
+}
+
+.swa-type-review {
+  background: var(--swa-color-review);
+}
+
+.swa-type-fixme {
+  background: var(--swa-color-fixme);
+}

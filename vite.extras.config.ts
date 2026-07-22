@@ -99,6 +99,11 @@ const external = [
   /^unified/,
   "mermaid",
   /^highlight\.js/,
+  // ── CodeMirror card deps ──────────────────────────────────────────────────
+  /^@uiw\/react-codemirror/,
+  /^@uiw\/codemirror/,
+  /^@codemirror\//,
+  "codemirror",
   // ── Other optional card deps (guard) ─────────────────────────────────────
   "react-resizable-panels",
   "react-json-view-lite",

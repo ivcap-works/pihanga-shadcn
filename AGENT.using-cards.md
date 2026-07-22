@@ -336,6 +336,7 @@ Or activate everything at once: `import "@pihanga2/shadcn"`.
 | dialog | `/r/dialog` | ✅ | |
 | dropDownMenu | `/r/dropDownMenu` | ✅ | |
 | field | `/r/field` | ✅ | |
+| fileDrop | `/r/fileDrop` | ✅ | drag-and-drop file upload |
 | flexGrid | `/r/flexGrid` | ✅ | |
 | form | `/r/form` | ✅ | |
 | framework | `/r/framework` | ✅ | App root |
@@ -384,6 +385,18 @@ Full registry index: `https://ivcap-works.github.io/pihanga-shadcn/r/registry.js
 - `graphin`, `jsonViewer`, `markdownViewer`, `resizable` are not in the npm
   package — use the registry for those.
 - Point Tailwind at `node_modules/@pihanga2/shadcn/dist-lib` to scan classes.
+- **Import types from the card index, not deep sub-paths.**  The exports map
+  only exposes `@pihanga2/shadcn/cards/<card>` — every type from
+  `<card>.types.ts` is re-exported there.  Deep paths like
+  `@pihanga2/shadcn/cards/fileDrop/fileDrop.types` are blocked by Node/Vite:
+
+  ```ts
+  // ❌ Deep sub-path — blocked by exports map, even if the .d.ts exists on disk
+  import type {FileDropProps} from "@pihanga2/shadcn/cards/fileDrop/fileDrop.types";
+
+  // ✅ Correct — all types re-exported from the card index
+  import type {FileDropProps} from "@pihanga2/shadcn/cards/fileDrop";
+  ```
 
 **Both channels:**
 - After activation, app-wiring APIs (`registerCard`, `registerFramework`,
@@ -1187,3 +1200,37 @@ yarn alternative or Node version constraint.
 | No `yarn dlx` alternative documented | Added `yarn dlx shadcn@latest` as the yarn-compatible alternative in the distribution channels table, Channel 1 init step, and "Adding individual cards" commands |
 | No warning about npm 11 + Node 24 incompatibility | Added a prominent compatibility callout at the top of *Channel 1 — shadcn registry prerequisites*, with the `nvm use 22` workaround and the `yarn dlx` alternative |
 | "Notes for AI agents" section did not mention the `npx` breakage | Added a bullet noting that `npx` fails on npm 11 + Node 24 and that `yarn dlx shadcn@latest` is a drop-in replacement |
+
+### 2026-07 user feedback — `fileDrop` import fails from `@pihanga2/shadcn@0.2.0`
+
+Users on `@pihanga2/shadcn@0.2.0` reported two compounding errors when importing
+the `fileDrop` card:
+
+1. `./cards/fileDrop` was absent from the `exports` map in the published
+   `package.json` — Node/TypeScript/Vite block any unlisted sub-path even when
+   the file physically exists on disk.
+2. The `cards/fileDrop/` directory contained only `.d.ts` type stubs — no `.js`
+   runtime files — because `fileDrop` was type-stubbed before the `0.2.0` publish
+   and the build was never re-run to include it.
+
+**Resolution:** `@pihanga2/shadcn@0.2.5` ships `fileDrop` correctly (`.js` +
+`.d.ts` + exports map entry).  **Upgrade to `>=0.2.5`.**
+
+```sh
+npm install @pihanga2/shadcn@latest
+# or:
+yarn add @pihanga2/shadcn@latest
+```
+
+A second mistake was also identified: users attempted to import types from the
+deep sub-path `@pihanga2/shadcn/cards/fileDrop/fileDrop.types`, which is NOT
+listed in the exports map and is therefore blocked.  All types from `fileDrop.types`
+are re-exported from the card index — use the card index path instead (see
+*Notes for AI agents → npm channel* above).
+
+| Root cause | Fix applied |
+|---|---|
+| `fileDrop` added to `core-cards.json` after `@pihanga2/shadcn@0.2.0` was published; package not rebuilt | Fixed in `@pihanga2/shadcn@0.2.5` — `fileDrop` is now fully built and in the exports map |
+| `react-drag-drop-files` mislabelled in `vite.lib.config.ts` as an "excluded-card guard" dep instead of a legitimate runtime dep | Moved to the runtime deps section with clarifying comment |
+| `fileDrop` missing from the Available cards table | Added to table |
+| No documentation that deep sub-path imports (`/cards/fileDrop/fileDrop.types`) are blocked | Added explicit ❌/✅ example to *Notes for AI agents → npm channel* |
