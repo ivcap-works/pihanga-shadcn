@@ -15,7 +15,7 @@ export const ToggleGroupComponent = (
 ): React.ReactNode => {
   const {
     name,
-    items,
+    items = [],
     type = "single",
     value: propValue,
     selfManaged = false,

@@ -20,6 +20,7 @@ import type {
 } from "./graphin.types";
 
 export type GraphinEventDispatcherProps = {
+  cardName: string;
   onNodeHovered?: (ctx: GraphinNodeEventContext) => void;
   onNodeHoverEnd?: (ctx: GraphinNodeEventContext) => void;
   onNodeClicked?: (ctx: GraphinNodeEventContext) => void;
@@ -88,7 +89,9 @@ export function GraphinEventDispatcher(
     };
 
     const handleAfterLayout = () => {
-      handlersRef.current.onAfterLayout?.({});
+      handlersRef.current.onAfterLayout?.({
+        cardID: handlersRef.current.cardName,
+      });
     };
 
     graph.on("node:pointerenter", handleNodePointerEnter);

@@ -338,6 +338,7 @@ export const GraphinComponent = (
 
         {/* Bridges G6 node events to Pihanga action dispatchers */}
         <GraphinEventDispatcher
+          cardName={cardName}
           onNodeHovered={onNodeHovered}
           onNodeHoverEnd={onNodeHoverEnd}
           onNodeClicked={onNodeClicked}

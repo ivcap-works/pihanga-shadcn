@@ -54,7 +54,7 @@ build-core: install ## Build @pihanga2/shadcn npm package into dist-lib/
 build-core-dry: ## Preview @pihanga2/shadcn build without writing files (dry-run)
 	node scripts/build-core.mjs --dry-run
 
-publish: build-core ## Build and publish @pihanga2/shadcn to npm
+publish: check build-core ## Build and publish @pihanga2/shadcn to npm
 	cd ${ROOT_DIR}/dist-lib && npm publish --access public
 
 build-extras: install ## Build all extra card packages (graphin, chart, markdown)
