@@ -1,10 +1,10 @@
-import {createCardDeclaration, type PiCardRef} from "@pihanga2/core";
+import {createCardDeclaration} from "@pihanga2/core";
 
 export const FLEX_GRID_CARD = "flex_grid";
 export const FlexGrid = createCardDeclaration<FlexGridProps>(FLEX_GRID_CARD);
 
 export type FlexGridProps = {
-  cards: {[name: string]: PiCardRef};
+  cards: {[name: string]: string}; // anonymous cards are not supported
   template: TemplateT;
   height?: string;
   margin?: string;

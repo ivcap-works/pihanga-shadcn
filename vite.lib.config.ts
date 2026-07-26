@@ -18,7 +18,7 @@
  */
 
 import path from "path";
-import {readFileSync} from "fs";
+import {readFileSync, existsSync} from "fs";
 import {fileURLToPath} from "url";
 import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
@@ -49,10 +49,10 @@ const entry: Record<string, string> = {
 };
 
 for (const card of CORE_CARDS) {
-  entry[`cards/${card}/index`] = path.resolve(
-    __dirname,
-    `src/cards/${card}/index.ts`,
-  );
+  // Support both index.ts and index.tsx (some cards use JSX in the index file)
+  const tsPath = path.resolve(__dirname, `src/cards/${card}/index.ts`);
+  const tsxPath = path.resolve(__dirname, `src/cards/${card}/index.tsx`);
+  entry[`cards/${card}/index`] = existsSync(tsPath) ? tsPath : tsxPath;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "infoCard",
+  "type": "registry:component",
+  "description": "Pihanga infoCard — a shadcn Card wrapper with optional title, description, and Pihanga card slots for action, content, and footer.",
+  "dependencies": [],
+  "registryDependencies": [
+    "card",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-lib-utils.json"
+  ],
+  "files": [
+    {
+      "path": "cards/infoCard/infoCard.types.ts",
+      "type": "registry:component",
+      "target": "src/cards/infoCard/infoCard.types.ts"
+    },
+    {
+      "path": "cards/infoCard/infoCard.component.tsx",
+      "type": "registry:component",
+      "target": "src/cards/infoCard/infoCard.component.tsx"
+    },
+    {
+      "path": "cards/infoCard/index.tsx",
+      "type": "registry:component",
+      "target": "src/cards/infoCard/index.tsx"
+    }
+  ]
+}

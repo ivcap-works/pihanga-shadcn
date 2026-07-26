@@ -36,6 +36,7 @@ import fileDropDef from "@/cards/fileDrop/fileDrop.example";
 import flexGridDef from "@/cards/flexGrid/flexGrid.example";
 import formDef from "@/cards/form/form.example";
 import graphinDef from "@/cards/graphin/graphin.example";
+import infoCardDef from "@/cards/infoCard/infoCard.example";
 import inputDef from "@/cards/input/input.example";
 import jsonViewerDef from "@/cards/jsonViewer/jsonViewer.example";
 import listDef from "@/cards/list/list.example";
@@ -81,6 +82,7 @@ import fileDropReadme from "@/cards/fileDrop/README.md?raw";
 import flexGridReadme from "@/cards/flexGrid/README.md?raw";
 import formReadme from "@/cards/form/README.md?raw";
 import graphinReadme from "@/cards/graphin/README.md?raw";
+import infoCardReadme from "@/cards/infoCard/README.md?raw";
 import inputReadme from "@/cards/input/README.md?raw";
 import jsonViewerReadme from "@/cards/jsonViewer/README.md?raw";
 import listReadme from "@/cards/list/README.md?raw";
@@ -139,6 +141,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...flexGridDef, introduction: flexGridReadme},
   {...formDef, introduction: formReadme},
   {...graphinDef, introduction: graphinReadme},
+  {...infoCardDef, introduction: infoCardReadme},
   {...inputDef, introduction: inputReadme},
   {...jsonViewerDef, introduction: jsonViewerReadme},
   {...listDef, introduction: listReadme},
@@ -152,7 +155,10 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...pageWithNavbarMetaDef, introduction: pageWithNavbarMetaReadme},
   {...pasteTargetDef, introduction: pasteTargetReadme},
   {...resizableDef, introduction: resizableReadme},
-  {...scrollbarWithAnnotationsDef, introduction: scrollbarWithAnnotationsReadme},
+  {
+    ...scrollbarWithAnnotationsDef,
+    introduction: scrollbarWithAnnotationsReadme,
+  },
   {...selectDef, introduction: selectReadme},
   {...sliderDef, introduction: sliderReadme},
   {...sliderValueDef, introduction: sliderValueReadme},
