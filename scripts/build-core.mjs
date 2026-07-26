@@ -150,7 +150,14 @@ exportsMap["./lib/utils"] = {
   import: "./lib/utils.js",
   types: "./lib/utils.d.ts",
 };
-exportsMap["./theme"] = { import: "./theme.css" };
+exportsMap["./theme.css"] = {
+  style: "./theme.css",
+  default: "./theme.css",
+};
+exportsMap["./theme"] = {
+  style: "./theme.css",
+  default: "./theme.css",
+};
 
 // ---------------------------------------------------------------------------
 // Step 4 — Write dist-lib/package.json
