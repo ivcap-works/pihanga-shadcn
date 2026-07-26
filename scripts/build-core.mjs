@@ -150,6 +150,7 @@ exportsMap["./lib/utils"] = {
   import: "./lib/utils.js",
   types: "./lib/utils.d.ts",
 };
+exportsMap["./theme"] = { import: "./theme.css" };
 
 // ---------------------------------------------------------------------------
 // Step 4 — Write dist-lib/package.json
@@ -316,6 +317,23 @@ if (!DRY_RUN) {
   }
 } else {
   console.log(`    (dry-run — would copy: ${AGENT_FILES.join(", ")})`);
+}
+
+// ---------------------------------------------------------------------------
+// Step 6.5 — Copy theme.css for consumers who don't use shadcn already
+// ---------------------------------------------------------------------------
+
+console.log("\n🎨  Copying theme.css…");
+if (!DRY_RUN) {
+  const themeSrc = join(ROOT, "src", "theme.css");
+  if (existsSync(themeSrc)) {
+    copyFileSync(themeSrc, join(DIST_DIR, "theme.css"));
+    console.log("    ✓  theme.css");
+  } else {
+    console.warn("    ⚠  src/theme.css not found — skipped");
+  }
+} else {
+  console.log("    (dry-run — would copy src/theme.css → dist-lib/theme.css)");
 }
 
 // ---------------------------------------------------------------------------

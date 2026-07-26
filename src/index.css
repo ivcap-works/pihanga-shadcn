@@ -24,6 +24,9 @@
 @source inline("{bg,text,border,ring,outline,fill,stroke,decoration}-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,100,200,300,400,500,600,700,800,900,950}/{5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95}");
 @source inline("{bg,text,border,ring,outline}-{black,white}/{5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95}");
 
+/* Import gaps used in various cards, like Stack */
+@source inline("gap-{0,1,2,3,4,5,6,8,10,12}");
+
 /*
  * Tailwind v4 — map shadcn semantic CSS variables to Tailwind colour utilities.
  * Without this @theme block, classes like bg-card / bg-background / border-border

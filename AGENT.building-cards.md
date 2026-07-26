@@ -703,3 +703,121 @@ Rules:
 - `src/cards/BUILDING_CARDS_HOWTO.md` — human-oriented narrative version of this guide
 - `scripts/gen-card-dependencies.mjs` — dependency scanner
 - `scripts/gen-registry.mjs` — registry builder
+
+---
+
+## Theme-aware cards — working with CSS variables
+
+shadcn/ui components (and therefore pihanga-shadcn cards built on top of them)
+use **CSS custom properties** for all semantic colours, radii, and shadows.
+Understanding the token system is essential for cards that carry their own
+visual chrome (borders, backgrounds, elevation).
+
+### How the token system works
+
+`src/theme.css` (shipped as `@pihanga2/shadcn/theme.css`) defines three layers:
+
+| Layer | Purpose | Example |
+|---|---|---|
+| `:root { --card: oklch(...) }` | **Palette** — raw colour values | `--card`, `--border`, `--radius` |
+| `@theme inline { --color-card: var(--card) }` | **Tailwind mapping** — wires vars to utility classes | `bg-card`, `border-border`, `rounded-xl` |
+| `.dark { --card: oklch(...) }` | **Dark-mode overrides** | Same tokens, different values |
+
+A consumer who overrides `:root { --card: oklch(0.9 0 0); }` in their own CSS
+automatically rethemes every card that uses `bg-card` — no card code changes
+needed.
+
+### Using theme tokens in a new card
+
+**Prefer shadcn semantic tokens over hardcoded colours.** This makes the card
+rethemable by the consumer:
+
+```tsx
+// ✅ Rethemable — uses CSS variable tokens
+<div className="bg-card text-card-foreground border border-border rounded-xl shadow-sm">
+
+// ❌ Hard-wired — ignores consumer theme
+<div className="bg-white text-gray-900 border border-gray-200 rounded-xl shadow-sm">
+```
+
+Standard shadcn tokens available as Tailwind utilities:
+
+| Tailwind class | CSS variable | Default (light) |
+|---|---|---|
+| `bg-card` | `--card` | white |
+| `text-card-foreground` | `--card-foreground` | near-black |
+| `bg-background` | `--background` | white |
+| `text-foreground` | `--foreground` | near-black |
+| `bg-muted` | `--muted` | light gray |
+| `text-muted-foreground` | `--muted-foreground` | medium gray |
+| `bg-primary` | `--primary` | dark |
+| `text-primary-foreground` | `--primary-foreground` | near-white |
+| `border-border` | `--border` | light gray |
+| `rounded-xl` | `--radius-xl` = `--radius + 4px` | ~14px |
+| `rounded-lg` | `--radius-lg` = `--radius` | 10px |
+| `shadow-sm` | Tailwind built-in | subtle shadow |
+
+### Adding a new theme token for a card
+
+When a card needs a design token consumers can override (e.g. a brand-specific
+colour or radius), add it to **`src/theme.css`** following the same pattern:
+
+```css
+/* In src/theme.css — @theme inline block */
+@theme inline {
+  /* … existing tokens … */
+  --color-my-card-accent: var(--my-card-accent);
+}
+
+/* default in :root */
+:root {
+  --my-card-accent: oklch(0.5 0.2 260);   /* a blue */
+}
+```
+
+Then use `bg-my-card-accent` / `text-my-card-accent` in your component.
+Consumers override by setting `--my-card-accent` in their own `:root`.
+
+> **Do not** add tokens that are only useful for a single card to the global
+> `theme.css`.  For card-local defaults, prefer explicit Tailwind colour classes
+> or a `className` prop.
+
+### The `@container` gotcha with shadcn composites
+
+shadcn's `<CardHeader>` applies `@container/card-header`
+(`container-type: inline-size`).  CSS containment makes the element's
+intrinsic inline size appear as **0** to its parent for `min-width` / `max-content`
+calculations — your card will collapse to a tiny width if it relies on `min-w-max`.
+
+**Fix:** replace `<CardHeader>` with a plain `<div data-slot="card-header">` that
+carries the same Tailwind classes but without the `@container` prefix:
+
+```tsx
+// ❌ @container breaks min-w-max on the parent Card
+<CardHeader className={headerClassName}>
+
+// ✅ Same visual styles, no CSS containment
+<div
+  data-slot="card-header"
+  className={cn(
+    "grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6",
+    "has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+    headerClassName,
+  )}
+>
+```
+
+This is safe because the `has-data-[slot=card-action]` selector is a CSS `:has()`
+rule, not a container query — it doesn't require `@container` to function.
+
+### Consumer setup (reminder)
+
+Cards in this library render correctly only when the consuming app's CSS
+includes `@import "@pihanga2/shadcn/theme.css"`.  That single import:
+
+1. Defines the CSS custom property palette (`:root`, `.dark`)
+2. Maps them to Tailwind v4 utility tokens (`@theme inline`)
+3. Tells Tailwind to scan the library's compiled files (`@source "."`)
+
+Apps that already use shadcn/ui with their own theme setup do not need the
+import — their `:root` variables cascade over the defaults.
