@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "collapsibleCard",
+  "type": "registry:component",
+  "description": "Pihanga collapsibleCard — a collapsible panel with a Typography title, an optional icon trigger, and a Pihanga card content slot.",
+  "dependencies": [
+    "@radix-ui/react-collapsible",
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-cards-icons.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-lib-utils.json"
+  ],
+  "files": [
+    {
+      "path": "cards/collapsibleCard/collapsibleCard.types.ts",
+      "type": "registry:component",
+      "target": "src/cards/collapsibleCard/collapsibleCard.types.ts"
+    },
+    {
+      "path": "cards/collapsibleCard/collapsibleCard.component.tsx",
+      "type": "registry:component",
+      "target": "src/cards/collapsibleCard/collapsibleCard.component.tsx"
+    },
+    {
+      "path": "cards/collapsibleCard/index.tsx",
+      "type": "registry:component",
+      "target": "src/cards/collapsibleCard/index.tsx"
+    }
+  ]
+}

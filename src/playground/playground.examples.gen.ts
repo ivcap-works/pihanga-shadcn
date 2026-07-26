@@ -13,7 +13,7 @@
 // imported with Vite's `?raw` suffix and merged into the definition as the
 // `introduction` field (overriding any inline value in the example file).
 //
-// Last generated: 2026-07-24T00:15:06.548Z
+// Last generated: 2026-07-26T06:07:38.700Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
@@ -24,6 +24,7 @@ import buttonDef from "@/cards/button/button.example";
 import chartDef from "@/cards/chart/chart.example";
 import checkboxDef from "@/cards/checkbox/checkbox.example";
 import codeMirrorDef from "@/cards/codeMirror/codeMirror.example";
+import collapsibleCardDef from "@/cards/collapsibleCard/collapsibleCard.example";
 import conditionalDef from "@/cards/conditional/conditional.example";
 import dataTableDef from "@/cards/dataTable/dataTable.example";
 import dialogDef from "@/cards/dialog/dialog.example";
@@ -68,6 +69,7 @@ import buttonReadme from "@/cards/button/README.md?raw";
 import chartReadme from "@/cards/chart/README.md?raw";
 import checkboxReadme from "@/cards/checkbox/README.md?raw";
 import codeMirrorReadme from "@/cards/codeMirror/README.md?raw";
+import collapsibleCardReadme from "@/cards/collapsibleCard/README.md?raw";
 import conditionalReadme from "@/cards/conditional/README.md?raw";
 import dataTableReadme from "@/cards/dataTable/README.md?raw";
 import dialogReadme from "@/cards/dialog/README.md?raw";
@@ -125,6 +127,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...chartDef, introduction: chartReadme},
   {...checkboxDef, introduction: checkboxReadme},
   {...codeMirrorDef, introduction: codeMirrorReadme},
+  {...collapsibleCardDef, introduction: collapsibleCardReadme},
   {...conditionalDef, introduction: conditionalReadme},
   {...dataTableDef, introduction: dataTableReadme},
   {...dialogDef, introduction: dialogReadme},
