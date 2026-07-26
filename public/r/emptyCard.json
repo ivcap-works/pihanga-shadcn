@@ -2,21 +2,32 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "emptyCard",
   "type": "registry:component",
-  "description": "Pihanga emptyCard card component",
-  "dependencies": [],
+  "description": "Pihanga emptyCard card component — an empty-state placeholder with an optional icon and a Pihanga card content slot.",
+  "dependencies": [
+    "class-variance-authority"
+  ],
   "registryDependencies": [
-    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json"
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-cards-icons.json"
   ],
   "files": [
     {
-      "path": "cards/emptyCard/index.ts",
-      "content": "import * as React from \"react\";\n\nimport {\n  createCardDeclaration,\n  registerCardComponent,\n  type PiCardProps,\n} from \"@pihanga2/core\";\n\nconst CARD_NAME = \"empty-card\";\nexport const EmptyCard = createCardDeclaration<EmptyProps>(CARD_NAME);\n\nexport type EmptyProps = {\n  style?: React.CSSProperties;\n};\n\nconst DEF_STYLE = {\n  height: \"100%\",\n  backgroundColor: \"var(--border)\",\n};\n\nexport const EmptyComponent = (\n  props: PiCardProps<EmptyProps>,\n): React.ReactNode => {\n  const style = props.style || DEF_STYLE;\n  return <div style={style} data-pihanga={props.cardName} />;\n};\n\nregisterCardComponent({\n  name: CARD_NAME,\n  component: EmptyComponent,\n});\n",
+      "path": "components/ui/empty.tsx",
+      "type": "registry:ui",
+      "target": "src/components/ui/empty.tsx"
+    },
+    {
+      "path": "cards/emptyCard/emptyCard.types.ts",
       "type": "registry:component",
-      "target": "src/cards/emptyCard/index.ts"
+      "target": "src/cards/emptyCard/emptyCard.types.ts"
+    },
+    {
+      "path": "cards/emptyCard/emptyCard.component.tsx",
+      "type": "registry:component",
+      "target": "src/cards/emptyCard/emptyCard.component.tsx"
     },
     {
       "path": "cards/emptyCard/index.tsx",
-      "content": "import * as React from \"react\";\n\nimport {\n  createCardDeclaration,\n  registerCardComponent,\n  type PiCardProps,\n} from \"@pihanga2/core\";\n\nconst CARD_NAME = \"empty-card\";\nexport const EmptyCard = createCardDeclaration<EmptyProps>(CARD_NAME);\n\nexport type EmptyProps = {\n  style?: React.CSSProperties;\n};\n\nconst DEF_STYLE = {\n  height: \"100%\",\n  backgroundColor: \"var(--border)\",\n};\n\nexport const EmptyComponent = (\n  props: PiCardProps<EmptyProps>,\n): React.ReactNode => {\n  const style = props.style || DEF_STYLE;\n  return <div style={style} data-pihanga={props.cardName} />;\n};\n\nregisterCardComponent({\n  name: CARD_NAME,\n  component: EmptyComponent,\n});\n",
       "type": "registry:component",
       "target": "src/cards/emptyCard/index.tsx"
     }

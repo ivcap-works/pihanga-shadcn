@@ -13,7 +13,7 @@
 // imported with Vite's `?raw` suffix and merged into the definition as the
 // `introduction` field (overriding any inline value in the example file).
 //
-// Last generated: 2026-07-20T07:14:02.837Z
+// Last generated: 2026-07-24T00:15:06.548Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
@@ -29,6 +29,7 @@ import dataTableDef from "@/cards/dataTable/dataTable.example";
 import dialogDef from "@/cards/dialog/dialog.example";
 import drawerDef from "@/cards/drawer/drawer.example";
 import dropDownMenuDef from "@/cards/dropDownMenu/drop-down.example";
+import emptyCardDef from "@/cards/emptyCard/emptyCard.example";
 import fieldDef from "@/cards/field/field.example";
 import fileDropDef from "@/cards/fileDrop/fileDrop.example";
 import flexGridDef from "@/cards/flexGrid/flexGrid.example";
@@ -72,6 +73,7 @@ import dataTableReadme from "@/cards/dataTable/README.md?raw";
 import dialogReadme from "@/cards/dialog/README.md?raw";
 import drawerReadme from "@/cards/drawer/README.md?raw";
 import dropDownMenuReadme from "@/cards/dropDownMenu/README.md?raw";
+import emptyCardReadme from "@/cards/emptyCard/README.md?raw";
 import fieldReadme from "@/cards/field/README.md?raw";
 import fileDropReadme from "@/cards/fileDrop/README.md?raw";
 import flexGridReadme from "@/cards/flexGrid/README.md?raw";
@@ -128,6 +130,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...dialogDef, introduction: dialogReadme},
   {...drawerDef, introduction: drawerReadme},
   {...dropDownMenuDef, introduction: dropDownMenuReadme},
+  {...emptyCardDef, introduction: emptyCardReadme},
   {...fieldDef, introduction: fieldReadme},
   {...fileDropDef, introduction: fileDropReadme},
   {...flexGridDef, introduction: flexGridReadme},
