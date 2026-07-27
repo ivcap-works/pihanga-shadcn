@@ -1,0 +1,38 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "iconCard",
+  "type": "registry:component",
+  "description": "Pihanga icon card — renders a registry icon inside a styleable div",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-cards-icons.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-lib-utils.json"
+  ],
+  "files": [
+    {
+      "path": "cards/iconCard/iconCard.component.tsx",
+      "content": "import React from \"react\";\nimport {type PiCardProps} from \"@pihanga2/core\";\nimport {cn} from \"@/lib/utils\";\nimport {getIcon} from \"@/cards/icons\";\nimport type {IconCardProps} from \"./iconCard.types\";\n\nexport const IconCardComponent = (\n  props: PiCardProps<IconCardProps>,\n): React.ReactNode => {\n  const {iconName, iconProps, className, style, cardName} = props;\n\n  return (\n    <div className={cn(className)} style={style} data-pihanga={cardName}>\n      {getIcon(iconName, iconProps)}\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/iconCard/iconCard.component.tsx"
+    },
+    {
+      "path": "cards/iconCard/iconCard.types.ts",
+      "content": "import {createCardDeclaration} from \"@pihanga2/core\";\nimport type React from \"react\";\n\nexport const ICON_CARD = \"shad/icon\";\n\nexport type IconCardProps = {\n  /** Name of the icon as registered via `registerIcon` */\n  iconName: string;\n\n  /** Props forwarded to the icon element (e.g. size, strokeWidth) */\n  // eslint-disable-next-line @typescript-eslint/no-explicit-any\n  iconProps?: Record<string, any>;\n\n  /** Additional Tailwind classes applied to the wrapping `<div>` */\n  className?: string;\n\n  /** Inline styles applied to the wrapping `<div>` */\n  style?: React.CSSProperties;\n};\n\nexport const ShadIcon = createCardDeclaration<IconCardProps>(ICON_CARD);\n",
+      "type": "registry:component",
+      "target": "src/cards/iconCard/iconCard.types.ts"
+    },
+    {
+      "path": "cards/iconCard/index.ts",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {IconCardComponent} from \"./iconCard.component\";\nimport {ICON_CARD} from \"./iconCard.types\";\n\nexport * from \"./iconCard.types\";\n\nregisterCardComponent({\n  name: ICON_CARD,\n  component: IconCardComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/iconCard/index.ts"
+    },
+    {
+      "path": "cards/iconCard/README.md",
+      "content": "A minimal card that renders a single named icon (resolved from the pihanga\nicon registry) inside a plain `<div>`.\n\nThe wrapping div accepts an optional `className` for Tailwind utility classes\nand an optional `style` for inline CSS overrides, giving full control over\nsize, colour, spacing, and layout without any card-specific CSS.\n\nIcons must be registered once in your app (e.g. `app.icons.ts`) via\n`registerIcon`, then referenced by the same name string in the card props.\n",
+      "type": "registry:file",
+      "target": "src/cards/iconCard/README.md"
+    }
+  ]
+}

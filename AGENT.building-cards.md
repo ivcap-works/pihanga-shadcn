@@ -817,7 +817,7 @@ includes `@import "@pihanga2/shadcn/theme.css"`.  That single import:
 
 1. Defines the CSS custom property palette (`:root`, `.dark`)
 2. Maps them to Tailwind v4 utility tokens (`@theme inline`)
-3. Tells Tailwind to scan the library's compiled files (`@source "."`)
+3. Tells Tailwind to scan the library's compiled files (`@source unsafe(".")`)
 
 Apps that already use shadcn/ui with their own theme setup do not need the
 import — their `:root` variables cascade over the defaults.

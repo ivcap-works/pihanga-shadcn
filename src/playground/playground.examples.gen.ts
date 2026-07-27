@@ -13,7 +13,7 @@
 // imported with Vite's `?raw` suffix and merged into the definition as the
 // `introduction` field (overriding any inline value in the example file).
 //
-// Last generated: 2026-07-26T06:07:38.700Z
+// Last generated: 2026-07-26T09:45:12.601Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
@@ -36,6 +36,7 @@ import fileDropDef from "@/cards/fileDrop/fileDrop.example";
 import flexGridDef from "@/cards/flexGrid/flexGrid.example";
 import formDef from "@/cards/form/form.example";
 import graphinDef from "@/cards/graphin/graphin.example";
+import iconCardDef from "@/cards/iconCard/iconCard.example";
 import infoCardDef from "@/cards/infoCard/infoCard.example";
 import inputDef from "@/cards/input/input.example";
 import jsonViewerDef from "@/cards/jsonViewer/jsonViewer.example";
@@ -52,6 +53,7 @@ import pasteTargetDef from "@/cards/pasteTarget/pasteTarget.example";
 import resizableDef from "@/cards/resizable/resizable.example";
 import scrollbarWithAnnotationsDef from "@/cards/scrollbarWithAnnotations/scrollbarWithAnnotations.example";
 import selectDef from "@/cards/select/select.example";
+import sheetCardDef from "@/cards/sheetCard/sheetCard.example";
 import sliderDef from "@/cards/slider/slider.example";
 import sliderValueDef from "@/cards/sliderValue/sliderValue.example";
 import stackDef from "@/cards/stack/stack.example";
@@ -82,6 +84,7 @@ import fileDropReadme from "@/cards/fileDrop/README.md?raw";
 import flexGridReadme from "@/cards/flexGrid/README.md?raw";
 import formReadme from "@/cards/form/README.md?raw";
 import graphinReadme from "@/cards/graphin/README.md?raw";
+import iconCardReadme from "@/cards/iconCard/README.md?raw";
 import infoCardReadme from "@/cards/infoCard/README.md?raw";
 import inputReadme from "@/cards/input/README.md?raw";
 import jsonViewerReadme from "@/cards/jsonViewer/README.md?raw";
@@ -98,6 +101,7 @@ import pasteTargetReadme from "@/cards/pasteTarget/README.md?raw";
 import resizableReadme from "@/cards/resizable/README.md?raw";
 import scrollbarWithAnnotationsReadme from "@/cards/scrollbarWithAnnotations/README.md?raw";
 import selectReadme from "@/cards/select/README.md?raw";
+import sheetCardReadme from "@/cards/sheetCard/README.md?raw";
 import sliderReadme from "@/cards/slider/README.md?raw";
 import sliderValueReadme from "@/cards/sliderValue/README.md?raw";
 import stackReadme from "@/cards/stack/README.md?raw";
@@ -141,6 +145,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...flexGridDef, introduction: flexGridReadme},
   {...formDef, introduction: formReadme},
   {...graphinDef, introduction: graphinReadme},
+  {...iconCardDef, introduction: iconCardReadme},
   {...infoCardDef, introduction: infoCardReadme},
   {...inputDef, introduction: inputReadme},
   {...jsonViewerDef, introduction: jsonViewerReadme},
@@ -160,6 +165,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
     introduction: scrollbarWithAnnotationsReadme,
   },
   {...selectDef, introduction: selectReadme},
+  {...sheetCardDef, introduction: sheetCardReadme},
   {...sliderDef, introduction: sliderReadme},
   {...sliderValueDef, introduction: sliderValueReadme},
   {...stackDef, introduction: stackReadme},

@@ -16,6 +16,7 @@
     "flexGrid",
     "form",
     "framework",
+    "iconCard",
     "infoCard",
     "input",
     "jsonViewer",
@@ -31,6 +32,7 @@
     "resizable",
     "scrollbarWithAnnotations",
     "select",
+    "sheetCard",
     "slider",
     "sliderValue",
     "stack",
@@ -43,8 +45,8 @@
     "typography"
   ],
   "excludeReason": {
-    "chartGraph": "recharts dependency (~200-300 KB gzipped) — published as @pihanga2/chart",
-    "graphin": "heavy AntV deps (@antv/g, @antv/g6, @antv/graphin — ~5 MB install) — published as @pihanga2/graphin",
-    "markdownViewer": "mermaid + remark/rehype stack — heavy markdown rendering pipeline — published as @pihanga2/markdown"
+    "chartGraph": "recharts dependency (~200-300 KB gzipped) \u2014 published as @pihanga2/chart",
+    "graphin": "heavy AntV deps (@antv/g, @antv/g6, @antv/graphin \u2014 ~5 MB install) \u2014 published as @pihanga2/graphin",
+    "markdownViewer": "mermaid + remark/rehype stack \u2014 heavy markdown rendering pipeline \u2014 published as @pihanga2/markdown"
   }
 }

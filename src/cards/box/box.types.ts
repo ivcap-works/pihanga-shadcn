@@ -26,6 +26,9 @@ export type BoxProps<S = object> = {
   /** Child card refs rendered inside the box */
   content?: PiCardRef[];
 
+  /** Single child to make dynmic selection (s) => ... possible */
+  singleContent: PiCardRef;
+
   /** Override the root element type */
   component?: React.ElementType;
 
