@@ -89,10 +89,12 @@ export type PiToggleGroupProps = {
    * Visual style variant of the toggle buttons.
    * - `"default"` — transparent background, highlights on active.
    * - `"outline"` — bordered buttons, grouped or spaced.
+   * - `"pill"` — segmented-control style: muted rounded-full container with a
+   *   filled foreground pill on the active item.
    *
    * @default "default"
    */
-  variant?: "default" | "outline";
+  variant?: "default" | "outline" | "pill";
 
   /**
    * Size of each toggle button.

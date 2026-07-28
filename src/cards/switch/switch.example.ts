@@ -15,6 +15,7 @@ export default definePlayground<PiSwitchProps>({
     checked: false,
     label: "Enable feature",
     disabled: false,
+    selfManaged: true,
   },
 
   facets: [
@@ -25,6 +26,7 @@ export default definePlayground<PiSwitchProps>({
       props: {
         checked: false,
         label: "Notifications",
+        selfManaged: true,
       },
     },
     {
@@ -34,6 +36,7 @@ export default definePlayground<PiSwitchProps>({
       props: {
         checked: true,
         label: "Notifications",
+        selfManaged: true,
       },
     },
     {
@@ -43,6 +46,8 @@ export default definePlayground<PiSwitchProps>({
         "Switch without a label — useful inside table cells or tight layouts.",
       props: {
         checked: true,
+        label: "",
+        selfManaged: true,
       },
     },
     {
@@ -70,6 +75,7 @@ export default definePlayground<PiSwitchProps>({
   controls: [
     {prop: "checked", type: "boolean", label: "Checked"},
     {prop: "disabled", type: "boolean", label: "Disabled"},
+    {prop: "selfManaged", type: "boolean", label: "Self-managed"},
     {
       prop: "label",
       type: "text",

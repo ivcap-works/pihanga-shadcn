@@ -10,6 +10,15 @@ import type {
   PiToggleGroupProps,
 } from "./toggleGroup.types";
 
+// Applied on the container when variant="pill".
+// Item rounding is handled directly via the ToggleGroupItem className prop
+// (using !rounded-full) so Tailwind scans it and generates !important CSS.
+const PILL_CLASS =
+  "bg-muted rounded-full p-1 border" +
+  " [&_[data-slot=toggle-group-item][data-state=on]]:bg-foreground" +
+  " [&_[data-slot=toggle-group-item][data-state=on]]:text-background" +
+  " [&_[data-slot=toggle-group-item][data-state=on]]:shadow-sm";
+
 export const ToggleGroupComponent = (
   props: PiCardProps<PiToggleGroupProps, PiToggleGroupEvents>,
 ): React.ReactNode => {
@@ -27,6 +36,14 @@ export const ToggleGroupComponent = (
     cardName,
     onChanged,
   } = props;
+
+  // Pill variant: apply segmented-control styling and fall back to "default"
+  // for the underlying UI primitive.
+  const isPill = variant === "pill";
+  const resolvedVariant = isPill ? "default" : variant;
+  const resolvedClassName =
+    [isPill ? PILL_CLASS : undefined, className].filter(Boolean).join(" ") ||
+    undefined;
 
   // Detect if we are inside a pi/form card via React context.
   const form = useFormContext();
@@ -102,17 +119,18 @@ export const ToggleGroupComponent = (
         type="single"
         value={typeof value === "string" ? value : ""}
         onValueChange={handleSingleChange}
-        variant={variant}
+        variant={resolvedVariant}
         size={size}
         spacing={spacing}
         disabled={disabled}
-        className={className}
+        className={resolvedClassName}
       >
         {items.map((item) => (
           <ToggleGroupItem
             key={item.value}
             value={item.value}
             disabled={item.disabled}
+            className={isPill ? "!rounded-full" : undefined}
           >
             {item.label}
           </ToggleGroupItem>
@@ -128,17 +146,18 @@ export const ToggleGroupComponent = (
       type="multiple"
       value={Array.isArray(value) ? value : value ? [value] : []}
       onValueChange={handleMultipleChange}
-      variant={variant}
+      variant={resolvedVariant}
       size={size}
       spacing={spacing}
       disabled={disabled}
-      className={className}
+      className={resolvedClassName}
     >
       {items.map((item) => (
         <ToggleGroupItem
           key={item.value}
           value={item.value}
           disabled={item.disabled}
+          className={isPill ? "!rounded-full" : undefined}
         >
           {item.label}
         </ToggleGroupItem>

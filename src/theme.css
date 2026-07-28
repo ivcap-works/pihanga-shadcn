@@ -15,7 +15,7 @@
  */
 
 /* Scan this package's compiled files for Tailwind utility classes */
-@source unsafe(".");
+@source ".";
 
 /* Map shadcn CSS vars to Tailwind v4 utility tokens */
 @theme inline {

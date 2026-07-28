@@ -170,22 +170,22 @@ extra alias is needed as long as cards are placed under `src/cards/`.
 > error is produced**.  This is a completely silent failure that is very hard
 > to diagnose.
 >
-> The correct `@source` path depends on which installation channel you used:
->
+> **npm channel:** `@pihanga2/shadcn/theme.css` contains `@source "."` (Tailwind v4.3+),
+> so importing it is sufficient — no separate `@source` line needed:
 > ```css
-> /* npm channel — @pihanga2/shadcn installed via yarn/npm */
-> @source "../node_modules/@pihanga2/shadcn/cards";
-> @source "../node_modules/@pihanga2/shadcn/components";
->
-> /* registry / monorepo channel — local copy of pihanga-shadcn */
-> @source "../node_modules/@pihanga2/shadcn/dist-lib";
+> @import "tailwindcss";
+> @import "@pihanga2/shadcn/theme.css";
 > ```
 >
-> Note: `dist-lib/` is the compiled library output produced by the
-> pihanga-shadcn build (`vite build --config vite.lib.config.ts`).  It exists
-> in the git repository but **is not included in the published npm package**.
-> Using the `dist-lib` path with the npm channel causes Tailwind to silently
-> find no files.  Always use the `cards/` + `components/` paths for npm installs.
+> **Registry channel:** cards are copied into your own `src/cards/`, which
+> Tailwind scans automatically — no `@source` needed.
+>
+> **Skipping `theme.css`** (e.g. you already have a shadcn/ui theme): add
+> `@source` lines pointing at the package's compiled output:
+> ```css
+> @source "../node_modules/@pihanga2/shadcn/cards";
+> @source "../node_modules/@pihanga2/shadcn/components";
+> ```
 
 > ⚠️ **Do not let your IDE formatter rewrite `@import "tailwindcss"`.**
 > Some CSS formatters (VS Code's built-in formatter, Prettier's CSS mode) do
@@ -220,9 +220,6 @@ it directly from the repo at
 /* npm channel (@pihanga2/shadcn installed via yarn/npm) */
 @source "../node_modules/@pihanga2/shadcn/cards";
 @source "../node_modules/@pihanga2/shadcn/components";
-
-/* registry / monorepo channel (uncomment and remove the two lines above) */
-/* @source "../node_modules/@pihanga2/shadcn/dist-lib"; */
 
 /*
  * Tailwind v4 — map shadcn semantic CSS variables to Tailwind colour utilities.

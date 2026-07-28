@@ -11,6 +11,7 @@ export const SwitchComponent = (
   const {
     name,
     checked: propChecked = false,
+    selfManaged = false,
     disabled,
     label,
     className,
@@ -27,14 +28,27 @@ export const SwitchComponent = (
   const form = useFormContext();
   const useFormData = form.isInForm && Boolean(name);
 
+  // Self-managed internal state — seeded from propChecked, only active when
+  // selfManaged=true and we are NOT inside a pi/form.
+  const [internalChecked, setInternalChecked] = React.useState(propChecked);
+
+  // Keep internal state in sync when the external prop changes (e.g. when the
+  // playground switches to a different facet and propChecked changes).
+  React.useEffect(() => {
+    if (selfManaged) setInternalChecked(propChecked);
+  }, [propChecked, selfManaged]);
+
   const checked = useFormData
     ? Boolean(form.formData[name!] ?? false)
-    : propChecked;
+    : selfManaged
+      ? internalChecked
+      : propChecked;
 
   function handleCheckedChange(newChecked: boolean) {
     if (useFormData) {
       form.handleChange(name!, newChecked);
     } else {
+      if (selfManaged) setInternalChecked(newChecked);
       onChanged({name, checked: newChecked});
     }
   }

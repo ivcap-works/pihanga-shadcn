@@ -55,7 +55,7 @@ import {Tabs, onTabsTabChanged} from "@/cards/tabs";
 import {MarkdownViewer} from "@/cards/markdownViewer";
 import {JsonViewer} from "@/cards/jsonViewer";
 import {Select, onPiSelectChanged} from "@/cards/select";
-import {PiInput, onPiInputCommitted} from "@/cards/input";
+import {PiInput, onPiInputChanged, onPiInputCommitted} from "@/cards/input";
 import {Switch, onPiSwitchChanged} from "@/cards/switch";
 import {ToggleGroup, onPiToggleGroupChanged} from "@/cards/toggleGroup";
 
@@ -457,38 +457,52 @@ function buildDetailContent(
     ];
   }
 
+  // ── Unique card names scoped to the selected playground card ───────────────
+  // Each section card is registered with an explicit name that embeds cardId.
+  // Without this, different playground cards (e.g. Switch vs Slider) reuse the
+  // same position-based Pihanga name for the preview card.  Pihanga does update
+  // cardMappings on overwrite, but React never re-renders the container because
+  // the *name string* it receives as a prop never changes.  By scoping names to
+  // cardId the string changes when the user switches cards, so React properly
+  // unmounts the stale component and mounts the correct new one.
+  const safeId = cardId.replace(/[^a-zA-Z0-9_]/g, "-");
+  const p = `playground/detail/${safeId}`;
+
+  // Helper: register a PiCardDef under `name` and return that name; pass
+  // through strings that are already registered card references.
+  const reg = (name: string, card: PiCardRef): string => {
+    if (typeof card !== "string") registerCard(name, card);
+    return typeof card === "string" ? card : name;
+  };
+
+  const names: string[] = [];
+
   // ── Title ──────────────────────────────────────────────────────────────────
-  const items: PiCardRef[] = [Typography({level: "h2", text: def.title})];
+  names.push(reg(`${p}/title`, Typography({level: "h2", text: def.title})));
 
   // ── Introduction ───────────────────────────────────────────────────────────
-  // Sourced from the card's README.md (injected by gen-playground) or the
-  // legacy inline `introduction` field.  MarkdownViewer renders GFM, inline
-  // code, fenced code blocks, and math expressions.
   if (def.introduction) {
-    items.push(MarkdownViewer({source: def.introduction}));
+    names.push(reg(`${p}/intro`, MarkdownViewer({source: def.introduction})));
   }
 
   // ── Facets as tabs ─────────────────────────────────────────────────────────
-  items.push(...buildFacetSection(def, facetId, eventLog));
+  buildFacetSection(def, facetId, eventLog).forEach((card, i) =>
+    names.push(reg(`${p}/f${i}`, card)),
+  );
 
   // ── Interactive controls + live preview ────────────────────────────────────
-  // Shown when PlaygroundDef.controls[] is non-empty.
-  // currentProps falls back to defaultProps on first render (before a card
-  // has been selected and the reducer has fired).
   const liveProps = currentProps ?? def.defaultProps;
-  items.push(...buildControlsSection(def, liveProps));
+  buildControlsSection(def, liveProps).forEach((card, i) =>
+    names.push(reg(`${p}/c${i}`, card)),
+  );
 
   // ── Real-app usage note ────────────────────────────────────────────────────
-  // MarkdownViewer renders the note with full markdown support — code fences
-  // and inline code display correctly (replaces the old Typography fallback).
   if (def.note) {
-    items.push(
-      Typography({level: "h4", text: "Real-app usage"}),
-      MarkdownViewer({source: def.note}),
-    );
+    names.push(reg(`${p}/note-h`, Typography({level: "h4", text: "Real-app usage"})));
+    names.push(reg(`${p}/note-md`, MarkdownViewer({source: def.note})));
   }
 
-  return items;
+  return names;
 }
 
 // ============================================================================
@@ -630,15 +644,17 @@ export function playgroundPiInit(): void {
       patchPgProp(state, name, value);
     });
 
+    // Real-time update for text/string controls — fires on every keystroke so
+    // the preview reflects what the user is typing without needing blur/Enter.
+    onPiInputChanged(r, (state: AppState, {name, value}) => {
+      patchPgProp(state, name, value);
+    });
+
     onPiInputCommitted(r, (state: AppState, {name, value}) => {
       // If the matching control is type "number", parse the string to a float
-      // so the live JSON viewer and card preview receive the correct type.
-      const def = PLAYGROUND_EXAMPLES.find(
-        (d) => d.cardId === state.playgroundSelectedCardId,
-      );
-      const ctrl = def?.controls?.find((c) => c.prop === name);
-      const coerced =
-        ctrl?.type === "number" ? (parseFloat(value) ?? value) : value;
+      const _def = PLAYGROUND_EXAMPLES.find(d => d.cardId === state.playgroundSelectedCardId);
+      const ctrl = _def?.controls?.find(c => c.prop === name);
+      const coerced = ctrl?.type === "number" ? (parseFloat(value as string) ?? value) : value;
       patchPgProp(state, name, coerced);
     });
 

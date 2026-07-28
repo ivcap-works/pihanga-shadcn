@@ -37,6 +37,15 @@ export type PiSwitchProps = {
    */
   checked?: boolean;
 
+  /**
+   * When true the component manages its own checked state internally via
+   * React.useState, seeded from the `checked` prop.
+   * The onChanged event still fires on every toggle so external listeners can
+   * react.  Useful in playground previews and self-contained demos where no
+   * Redux state is wired up.
+   */
+  selfManaged?: boolean;
+
   /** When true, the switch is disabled and non-interactive. */
   disabled?: boolean;
 

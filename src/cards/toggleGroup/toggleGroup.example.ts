@@ -104,7 +104,7 @@ export default definePlayground<PiToggleGroupProps>({
       id: "pill-tabs",
       title: "Pill tabs",
       description:
-        "Segmented-control style: wrap the group in a muted background and highlight the active item with a filled foreground pill — all via `className`.",
+        'Segmented-control style: set `variant` to `"pill"` for a rounded muted background with a filled foreground pill on the active item.',
       props: {
         items: [
           {value: "left", label: "Left"},
@@ -114,14 +114,8 @@ export default definePlayground<PiToggleGroupProps>({
         type: "single",
         value: "left",
         selfManaged: true,
-        variant: "default",
+        variant: "pill",
         spacing: 0,
-        className:
-          "bg-muted rounded-lg p-1 border" +
-          " [&_[data-slot=toggle-group-item]]:rounded-md" +
-          " [&_[data-slot=toggle-group-item][data-state=on]]:bg-foreground" +
-          " [&_[data-slot=toggle-group-item][data-state=on]]:text-background" +
-          " [&_[data-slot=toggle-group-item][data-state=on]]:shadow-sm",
       },
     },
     {
@@ -153,7 +147,7 @@ export default definePlayground<PiToggleGroupProps>({
       prop: "variant",
       type: "token",
       label: "Variant",
-      options: ["default", "outline"],
+      options: ["default", "outline", "pill"],
     },
     {
       prop: "size",
@@ -189,6 +183,21 @@ registerCard("myApp/textFormatGroup", ToggleGroup({
     {value: "underline", label: "Underline"},
   ],
   variant: "outline",
+}));
+\`\`\`
+
+**Pill / segmented-control style**:
+
+\`\`\`ts
+registerCard("myApp/viewToggle", ToggleGroup({
+  type: "single",
+  selfManaged: true,
+  value: "grid",
+  items: [
+    {value: "grid", label: "Grid"},
+    {value: "list", label: "List"},
+  ],
+  variant: "pill",
 }));
 \`\`\`
 

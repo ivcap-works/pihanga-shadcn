@@ -82,7 +82,7 @@
 | **Cards available** | All 34 | 30 core (no graphin / jsonViewer / markdownViewer / resizable) |
 | **Requires `shadcn init`** | Yes | No |
 | **Files land in your project** | Yes — editable source | No — compiled bundle |
-| **Tailwind** | Consumer's own Tailwind config | Add `@source` pointing at `node_modules/@pihanga2/shadcn/dist-lib` |
+| **Tailwind** | Consumer's own Tailwind config | `@import "@pihanga2/shadcn/theme.css"` handles source scanning automatically |
 
 Use the **registry** for projects already on shadcn/ui or when you want to
 customise card source.  Use the **npm package** for monorepos, CI, or anywhere
@@ -137,11 +137,17 @@ Then use `registerCard(...)` in your init function exactly as with the registry.
 **Cards NOT in the npm package** (registry-only due to heavy deps):
 `graphin`, `jsonViewer`, `markdownViewer`, `resizable`.
 
-**Tailwind:** add `@source` to your CSS so Tailwind can scan the package:
+**Tailwind:** import `theme.css` from the package — it contains `@source "."` which tells Tailwind to scan the package automatically (Tailwind v4.3+):
 ```css
 /* src/index.css — Tailwind v4 */
 @import "tailwindcss";
-@source "../../node_modules/@pihanga2/shadcn/dist-lib";
+@import "@pihanga2/shadcn/theme.css";
+```
+
+If you already have your own shadcn/ui theme and skip the `theme.css` import, add `@source` lines pointing at the package's compiled output instead:
+```css
+@source "../node_modules/@pihanga2/shadcn/cards";
+@source "../node_modules/@pihanga2/shadcn/components";
 ```
 
 ### Migrating a card from npm to a local customised copy
@@ -384,7 +390,7 @@ Full registry index: `https://ivcap-works.github.io/pihanga-shadcn/r/registry.js
 - Activate cards with `import "@pihanga2/shadcn"` (all) or per-card sub-paths.
 - `graphin`, `jsonViewer`, `markdownViewer`, `resizable` are not in the npm
   package — use the registry for those.
-- Point Tailwind at `node_modules/@pihanga2/shadcn/dist-lib` to scan classes.
+- Import `@pihanga2/shadcn/theme.css` — it handles Tailwind source scanning automatically via `@source "."`.
 - **Import types from the card index, not deep sub-paths.**  The exports map
   only exposes `@pihanga2/shadcn/cards/<card>` — every type from
   `<card>.types.ts` is re-exported there.  Deep paths like
