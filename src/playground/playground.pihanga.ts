@@ -46,7 +46,7 @@
  *        Dispatches onPlaygroundPropChanged → patches state.playgroundCurrentProps.
  */
 
-import {memo, register, registerCard} from "@pihanga2/core";
+import {memo, register, registerCard, showPage, onShowPage, onInit} from "@pihanga2/core";
 import type {PiCardRef} from "@pihanga2/core";
 import {List, onListItemClicked} from "@/cards/list";
 import {Stack} from "@/cards/stack";
@@ -606,6 +606,34 @@ function makeEventLogger(cardId: string) {
   };
 }
 
+
+// ============================================================================
+// Route helpers
+// ============================================================================
+
+/**
+ * Convert a playground cardId to a URL-safe slug.
+ * Takes the last segment after the final '/' (or the whole string if no slash).
+ * e.g. "pi/switch" → "switch", "shad/chart-graph" → "chart-graph", "graphin" → "graphin"
+ */
+function cardIdToSlug(cardId: string): string {
+  return cardId.split("/").pop()!;
+}
+
+/**
+ * Activate a playground card by URL slug: look up the def and update state.
+ * Called both from `onShowPage` (URL-driven) and `onListItemClicked`.
+ */
+function activateCardBySlug(state: AppState, slug: string): void {
+  const def = PLAYGROUND_EXAMPLES.find((d) => cardIdToSlug(d.cardId) === slug);
+  if (def) {
+    state.playgroundSelectedCardId = def.cardId;
+    state.playgroundSelectedFacetId = def.facets?.[0]?.id;
+    state.playgroundCurrentProps = {...def.defaultProps};
+    state.playgroundEventLog = [];
+  }
+}
+
 // ============================================================================
 // Init
 // ============================================================================
@@ -614,7 +642,26 @@ export function playgroundPiInit(): void {
   // ── Event handlers ─────────────────────────────────────────────────────────
   register((r) => {
     // Store the clicked card's `cardId` in state and reset facet + currentProps.
-    onListItemClicked(r, (state: AppState, action) => {
+    // ── Route → card selection ──────────────────────────────────────────────
+    // onInit: fires once at startup with state.route already set from the
+    // current browser URL (initialised by currentRoute() inside start()).
+    // Handles deep-links like /cards/switch without relying on onShowPage timing.
+    onInit(r, (state: AppState) => {
+      const {path} = state.route;
+      if (path[0] === "cards" && path[1]) {
+        activateCardBySlug(state, path[1]);
+      }
+    });
+
+    // onShowPage: fires on subsequent navigations (browser back/forward, showPage
+    // calls) — keeps card selection in sync as the URL changes.
+    onShowPage(r, (state: AppState, {path}) => {
+      if (path[0] === "cards" && path[1]) {
+        activateCardBySlug(state, path[1]);
+      }
+    });
+
+        onListItemClicked(r, (state: AppState, action, dispatch) => {
       if (action.cardID === PlaygroundCard.List) {
         const cardId = String(action.itemID);
         state.playgroundSelectedCardId = cardId;
@@ -624,6 +671,8 @@ export function playgroundPiInit(): void {
         state.playgroundCurrentProps = def ? {...def.defaultProps} : undefined;
         // Clear the event log when switching to a new card.
         state.playgroundEventLog = [];
+        // Push the card's slug onto the URL so the route reflects the selection.
+        showPage(dispatch, ["cards", cardIdToSlug(cardId)]);
       }
     });
 

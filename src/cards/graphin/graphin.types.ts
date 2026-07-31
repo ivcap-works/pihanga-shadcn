@@ -214,6 +214,16 @@ export type GraphinProps = {
   zoomLevel?: number;
 
   /**
+   * When `false` node labels are hidden globally.
+   *
+   * You can also hide/show labels on a per-style basis by setting
+   * `showLabel: false` on individual entries in `nodeStyles`.
+   *
+   * @default true
+   */
+  showLabels?: boolean;
+
+  /**
    * When `true` every edge is rendered with an arrowhead at its **target**
    * end, making the graph visually directed.
    *
@@ -475,6 +485,12 @@ export type GraphinNodeStyleDef = {
   labelFill?: string;
   /** Label font size in pixels. */
   labelFontSize?: number;
+  /**
+   * When `false`, hides the label for nodes using this style.
+   * Overrides the card-level `showLabels` prop for these nodes.
+   * @default true
+   */
+  showLabel?: boolean;
 };
 
 /**

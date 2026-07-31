@@ -85,6 +85,7 @@ export const GraphinComponent = (
     onContextMenuClose,
     nodeStyles,
     nodeStyleKey,
+    showLabels,
     legend,
   } = props;
 
@@ -122,6 +123,7 @@ export const GraphinComponent = (
       node: {
         style: {
           labelText: (d) => {
+            if (showLabels === false) return "";
             return (d.data?.displayName || d.id) as string;
           },
           lod: {
@@ -215,8 +217,22 @@ export const GraphinComponent = (
     }
 
     // ── directed ──────────────────────────────────────────────────────────
+    // Only inject the default endArrow when the caller hasn't explicitly
+    // configured either arrow in options.edge.style — this lets users flip
+    // the visual arrowhead (startArrow:true / endArrow:false) without the
+    // directed block overwriting their intent.
     if (directed) {
-      merged.edge = merge(merged.edge ?? {}, {style: {endArrow: true}});
+      const userEdgeStyle = (options as Record<string, unknown> | undefined)
+        ?.edge as Record<string, unknown> | undefined;
+      const userStyle = userEdgeStyle?.style as
+        | Record<string, unknown>
+        | undefined;
+      const userSetArrow =
+        userStyle?.endArrow !== undefined ||
+        userStyle?.startArrow !== undefined;
+      if (!userSetArrow) {
+        merged.edge = merge(merged.edge ?? {}, {style: {endArrow: true}});
+      }
     }
 
     // ── nodeStyles ─────────────────────────────────────────────────────────
@@ -261,6 +277,16 @@ export const GraphinComponent = (
             getSpec(d)?.opacity ?? 1,
           labelFill: (d: {id?: string; data?: Record<string, unknown>}) =>
             getSpec(d)?.labelFill ?? "#000000",
+          labelText: (d: {id?: string; data?: Record<string, unknown>}) => {
+            const spec = getSpec(d);
+            // per-style showLabel takes precedence over the global showLabels flag
+            const show =
+              spec?.showLabel !== undefined
+                ? spec.showLabel
+                : showLabels !== false;
+            if (!show) return "";
+            return (d.data?.displayName || d.id) as string;
+          },
           labelFontSize: (d: {id?: string; data?: Record<string, unknown>}) =>
             getSpec(d)?.labelFontSize ?? 12,
         },
@@ -286,6 +312,7 @@ export const GraphinComponent = (
     directed,
     nodeStyles, // include so that the style functions are installed when
     nodeStyleKey, // nodeStyles is first provided (or key changes)
+    showLabels,
   ]);
 
   return (

@@ -51,6 +51,9 @@ export type BoxProps<S = object> = {
   style?: S;
   /** Additional Tailwind utility classes */
   className?: string;
+
+  /** Arbitrary data attributes rendered as `data-{key}={value}` on the root element */
+  data?: Record<string, string>;
 };
 
 /**

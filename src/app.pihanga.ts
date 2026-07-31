@@ -29,7 +29,13 @@
  * The rootFilePlugin in vite.config.ts handles this automatically in dev and build.
  */
 
-import {memo, register, registerCard, registerFramework} from "@pihanga2/core";
+import {
+  memo,
+  register,
+  registerCard,
+  registerFramework,
+  showPage,
+} from "@pihanga2/core";
 import {SdFramework} from "./cards/framework";
 import {
   PageWithNavbar,
@@ -75,8 +81,8 @@ export function appPiInit(): void {
   // ── Navigation handler ─────────────────────────────────────────────────────
   // Store the clicked nav link id in state so the memo below can switch pages.
   register((r) => {
-    onPageWithNavbarNavigateTo(r, (state: AppState, {id}) => {
-      state.currentPage = id;
+    onPageWithNavbarNavigateTo(r, (_state: AppState, {id}, dispatch) => {
+      showPage(dispatch, id === "playground" ? ["cards"] : []);
     });
   });
 
@@ -93,8 +99,9 @@ export function appPiInit(): void {
         {id: "playground", title: "Playground"},
       ],
       main: memo(
-        (s: AppState) => s.currentPage ?? "introduction",
-        (page) => `app/page/${page}`,
+        (s: AppState) => s.route.path[0],
+        (seg) =>
+          seg === "cards" ? AppCard.PlaygroundPage : AppCard.IntroductionPage,
       ),
     }),
   );
@@ -133,7 +140,12 @@ export function appPiInit(): void {
         columns: ["260px", "1fr"],
         gap: "16px",
       },
+      // height:"100%" fills .main so the grid never overflows it — each column
+      // then scrolls independently via overflow:"auto" on its wrapper div.
+      // minHeight:"0" lets CSS grid cells shrink below content height.
+      height: "100%",
       overflow: "auto",
+      style: {item: {minHeight: "0"}},
     }),
   );
 }

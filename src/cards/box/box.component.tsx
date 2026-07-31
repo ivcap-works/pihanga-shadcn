@@ -4,7 +4,7 @@ import {Card, type PiCardProps} from "@pihanga2/core";
 import type {BoxProps} from "./box.types";
 
 export const BoxComponent = (props: PiCardProps<BoxProps>): React.ReactNode => {
-  const {content, singleContent, className, style, cardName} = props;
+  const {content, singleContent, className, style, cardName, data} = props;
 
   const sy: Record<string, string | number> = {
     ...(style as Record<string, string | number> | undefined),
@@ -30,8 +30,17 @@ export const BoxComponent = (props: PiCardProps<BoxProps>): React.ReactNode => {
     ));
   }
 
+  const dataAttrs = data
+    ? Object.fromEntries(Object.entries(data).map(([k, v]) => [`data-${k}`, v]))
+    : {};
+
   return (
-    <div className={className} style={sy} data-pihanga={cardName}>
+    <div
+      className={className}
+      style={sy}
+      data-pihanga={cardName}
+      {...dataAttrs}
+    >
       {renderContent()}
       {props.children}
     </div>

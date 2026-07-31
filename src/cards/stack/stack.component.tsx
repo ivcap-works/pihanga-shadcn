@@ -20,6 +20,7 @@ export const Component = (props: PiCardProps<StackProps>): React.ReactNode => {
     className,
     style,
     cardName,
+    data,
   } = props;
   const sd: SelectSD = (style as SelectSD | undefined) ?? {};
 
@@ -111,8 +112,12 @@ export const Component = (props: PiCardProps<StackProps>): React.ReactNode => {
     ));
   }
 
+  const dataAttrs = data
+    ? Object.fromEntries(Object.entries(data).map(([k, v]) => [`data-${k}`, v]))
+    : {};
+
   return (
-    <div className={clsx(cn)} data-pihanga={cardName}>
+    <div className={clsx(cn)} data-pihanga={cardName} {...dataAttrs}>
       {renderContent()}
       {props.children}
     </div>
