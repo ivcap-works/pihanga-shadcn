@@ -54,6 +54,7 @@ export const TextFieldComponent = (
       placeholder={placeholder}
       disabled={disabled}
       aria-invalid={invalid || undefined}
+      data-pihanga={cardName}
     />
   );
 };
