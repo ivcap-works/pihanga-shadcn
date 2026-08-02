@@ -1,0 +1,36 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "sliderValue",
+  "type": "registry:component",
+  "description": "Pihanga sliderValue card component",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json"
+  ],
+  "files": [
+    {
+      "path": "cards/sliderValue/index.ts",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {SliderValueComponent} from \"./sliderValue.component\";\nimport {PI_SLIDER_VALUE_CARD} from \"./sliderValue.types\";\n\nexport * from \"./sliderValue.types\";\n\nregisterCardComponent({\n  name: PI_SLIDER_VALUE_CARD,\n  component: SliderValueComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/sliderValue/index.ts"
+    },
+    {
+      "path": "cards/sliderValue/sliderValue.component.tsx",
+      "content": "import React from \"react\";\nimport {type PiCardProps} from \"@pihanga2/core\";\nimport {cn} from \"@/components/lib/utils\";\nimport type {PiSliderValueProps} from \"./sliderValue.types\";\n\n/**\n * Display-only companion to `shad/slider`.\n *\n * Renders the same track + filled-range visual as the interactive slider but\n * with no thumb and no user interaction.  Use this card to show a read-only\n * numeric value in contexts where editing is not permitted (e.g. a summary\n * panel, a table cell, or a loading state).\n *\n * The component uses the same Tailwind classes as `src/components/ui/slider.tsx`\n * so the two cards look identical.\n */\nexport const SliderValueComponent = (\n  props: PiCardProps<PiSliderValueProps>,\n): React.ReactNode => {\n  const {value, min = 0, max = 100, label, className, cardName} = props;\n\n  // Clamp value inside [min, max] and compute fill percentage.\n  const clamped = Math.min(Math.max(value, min), max);\n  const range = max - min;\n  const pct = range > 0 ? ((clamped - min) / range) * 100 : 0;\n\n  return (\n    <div\n      data-pihanga={cardName}\n      className={cn(\"flex flex-col gap-2\", className)}\n    >\n      {label && (\n        <div className=\"flex items-center justify-between\">\n          <span className=\"text-sm font-medium leading-none\">{label}</span>\n          <span className=\"text-sm text-muted-foreground tabular-nums\">\n            {clamped}\n          </span>\n        </div>\n      )}\n      {/* Track — mirrors the SliderPrimitive.Track CSS from slider.tsx */}\n      <div\n        aria-hidden=\"true\"\n        className={cn(\n          \"bg-muted relative h-1.5 w-full grow overflow-hidden rounded-full\",\n        )}\n      >\n        {/* Range fill — mirrors SliderPrimitive.Range */}\n        <div\n          className=\"bg-primary absolute h-full transition-[width]\"\n          style={{width: `${pct}%`}}\n        />\n      </div>\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/sliderValue/sliderValue.component.tsx"
+    },
+    {
+      "path": "cards/sliderValue/sliderValue.types.ts",
+      "content": "import {createCardDeclaration} from \"@pihanga2/core\";\n\nexport const PI_SLIDER_VALUE_CARD = \"shad/slider-value\";\n\nexport const SliderValue =\n  createCardDeclaration<PiSliderValueProps>(PI_SLIDER_VALUE_CARD);\n\n// ---------------------------------------------------------------------------\n// Props (no events — display-only)\n// ---------------------------------------------------------------------------\n\nexport type PiSliderValueProps = {\n  /**\n   * The numeric value to display on the track.\n   * Clamped between `min` and `max`.\n   */\n  value: number;\n\n  /** Minimum value of the range. Defaults to 0. */\n  min?: number;\n\n  /** Maximum value of the range. Defaults to 100. */\n  max?: number;\n\n  /**\n   * Optional label text rendered above the track.\n   * When provided, the numeric value is shown to the right of the label,\n   * matching the interactive `shad/slider` layout exactly.\n   */\n  label?: string;\n\n  /** Extra Tailwind / CSS classes forwarded to the root wrapper element. */\n  className?: string;\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/sliderValue/sliderValue.types.ts"
+    },
+    {
+      "path": "cards/sliderValue/README.md",
+      "content": "A read-only companion to the interactive `shad/slider` card.\n\nRenders the same track + filled-range visual as the slider but without a thumb\nand without any user interaction.  The fill width is proportional to `value`\nwithin the `[min, max]` range, so both cards look visually consistent side by\nside or in alternating read/edit contexts.\n\nUse `shad/slider-value` in summary panels, data tables, or anywhere you want\nto display a bounded numeric value at a glance without allowing edits.\n",
+      "type": "registry:file",
+      "target": "src/cards/sliderValue/README.md"
+    }
+  ]
+}

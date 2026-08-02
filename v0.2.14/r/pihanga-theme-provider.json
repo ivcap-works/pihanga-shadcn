@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "pihanga-theme-provider",
+  "type": "registry:component",
+  "description": "Pihanga theme provider — light / dark mode support",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/theme-provider/index.ts",
+      "content": "import {useContext} from \"react\";\nimport {ThemeProviderContext} from \"./theme-provider.types\";\n\nexport const useTheme = () => {\n  const context = useContext(ThemeProviderContext);\n\n  if (context === undefined)\n    throw new Error(\"useTheme must be used within a ThemeProvider\");\n\n  return context;\n};\n",
+      "type": "registry:component"
+    },
+    {
+      "path": "components/theme-provider/theme-provider.component.tsx",
+      "content": "import {useEffect, useState} from \"react\";\nimport {\n  ThemeProviderContext,\n  type Theme,\n  type ThemeProviderProps,\n} from \"./theme-provider.types\";\n\nexport function ThemeProvider({\n  children,\n  defaultTheme = \"system\",\n  storageKey = \"vite-ui-theme\",\n  ...props\n}: ThemeProviderProps) {\n  const [theme, setTheme] = useState<Theme>(\n    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme\n  );\n\n  useEffect(() => {\n    const root = window.document.documentElement;\n\n    root.classList.remove(\"light\", \"dark\");\n\n    if (theme === \"system\") {\n      const systemTheme = window.matchMedia(\"(prefers-color-scheme: dark)\")\n        .matches\n        ? \"dark\"\n        : \"light\";\n\n      root.classList.add(systemTheme);\n      return;\n    }\n\n    root.classList.add(theme);\n  }, [theme]);\n\n  const value = {\n    theme,\n    setTheme: (theme: Theme) => {\n      localStorage.setItem(storageKey, theme);\n      setTheme(theme);\n    },\n  };\n\n  return (\n    <ThemeProviderContext.Provider {...props} value={value}>\n      {children}\n    </ThemeProviderContext.Provider>\n  );\n}\n",
+      "type": "registry:component"
+    },
+    {
+      "path": "components/theme-provider/theme-provider.types.ts",
+      "content": "import {createContext} from \"react\";\n\nexport type Theme = \"dark\" | \"light\" | \"system\";\n\nexport type ThemeProviderProps = {\n  children: React.ReactNode;\n  defaultTheme?: Theme;\n  storageKey?: string;\n};\n\ntype ThemeProviderState = {\n  theme: Theme;\n  setTheme: (theme: Theme) => void;\n};\n\nconst initialState: ThemeProviderState = {\n  theme: \"system\",\n  setTheme: () => null,\n};\n\nexport const ThemeProviderContext =\n  createContext<ThemeProviderState>(initialState);\n",
+      "type": "registry:component"
+    }
+  ]
+}

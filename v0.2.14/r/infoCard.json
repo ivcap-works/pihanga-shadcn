@@ -1,0 +1,40 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "infoCard",
+  "type": "registry:component",
+  "description": "Pihanga infoCard card component",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-lib-utils.json",
+    "card",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/typography.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/button.json"
+  ],
+  "files": [
+    {
+      "path": "cards/infoCard/index.tsx",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {InfoCardComponent} from \"./infoCard.component\";\nimport {INFO_CARD} from \"./infoCard.types\";\n\nexport * from \"./infoCard.types\";\n\nregisterCardComponent({\n  name: INFO_CARD,\n  component: InfoCardComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/infoCard/index.tsx"
+    },
+    {
+      "path": "cards/infoCard/infoCard.component.tsx",
+      "content": "import * as React from \"react\";\nimport {Card as PiCard, type PiCardProps} from \"@pihanga2/core\";\nimport {cn} from \"@/lib/utils\";\nimport {\n  Card,\n  CardTitle,\n  CardDescription,\n  CardAction,\n  CardContent,\n  CardFooter,\n} from \"@/components/ui/card\";\nimport type {InfoCardProps} from \"./infoCard.types\";\n\nexport const InfoCardComponent = (\n  props: PiCardProps<InfoCardProps>,\n): React.ReactNode => {\n  const {\n    title,\n    description,\n    actionCard,\n    contentCard,\n    footerCard,\n    className,\n    headerClassName,\n    titleClassName,\n    descriptionClassName,\n    actionClassName,\n    contentClassName,\n    footerClassName,\n    style,\n    cardName,\n  } = props;\n\n  const hasHeader = title || description || actionCard;\n\n  return (\n    <Card\n      className={cn(\"min-w-max\", className)}\n      style={style}\n      data-pihanga={cardName}\n    >\n      {hasHeader && (\n        // Plain <div> instead of shadcn <CardHeader> — avoids @container/card-header\n        // (container-type:inline-size) which zeroes out intrinsic inline size and\n        // breaks min-w-max on the parent Card. Visual classes are identical.\n        <div\n          data-slot=\"card-header\"\n          className={cn(\n            \"grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6\",\n            \"has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6\",\n            headerClassName,\n          )}\n        >\n          {title && <CardTitle className={titleClassName}>{title}</CardTitle>}\n          {description && (\n            <CardDescription className={descriptionClassName}>\n              {description}\n            </CardDescription>\n          )}\n          {actionCard && (\n            <CardAction className={actionClassName}>\n              <PiCard cardName={actionCard} parentCard={cardName} />\n            </CardAction>\n          )}\n        </div>\n      )}\n      {contentCard && (\n        <CardContent className={contentClassName}>\n          <PiCard cardName={contentCard} parentCard={cardName} />\n        </CardContent>\n      )}\n      {footerCard && (\n        <CardFooter className={footerClassName}>\n          <PiCard cardName={footerCard} parentCard={cardName} />\n        </CardFooter>\n      )}\n    </Card>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/infoCard/infoCard.component.tsx"
+    },
+    {
+      "path": "cards/infoCard/infoCard.types.ts",
+      "content": "import {createCardDeclaration, type PiCardRef} from \"@pihanga2/core\";\nimport type React from \"react\";\n\nexport const INFO_CARD = \"shad/info-card\";\n\nexport type InfoCardProps = {\n  /**\n   * Text rendered inside `CardTitle`.\n   * Leave unset to omit the title element entirely.\n   */\n  title?: string;\n\n  /**\n   * Text rendered inside `CardDescription`.\n   * Leave unset to omit the description element entirely.\n   */\n  description?: string;\n\n  /**\n   * Pihanga card reference rendered inside the `CardAction` slot.\n   * Positioned at the top-right of the header (e.g. a button, badge, or icon).\n   */\n  actionCard?: PiCardRef;\n\n  /**\n   * Pihanga card reference rendered inside `CardContent`.\n   * Main body of the card — use any layout or display card.\n   */\n  contentCard?: PiCardRef;\n\n  /**\n   * Pihanga card reference rendered inside `CardFooter`.\n   * Typically a row of actions or a status line.\n   */\n  footerCard?: PiCardRef;\n\n  // ── Per-element className overrides ────────────────────────────────────────\n\n  /** Extra CSS classes applied to the root `<div data-slot=\"card\">`. */\n  className?: string;\n\n  /** Extra CSS classes applied to `<div data-slot=\"card-header\">`. */\n  headerClassName?: string;\n\n  /** Extra CSS classes applied to `<div data-slot=\"card-title\">`. */\n  titleClassName?: string;\n\n  /** Extra CSS classes applied to `<div data-slot=\"card-description\">`. */\n  descriptionClassName?: string;\n\n  /** Extra CSS classes applied to `<div data-slot=\"card-action\">`. */\n  actionClassName?: string;\n\n  /** Extra CSS classes applied to `<div data-slot=\"card-content\">`. */\n  contentClassName?: string;\n\n  /** Extra CSS classes applied to `<div data-slot=\"card-footer\">`. */\n  footerClassName?: string;\n\n  /** Inline styles applied to the root card element. */\n  style?: React.CSSProperties;\n};\n\n/**\n * Factory function for declaring a `shad/info-card` instance.\n *\n * ```ts\n * import {registerCard} from \"@pihanga2/core\";\n * import {InfoCard} from \"@/cards/infoCard\";\n * import {Typography} from \"@/cards/typography\";\n * import {Button} from \"@/cards/button\";\n *\n * registerCard(\"myApp/userCard\", InfoCard({\n *   title: \"John Doe\",\n *   description: \"Software Engineer\",\n *   actionCard: \"myApp/editButton\",\n *   contentCard: \"myApp/userDetails\",\n *   footerCard: \"myApp/userActions\",\n * }));\n * ```\n */\nexport const InfoCard = createCardDeclaration<InfoCardProps>(INFO_CARD);\n",
+      "type": "registry:component",
+      "target": "src/cards/infoCard/infoCard.types.ts"
+    },
+    {
+      "path": "cards/infoCard/README.md",
+      "content": "A structural display card built on the shadcn `Card` primitives\n(`Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`,\n`CardContent`, `CardFooter`).\n\nAll five slots are **optional** — only slots that receive a prop are rendered.\n\n## Slots\n\n| Prop | Renders | Description |\n|---|---|---|\n| `title` | `CardTitle` | Bold header text. |\n| `description` | `CardDescription` | Muted sub-header text below the title. |\n| `actionCard` | `CardAction` | Top-right of the header — badge, button, icon card. |\n| `contentCard` | `CardContent` | Main body — any Pihanga card. |\n| `footerCard` | `CardFooter` | Bottom row — actions, metadata, pagination. |\n\nThe header (`CardHeader`) is rendered automatically whenever at least one of\n`title`, `description`, or `actionCard` is supplied.\n\n## Per-element styling\n\nEvery slot has its own `*ClassName` prop so you can target individual elements\nwithout overriding sibling slots:\n\n| Prop | Element |\n|---|---|\n| `className` | Root `<div data-slot=\"card\">` |\n| `headerClassName` | `<div data-slot=\"card-header\">` |\n| `titleClassName` | `<div data-slot=\"card-title\">` |\n| `descriptionClassName` | `<div data-slot=\"card-description\">` |\n| `actionClassName` | `<div data-slot=\"card-action\">` |\n| `contentClassName` | `<div data-slot=\"card-content\">` |\n| `footerClassName` | `<div data-slot=\"card-footer\">` |\n| `style` | Inline styles on the root element |\n",
+      "type": "registry:file",
+      "target": "src/cards/infoCard/README.md"
+    }
+  ]
+}

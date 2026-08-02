@@ -1,0 +1,37 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "typography",
+  "type": "registry:component",
+  "description": "Pihanga typography card component",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-lib-utils.json"
+  ],
+  "files": [
+    {
+      "path": "cards/typography/index.ts",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {TypographyComponent} from \"./typography.component\";\nimport {TYPOGRAPHY_CARD} from \"./typography.types\";\n\nexport * from \"./typography.types\";\n\nregisterCardComponent({\n  name: TYPOGRAPHY_CARD,\n  component: TypographyComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/typography/index.ts"
+    },
+    {
+      "path": "cards/typography/typography.component.tsx",
+      "content": "import * as React from \"react\";\nimport {Card, type PiCardProps} from \"@pihanga2/core\";\nimport {cn} from \"@/lib/utils\";\nimport type {TypographyLevel, TypographyProps} from \"./typography.types\";\n\n/** Maps each level to [html element, tailwind classes] */\nconst LEVEL_CONFIG: Record<\n  TypographyLevel,\n  [keyof React.JSX.IntrinsicElements, string]\n> = {\n  h1: [\"h1\", \"scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl\"],\n  h2: [\n    \"h2\",\n    \"scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0\",\n  ],\n  h3: [\"h3\", \"scroll-m-20 text-2xl font-semibold tracking-tight\"],\n  h4: [\"h4\", \"scroll-m-20 text-xl font-semibold tracking-tight\"],\n  p: [\"p\", \"leading-7 [&:not(:first-child)]:mt-6\"],\n  blockquote: [\"blockquote\", \"mt-6 border-l-2 pl-6 italic\"],\n  code: [\n    \"code\",\n    \"relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold\",\n  ],\n  lead: [\"p\", \"text-xl text-muted-foreground\"],\n  large: [\"div\", \"text-lg font-semibold\"],\n  small: [\"small\", \"text-sm font-medium leading-none\"],\n  muted: [\"p\", \"text-sm text-muted-foreground\"],\n};\n\nexport const TypographyComponent = (\n  props: PiCardProps<TypographyProps>,\n): React.ReactNode => {\n  const {\n    text,\n    childCard,\n    paragraph,\n    level,\n    className,\n    style,\n    cardName,\n    _dispatch,\n    _cls,\n  } = props;\n\n  const [el, levelClass] = level ? LEVEL_CONFIG[level] : [\"div\", \"\"];\n\n  function renderChildren(): React.ReactNode {\n    if (childCard) {\n      return <Card cardName={childCard} parentCard={cardName} />;\n    }\n    if (paragraph) {\n      return <>{paragraph.map((item, i) => renderParaItem(item, i))}</>;\n    }\n    return text;\n  }\n\n  function renderParaItem(\n    item: string | TypographyProps,\n    key: number,\n  ): React.ReactNode {\n    if (typeof item === \"string\") {\n      return item;\n    }\n    if (item && typeof item === \"object\") {\n      return TypographyComponent({\n        ...item,\n        _dispatch,\n        _cls,\n        cardName,\n        key,\n      } as PiCardProps<TypographyProps> & {key: number});\n    }\n    return null;\n  }\n\n  return React.createElement(\n    el,\n    {\n      className: cn(levelClass, className),\n      style,\n      \"data-pihanga\": cardName,\n    },\n    renderChildren(),\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/typography/typography.component.tsx"
+    },
+    {
+      "path": "cards/typography/typography.types.ts",
+      "content": "import * as React from \"react\";\nimport {type PiCardRef, createCardDeclaration} from \"@pihanga2/core\";\n\nexport const TYPOGRAPHY_CARD = \"shad/typography\";\n\nexport const Typography =\n  createCardDeclaration<TypographyProps>(TYPOGRAPHY_CARD);\n\n/**\n * Semantic level controls both the rendered HTML element and default\n * Tailwind prose styling (following shadcn/ui typography conventions).\n */\nexport type TypographyLevel =\n  | \"h1\"\n  | \"h2\"\n  | \"h3\"\n  | \"h4\"\n  | \"p\"\n  | \"blockquote\"\n  | \"code\"\n  | \"lead\" // large muted intro paragraph\n  | \"large\" // large text, semibold\n  | \"small\" // small, medium-weight\n  | \"muted\"; // small, muted-foreground\n\nexport type TypographyProps = {\n  /** Plain text content. */\n  text?: string;\n  /** A child card rendered as content. */\n  childCard?: PiCardRef;\n  /** Inline paragraph: mix of literal strings and nested TypographyProps. */\n  paragraph?: (string | TypographyProps)[];\n\n  /** Semantic level — controls the HTML element and default prose styling. */\n  level?: TypographyLevel;\n\n  /** Additional CSS classes applied directly to the element. */\n  className?: string;\n  /** Inline styles applied directly to the element. */\n  style?: React.CSSProperties;\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/typography/typography.types.ts"
+    },
+    {
+      "path": "cards/typography/README.md",
+      "content": "A versatile text rendering card that maps semantic **levels** to the appropriate\nHTML element and shadcn/ui Tailwind prose styles.\n\nUse it to display headings, body paragraphs, blockquotes, inline code, and\nmuted captions without writing custom CSS.  The `level` prop controls both the\nrendered HTML tag and the default visual style.\n\nAvailable levels: `h1`–`h4` for headings, `p` for body text, `lead` for a\nlarge intro paragraph, `large` for prominent but non-heading text, `small` for\nfine print, `muted` for secondary captions, `blockquote`, and `code`.\n",
+      "type": "registry:file",
+      "target": "src/cards/typography/README.md"
+    }
+  ]
+}

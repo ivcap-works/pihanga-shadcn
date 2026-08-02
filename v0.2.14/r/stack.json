@@ -1,0 +1,38 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "stack",
+  "type": "registry:component",
+  "description": "Pihanga stack card component",
+  "dependencies": [
+    "clsx@^2.1.1"
+  ],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json"
+  ],
+  "files": [
+    {
+      "path": "cards/stack/index.ts",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {Component} from \"./stack.component\";\nimport {STACK_CARD} from \"./stack.types\";\n\nexport * from \"./stack.types\";\n\nregisterCardComponent({\n  name: STACK_CARD,\n  component: Component,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/stack/index.ts"
+    },
+    {
+      "path": "cards/stack/stack.component.tsx",
+      "content": "import * as React from \"react\";\nimport type {StackProps} from \"./stack.types\";\n\nimport {Card, type PiCardProps} from \"@pihanga2/core\";\nimport clsx from \"clsx\";\nimport {Fragment} from \"react\";\n\nexport type SelectSD = {\n  root?: string;\n};\n\nexport const Component = (props: PiCardProps<StackProps>): React.ReactNode => {\n  const {\n    content,\n    direction,\n    divider,\n    spacing,\n    justifyContent,\n    alignItems,\n    className,\n    style,\n    cardName,\n    data,\n  } = props;\n  const sd: SelectSD = (style as SelectSD | undefined) ?? {};\n\n  const cn = [className, sd.root, \"flex\"];\n  if (direction) {\n    switch (direction) {\n      // \"column-reverse\" | \"column\" | \"row-reverse\" | \"row\"\n      case \"row\":\n        cn.push(\"flex-row\");\n        break;\n      case \"row-reverse\":\n        cn.push(\"flex-row-reverse\");\n        break;\n      case \"column\":\n        cn.push(\"flex-col\");\n        break;\n      case \"column-reverse\":\n        cn.push(\"flex-col-reverse\");\n        break;\n    }\n  }\n  if (justifyContent) {\n    switch (justifyContent) {\n      // \"flex-start\" | \"center\" | \"flex-end\" | \"space-between\" | \"space-around\" | \"space-evenly\"\n      case \"flex-start\":\n        cn.push(\"justify-start\");\n        break;\n      case \"center\":\n        cn.push(\"justify-center\");\n        break;\n      case \"flex-end\":\n        cn.push(\"justify-end\");\n        break;\n      case \"space-between\":\n        cn.push(\"justify-between\");\n        break;\n      case \"space-around\":\n        cn.push(\"justify-around\");\n        break;\n      case \"space-evenly\":\n        cn.push(\"justify-evenly\");\n        break;\n    }\n  }\n  if (alignItems) {\n    switch (alignItems) {\n      // \"flex-start\" | \"center\" | \"flex-end\" | \"normal\" | \"stretch\" | \"start\" | \"end\" | \"baseline\" | \"initial\" | \"inherit\"\n      case \"flex-start\":\n        cn.push(\"items-start\");\n        break;\n      case \"center\":\n        cn.push(\"items-center\");\n        break;\n      case \"stretch\":\n        cn.push(\"items-stretch\");\n        break;\n      case \"flex-end\":\n        cn.push(\"items-end\");\n        break;\n      case \"baseline\":\n        cn.push(\"items-baseline\");\n        break;\n      default:\n        console.warn(\"stack: unsupported 'alignItems' property\", alignItems);\n    }\n  }\n  if (spacing && spacing > 0) {\n    if (\n      direction === undefined ||\n      direction === \"row\" ||\n      direction === \"row-reverse\"\n    ) {\n      cn.push(`gap-${spacing}`);\n    } else {\n      cn.push(`gap-${spacing}`);\n    }\n  }\n\n  function renderContent() {\n    if (!content) return null;\n\n    return content.map((cn, i) => (\n      <Fragment key={i}>\n        <Card cardName={cn} parentCard={cardName} key={`item-${i}`} />\n        {divider && i < content.length - 1 && (\n          <Card cardName={divider} parentCard={cardName} key={`divider-${i}`} />\n        )}\n      </Fragment>\n    ));\n  }\n\n  const dataAttrs = data\n    ? Object.fromEntries(Object.entries(data).map(([k, v]) => [`data-${k}`, v]))\n    : {};\n\n  return (\n    <div className={clsx(cn)} data-pihanga={cardName} {...dataAttrs}>\n      {renderContent()}\n      {props.children}\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/stack/stack.component.tsx"
+    },
+    {
+      "path": "cards/stack/stack.types.ts",
+      "content": "import {type PiCardRef, createCardDeclaration} from \"@pihanga2/core\";\nimport type {AlignItemsT} from \"../types\";\n\nexport const STACK_CARD = \"pi/stack\";\n\n/**\n * Factory function for declaring a `stack` card instance.\n *\n * ```ts\n * import {registerCard} from \"@pihanga2/core\";\n * import {Stack} from \"@/cards/stack\";\n *\n * registerCard(\"myApp/toolbar\", Stack({\n *   direction:      \"row\",\n *   spacing:        2,\n *   alignItems:     \"center\",\n *   justifyContent: \"space-between\",\n *   content:        [\"myApp/logo\", \"myApp/navLinks\", \"myApp/userMenu\"],\n * }));\n * ```\n */\nexport const Stack = createCardDeclaration<StackProps>(STACK_CARD);\n\n/**\n * CSS `flex-direction` values supported by the Stack card.\n */\nexport type DirectionT = \"column-reverse\" | \"column\" | \"row-reverse\" | \"row\";\n\n/**\n * CSS `justify-content` values supported by the Stack card.\n */\nexport type JustifyContentT =\n  | \"flex-start\"\n  | \"center\"\n  | \"flex-end\"\n  | \"space-between\"\n  | \"space-around\"\n  | \"space-evenly\";\n\nexport type StackProps<S = object> = {\n  /** Ordered list of child card refs to render */\n  content: PiCardRef[];\n\n  /** Flex direction — defaults to `\"column\"` */\n  direction?: DirectionT;\n  /** Optional card ref rendered as a separator between children */\n  divider?: PiCardRef;\n  /** Tailwind gap spacing units between children */\n  spacing?: number;\n\n  justifyContent?: JustifyContentT;\n  alignItems?: AlignItemsT;\n\n  /** Additional Tailwind utility classes */\n  className?: string;\n  /** Card style object (use the `shad` key for Tailwind-compatible overrides) */\n  style?: S;\n\n  /** Arbitrary data attributes rendered as `data-{key}={value}` on the root element */\n  data?: Record<string, string>;\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/stack/stack.types.ts"
+    },
+    {
+      "path": "cards/stack/README.md",
+      "content": "A Flexbox layout card that arranges its child cards in a row or column with\nconfigurable gap, alignment, and justification.\n\nUse `Stack` as the primary building block for one-dimensional layouts: vertical\npage sections, horizontal toolbars, button groups, and card grids.\n\nThe `direction` prop switches between row and column layout.  `spacing`\ncontrols the Tailwind gap between children (in spacing units).  `justifyContent`\nand `alignItems` mirror their CSS Flexbox equivalents.\n\nAn optional `divider` card ref is rendered between consecutive children.\n",
+      "type": "registry:file",
+      "target": "src/cards/stack/README.md"
+    }
+  ]
+}

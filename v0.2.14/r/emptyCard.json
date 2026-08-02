@@ -1,0 +1,41 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "emptyCard",
+  "type": "registry:component",
+  "description": "Pihanga emptyCard card component",
+  "dependencies": [
+    "class-variance-authority@^0.7.1"
+  ],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-ui-extras.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-cards-icons.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/button.json"
+  ],
+  "files": [
+    {
+      "path": "cards/emptyCard/emptyCard.component.tsx",
+      "content": "import * as React from \"react\";\n\nimport {Card, type PiCardProps} from \"@pihanga2/core\";\nimport {Empty, EmptyContent, EmptyMedia} from \"@/components/ui/empty\";\nimport {getIcon} from \"@/cards/icons\";\nimport type {EmptyCardProps} from \"./emptyCard.types\";\n\nexport const EmptyCardComponent = (\n  props: PiCardProps<EmptyCardProps>,\n): React.ReactNode => {\n  const {icon, content, className, style, cardName} = props;\n\n  return (\n    <Empty className={className} style={style} data-pihanga={cardName}>\n      {icon && <EmptyMedia variant=\"icon\">{getIcon(icon)}</EmptyMedia>}\n      {content && (\n        <EmptyContent>\n          <Card cardName={content} parentCard={cardName} />\n        </EmptyContent>\n      )}\n    </Empty>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/emptyCard/emptyCard.component.tsx"
+    },
+    {
+      "path": "cards/emptyCard/emptyCard.types.ts",
+      "content": "import {createCardDeclaration, type PiCardRef} from \"@pihanga2/core\";\nimport type React from \"react\";\n\nexport const EMPTY_CARD = \"empty-card\";\n\nexport type EmptyCardProps = {\n  /**\n   * Icon name from the pihanga icon registry.\n   * When provided, renders an `EmptyMedia` slot with `variant=\"icon\"`.\n   */\n  icon?: string;\n\n  /**\n   * Pihanga card reference rendered inside `EmptyContent`.\n   * Use this to show a call-to-action button, form, or any other card.\n   */\n  content?: PiCardRef;\n\n  /** Additional Tailwind / CSS classes forwarded to the root `Empty` element. */\n  className?: string;\n\n  /** Inline styles forwarded to the root `Empty` element. */\n  style?: React.CSSProperties;\n};\n\n/**\n * Factory function for declaring an `empty-card` instance.\n *\n * ```ts\n * import {registerCard} from \"@pihanga2/core\";\n * import {EmptyCard} from \"@/cards/emptyCard\";\n * import {Button} from \"@/cards/button\";\n *\n * registerCard(\"myApp/noResults\", EmptyCard({\n *   icon: \"search\",\n *   content: \"myApp/createButton\",\n * }));\n *\n * registerCard(\"myApp/createButton\", Button({label: \"Create new\"}));\n * ```\n */\nexport const EmptyCard = createCardDeclaration<EmptyCardProps>(EMPTY_CARD);\n",
+      "type": "registry:component",
+      "target": "src/cards/emptyCard/emptyCard.types.ts"
+    },
+    {
+      "path": "cards/emptyCard/index.tsx",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {EmptyCardComponent} from \"./emptyCard.component\";\nimport {EMPTY_CARD} from \"./emptyCard.types\";\n\nexport * from \"./emptyCard.types\";\n\nregisterCardComponent({\n  name: EMPTY_CARD,\n  component: EmptyCardComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/emptyCard/index.tsx"
+    },
+    {
+      "path": "cards/emptyCard/README.md",
+      "content": "An empty-state placeholder card built on the shadcn `Empty` component.\n\nUse `EmptyCard` to fill blank regions of the UI when there is no data to display.\nIt composes two optional slots:\n\n- **`icon`** — a named icon from the Pihanga icon registry, rendered in a\n  rounded `EmptyMedia` badge (`variant=\"icon\"`).\n- **`content`** — any Pihanga card reference rendered inside `EmptyContent`.\n  Typically a call-to-action button or a short form.\n\nBoth slots are optional; omitting them renders a bare empty-state container.\n",
+      "type": "registry:file",
+      "target": "src/cards/emptyCard/README.md"
+    }
+  ]
+}

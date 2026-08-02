@@ -1,0 +1,45 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "loadingOverlay",
+  "type": "registry:component",
+  "description": "Pihanga loadingOverlay card component",
+  "dependencies": [
+    "clsx@^2.1.1"
+  ],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-ui-extras.json"
+  ],
+  "files": [
+    {
+      "path": "cards/loadingOverlay/index.ts",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {LoadingOverlayComponent} from \"./loadingOverlay.component\";\nimport {LOADING_OVERLAY_CARD} from \"./loadingOverlay.types\";\n\nexport * from \"./loadingOverlay.types\";\n\nregisterCardComponent({\n  name: LOADING_OVERLAY_CARD,\n  component: LoadingOverlayComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/loadingOverlay/index.ts"
+    },
+    {
+      "path": "cards/loadingOverlay/loadingOverlay.component.tsx",
+      "content": "import * as React from \"react\";\nimport clsx from \"clsx\";\n\nimport {Card, type PiCardProps} from \"@pihanga2/core\";\n\nimport {Spinner} from \"@/components/ui/spinner\";\n\nimport type {LoadingOverlayProps} from \"./loadingOverlay.types\";\nimport \"./loadingOverlay.css\";\n\nexport const LoadingOverlayComponent = (\n  props: PiCardProps<LoadingOverlayProps>,\n): React.ReactNode => {\n  const {\n    cardName,\n    content,\n    isLoading,\n    label,\n    fillParent,\n    viewportCentered,\n    className,\n    contentClassName,\n    overlayClassName,\n  } = props;\n\n  if (!content) return null;\n\n  return (\n    <div\n      data-pihanga={cardName}\n      className={clsx(\n        \"overlay-wrapper\",\n        isLoading && \"is-loading\",\n        fillParent && \"fill-parent\",\n        viewportCentered && \"viewport-centered\",\n        className,\n      )}\n    >\n      <div className={clsx(\"overlay-content\", contentClassName)}>\n        <Card cardName={content} parentCard={cardName} />\n        <div className={clsx(\"loading-overlay\", overlayClassName)}>\n          <div className=\"loading-overlay__content\">\n            <Spinner size=\"icon\" />\n            <span>{label ?? \"Loading...\"}</span>\n          </div>\n        </div>\n      </div>\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/loadingOverlay/loadingOverlay.component.tsx"
+    },
+    {
+      "path": "cards/loadingOverlay/loadingOverlay.css",
+      "content": ".overlay-wrapper {\n  position: relative;\n  width: 100%;\n  min-width: 0;\n\n  display: flex;\n  flex-direction: column;\n}\n\n.overlay-wrapper.is-loading.fill-parent {\n  min-height: 12rem;\n}\n\n.overlay-content {\n  position: relative;\n  width: 100%;\n  min-width: 0;\n\n  display: flex;\n  flex-direction: column;\n  overflow-y: hidden;\n  /* Prevent double scrollbars */\n  flex-grow: 1;\n}\n\n.overlay-wrapper.fill-parent .overlay-content {\n  min-height: inherit;\n}\n\n.loading-overlay {\n  position: absolute;\n  inset: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background: oklch(1 0 0 / 0.7);\n  opacity: 0;\n  pointer-events: none;\n  transition: opacity 150ms ease;\n  z-index: 2;\n}\n\n.overlay-wrapper.viewport-centered .loading-overlay {\n  position: fixed;\n  inset: 0;\n  z-index: 50;\n}\n\n.dark .loading-overlay {\n  background: oklch(0.145 0 0 / 0.5);\n}\n\n.overlay-wrapper.is-loading .loading-overlay {\n  opacity: 1;\n  pointer-events: auto;\n}\n\n.loading-overlay__content {\n  display: flex;\n  align-items: center;\n  gap: 0.5rem;\n  font-size: 0.875rem;\n  color: var(--muted-foreground);\n}",
+      "type": "registry:component",
+      "target": "src/cards/loadingOverlay/loadingOverlay.css"
+    },
+    {
+      "path": "cards/loadingOverlay/loadingOverlay.types.ts",
+      "content": "import {createCardDeclaration, type PiCardRef} from \"@pihanga2/core\";\n\nexport const LOADING_OVERLAY_CARD = \"loading-overlay\";\n\nexport type LoadingOverlayProps = {\n  content: PiCardRef;\n  isLoading?: boolean;\n  label?: string;\n  fillParent?: boolean;\n  viewportCentered?: boolean;\n  className?: string;\n  contentClassName?: string;\n  overlayClassName?: string;\n};\n\nexport const LoadingOverlay = createCardDeclaration<LoadingOverlayProps>(\n  LOADING_OVERLAY_CARD,\n);\n",
+      "type": "registry:component",
+      "target": "src/cards/loadingOverlay/loadingOverlay.types.ts"
+    },
+    {
+      "path": "cards/loadingOverlay/README.md",
+      "content": "Wraps any content card with a translucent loading spinner overlay.\n\nWhen `isLoading` is `true`, the spinner appears over the content card (the\ncontent remains mounted and visible beneath the overlay).  When `false`, the\noverlay is hidden and the content is fully interactive.\n\nUse it to block interaction during async operations such as data fetches,\nform submissions, or file uploads — without unmounting the underlying UI.\n\nSet `fillParent: true` to fill the parent container, or `viewportCentered: true`\nto center the spinner in the viewport regardless of the parent layout.\n",
+      "type": "registry:file",
+      "target": "src/cards/loadingOverlay/README.md"
+    }
+  ]
+}
