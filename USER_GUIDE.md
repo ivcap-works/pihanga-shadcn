@@ -186,7 +186,7 @@ for the full annotated listing.
 | **All cards available** | ✅ Yes (34 cards) | ✗ 30 core cards only |
 | **Auto-installs npm deps** | ✅ Yes (shadcn CLI) | ✅ Yes (package deps) |
 | **shadcn `init` required** | ✅ Yes | ✗ No |
-| **Tailwind** | Consumer's own config | Point Tailwind at `dist-lib/` |
+| **Tailwind** | Consumer's own config | `@import "@pihanga2/shadcn/theme.css"` handles source scanning |
 | **Best for** | shadcn/ui projects; max flexibility | Monorepos; CI; standard npm DX |
 
 > **In practice,** most projects use the **registry** if they are already on
@@ -388,23 +388,24 @@ version; cards referencing `"myapp/custom-button"` will use yours.
 
 ### Tailwind CSS with the npm package
 
-The package ships Tailwind **source** (standard shadcn convention — no
-pre-built CSS).  Point Tailwind at the package so it can scan utility classes:
+The package's `theme.css` contains `@source "."` (Tailwind v4.3+), which
+automatically tells Tailwind to scan the package for utility classes.  Simply
+import it after `tailwindcss`:
 
 ```css
-/* src/index.css — Tailwind v4 */
+/* src/index.css — Tailwind v4.3+ */
 @import "tailwindcss";
-@source "../../node_modules/@pihanga2/shadcn/dist-lib";
+@import "@pihanga2/shadcn/theme.css";
 
 /* … rest of your theme */
 ```
 
-For Tailwind v3, add to `tailwind.config.js`:
-```js
-content: [
-  "./src/**/*.{ts,tsx}",
-  "./node_modules/@pihanga2/shadcn/dist-lib/**/*.{js,mjs}",
-]
+If you already have your own shadcn/ui theme and skip the `theme.css` import,
+add `@source` lines pointing at the package's compiled output instead:
+
+```css
+@source "../node_modules/@pihanga2/shadcn/cards";
+@source "../node_modules/@pihanga2/shadcn/components";
 ```
 
 ### Vite `optimizeDeps` — npm channel (dev server)
