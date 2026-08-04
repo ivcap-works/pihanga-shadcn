@@ -3,9 +3,11 @@ import type {PiCardProps} from "@pihanga2/core";
 import {FileUploader} from "react-drag-drop-files";
 import {
   DEF_FILE_DROP_FILE_TYPES,
+  getFileDropTheme,
   type FileDropEvents,
   type FileDropProps,
 } from "./fileDrop.types";
+import {getIcon} from "../icons";
 import "./fileDrop.css";
 
 type LastDropped = {name: string; file: File};
@@ -17,6 +19,7 @@ const globalForCache = globalThis as unknown as Record<
   LastDropped | null | undefined
 >;
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function get_last_dropped(name: string): File | null {
   const slot = (globalForCache[KEY] ??= null);
   if (slot?.name === name) {
@@ -44,12 +47,20 @@ export const FileDropComponent = (
     progress = 0,
     progressStyle = {},
     dropStyle = {},
+    icon,
+    iconProps,
+    browseLabel,
     onFileDropped,
     onError,
     cardName,
+    theme,
+    classNames,
     className,
     _cls,
   } = props;
+
+  // Merge theme (base) with per-card classNames (overrides)
+  const cn = {...(theme ? getFileDropTheme(theme) : {}), ...classNames};
 
   function handleChange(file: File | File[]): void {
     const f = Array.isArray(file) ? file[0] : file;
@@ -88,12 +99,29 @@ export const FileDropComponent = (
   }
 
   function renderDropZone(): React.ReactElement {
+    const dzCn = ["dropzone-msg", cn.dropZone].filter(Boolean).join(" ");
     return (
-      <div className="dropzone-msg" style={dropStyle as React.CSSProperties}>
-        {title && <h3 className="dropzone-msg-title">{title}</h3>}
-        {description && (
-          <span className="dropzone-msg-desc">{description}</span>
+      <div className={dzCn} style={dropStyle as React.CSSProperties}>
+        {icon && <div className={cn.icon}>{getIcon(icon, iconProps)}</div>}
+        {title && (
+          <h3
+            className={["dropzone-msg-title", cn.title]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {title}
+          </h3>
         )}
+        {description && (
+          <span
+            className={["dropzone-msg-desc", cn.description]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {description}
+          </span>
+        )}
+        {browseLabel && <div className={cn.browseButton}>{browseLabel}</div>}
       </div>
     );
   }
@@ -112,9 +140,10 @@ export const FileDropComponent = (
     );
   }
 
-  const cn = _cls("root", className);
+  // classNames.root takes precedence over the legacy className prop
+  const rootCn = _cls("root", cn.root ?? className);
   return (
-    <div className={cn} data-pihanga={cardName}>
+    <div className={rootCn} data-pihanga={cardName}>
       {showProgress ? renderProgress() : renderFileUploader()}
     </div>
   );
