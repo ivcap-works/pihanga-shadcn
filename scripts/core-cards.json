@@ -31,6 +31,8 @@
     "pageWithNavbarMeta",
     "pasteTarget",
     "resizable",
+    "resizableColumns",
+    "resizableGrid",
     "scrollbarWithAnnotations",
     "select",
     "sheetCard",
