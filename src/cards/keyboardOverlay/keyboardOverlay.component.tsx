@@ -90,7 +90,7 @@ export const KeyboardOverlayComponent = (
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("keydown", onKeyDown, {capture: true});
     };
-  }, [shortcuts, onShortcut]);
+  }, [shortcuts, onShortcut, dataKey]);
 
   function onMouseEnter() {
     if (captureFocus) {

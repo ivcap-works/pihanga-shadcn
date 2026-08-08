@@ -19,7 +19,6 @@ const globalForCache = globalThis as unknown as Record<
   LastDropped | null | undefined
 >;
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function get_last_dropped(name: string): File | null {
   const slot = (globalForCache[KEY] ??= null);
   if (slot?.name === name) {

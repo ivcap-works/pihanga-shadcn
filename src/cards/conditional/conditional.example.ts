@@ -5,7 +5,16 @@ import {definePlayground} from "@/playground/definePlayground";
 import {ShadBadge} from "@/cards/badge";
 import {Conditional, type ConditionalProps} from "./index";
 
-export default definePlayground<ConditionalProps>({
+// In the playground `alternativeContent` is driven as a boolean toggle;
+// the preview factory converts it to an actual PiCardRef or undefined.
+type ConditionalPlaygroundProps = Omit<
+  ConditionalProps,
+  "alternativeContent"
+> & {
+  alternativeContent?: boolean;
+};
+
+export default definePlayground<ConditionalPlaygroundProps>({
   cardId: "shad/conditional",
   title: "Conditional",
 

@@ -7,13 +7,13 @@
  * the Suspense boundary in its fallback state.
  */
 import {definePlayground} from "@/playground/definePlayground";
-import {PiSuspense, type SuspenseProps} from "./index";
+import {Suspense, type SuspenseProps} from "./index";
 
 export default definePlayground<SuspenseProps>({
   cardId: "shad/suspense",
   title: "Suspense",
 
-  preview: (props) => PiSuspense(props),
+  preview: (props) => Suspense(props),
 
   defaultProps: {
     content: "__suspense_demo_placeholder__",
