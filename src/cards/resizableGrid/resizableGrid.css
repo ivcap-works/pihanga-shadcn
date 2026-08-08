@@ -1,0 +1,88 @@
+/*
+ * ResizableGrid layout
+ *
+ * Divider styling options
+ * ──────────────────────
+ * Each drag handle is an 8 px invisible hit area (`::before` carries the visible line).
+ *
+ * 1. Always-visible subtle line (default below) — set via CSS custom properties:
+ *      --rg-divider-color       default background of the 1 px line
+ *      --rg-divider-hover-color background on hover / focus
+ *      --rg-divider-width       default line thickness (default 1px)
+ *      --rg-divider-hover-width line thickness on hover / focus (default 4px)
+ *
+ * 2. Override with `dividerClassName` prop (Tailwind, CSS modules, etc.) —
+ *    targets the 8 px hit-area element.  Use `[&::before]:bg-primary` (Tailwind
+ *    arbitrary-property modifier) to reach the inner line:
+ *      dividerClassName="[&::before]:bg-primary [&::before]:w-[2px]"
+ *
+ * 3. Cell borders — apply a Tailwind `border` class *inside* each child card
+ *    instead.  This is the only way to draw borders adjacent to 'auto' rows/columns
+ *    (which have no divider element at all).
+ */
+
+.pi-resizable-grid {
+  display: grid;
+  width: 100%;
+  height: 100%;
+}
+
+.pi-resizable-grid-cell {
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── Vertical column divider ─────────────────────────────────────────────── */
+
+.pi-resizable-grid-col-divider {
+  cursor: col-resize;
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+}
+
+.pi-resizable-grid-col-divider::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--rg-divider-width, 1px);
+  background-color: var(--rg-divider-color, var(--border));
+  transition: width 120ms ease, background-color 120ms ease;
+}
+
+.pi-resizable-grid-col-divider:hover::before,
+.pi-resizable-grid-col-divider:focus-visible::before {
+  width: var(--rg-divider-hover-width, 4px);
+  background-color: var(--rg-divider-hover-color, var(--muted-foreground));
+}
+
+/* ── Horizontal row divider ──────────────────────────────────────────────── */
+
+.pi-resizable-grid-row-divider {
+  cursor: row-resize;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.pi-resizable-grid-row-divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: var(--rg-divider-width, 1px);
+  background-color: var(--rg-divider-color, var(--border));
+  transition: height 120ms ease, background-color 120ms ease;
+}
+
+.pi-resizable-grid-row-divider:hover::before,
+.pi-resizable-grid-row-divider:focus-visible::before {
+  height: var(--rg-divider-hover-width, 4px);
+  background-color: var(--rg-divider-hover-color, var(--muted-foreground));
+}

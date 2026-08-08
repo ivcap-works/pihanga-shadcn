@@ -33,6 +33,8 @@ export const ConditionalComponent = (
     showOn,
     containerQuery = false,
     content,
+    alternativeContent,
+    keepMounted = false,
   } = props;
 
   // Ref for container-query mode — attached to the wrapper div.
@@ -58,13 +60,43 @@ export const ConditionalComponent = (
   if (containerQuery) {
     return (
       <div ref={wrapperRef} style={{width: "100%"}}>
-        {visible && <Card cardName={content} parentCard={cardName} />}
+        {visible ? (
+          <Card cardName={content} parentCard={cardName} />
+        ) : (
+          alternativeContent && (
+            <Card cardName={alternativeContent} parentCard={cardName} />
+          )
+        )}
       </div>
+    );
+  }
+
+  // ── keepMounted mode ─────────────────────────────────────────────────────
+  // Keep the subtree mounted at all times; toggle display so React never
+  // destroys expensive components (e.g. Plate editors) on hide.
+  // `display:contents` makes the wrapper transparent to layout when visible;
+  // `display:none` hides it entirely when not.
+  if (keepMounted) {
+    return (
+      <>
+        <div style={{display: visible ? "contents" : "none"}}>
+          <Card cardName={content} parentCard={cardName} />
+        </div>
+        {alternativeContent && (
+          <div style={{display: visible ? "none" : "contents"}}>
+            <Card cardName={alternativeContent} parentCard={cardName} />
+          </div>
+        )}
+      </>
     );
   }
 
   // ── Viewport / manual mode ───────────────────────────────────────────────
   // Transparent pass-through — no extra DOM node.
-  if (!visible) return null;
+  if (!visible) {
+    return alternativeContent ? (
+      <Card cardName={alternativeContent} parentCard={cardName} />
+    ) : null;
+  }
   return <Card cardName={content} parentCard={cardName} />;
 };

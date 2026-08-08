@@ -12,10 +12,10 @@ mouse events, and touch events pass through to child components unmodified.
   causing re-renders.
 - When a registered shortcut fires, calls `document.elementFromPoint` at the
   last known cursor position and walks up the DOM tree to find the nearest
-  ancestor (inclusive) that carries a `data-pihanga` attribute — i.e. the
-  deepest pihanga card boundary under the cursor.
+  ancestor (inclusive) that carries a `data-{dataKey}` attribute (default:
+  `data-pihanga`) — i.e. the deepest card boundary under the cursor.
 - Fires `onShortcut` with the shortcut id, matched key, active modifiers, the
-  resolved `data-pihanga` value, and the cursor coordinates.
+  resolved attribute value (`dataValue`), and the cursor coordinates.
 
 ## Props
 
@@ -23,6 +23,8 @@ mouse events, and touch events pass through to child components unmodified.
 |---|---|---|---|
 | `content` | `PiCardRef` | — | Child card rendered inside the wrapper. |
 | `shortcuts` | `ShortcutDef[]` | — | Shortcuts to watch (see below). |
+| `captureFocus` | `boolean` | `true` | When `true`, the wrapper `<div>` is made focusable (`tabIndex -1`) and automatically focused whenever the cursor enters it, so keyboard shortcuts are reliably delivered without stealing focus from the rest of the page at startup. Set to `false` to leave focus management entirely to the application. |
+| `dataKey` | `string` | `"pihanga"` | DOM attribute key to walk up the tree for. The overlay looks for `data-{dataKey}` on ancestors of the element under the cursor and forwards the value as `dataValue` in the shortcut event. |
 | `className` | `string` | — | Tailwind / CSS classes on the wrapper `<div>`, e.g. `"h-full w-full"`. |
 | `style` | `React.CSSProperties` | — | Inline styles merged onto the wrapper `<div>`. `position: relative` always wins. |
 
@@ -56,7 +58,7 @@ import {
 register((r) => {
   onKeyboardShortcut(r, (state, ev) => {
     console.log(
-      `Shortcut "${ev.shortcutId}" over card "${ev.dataPihanga}"`,
+      `Shortcut "${ev.shortcutId}" over card "${ev.dataValue}"`,
       `at (${ev.cursorX}, ${ev.cursorY})`,
     );
   });
@@ -88,6 +90,6 @@ registerCard("myApp/root", KeyboardOverlay({
 | `shortcutId` | `string` | `ShortcutDef.id` if set, otherwise the matched `key`. |
 | `key` | `string` | The matched key string. |
 | `modifiers` | `Modifier[]` | Active modifiers at the time of the event. |
-| `dataPihanga` | `string \| undefined` | `data-pihanga` value of the deepest card boundary under the cursor, or `undefined` if none. |
+| `dataValue` | `string \| undefined` | Value of the `data-{dataKey}` attribute (default `data-pihanga`) of the deepest matching ancestor under the cursor, or `undefined` if none. |
 | `cursorX` | `number` | Cursor X position (CSS pixels, relative to viewport). |
 | `cursorY` | `number` | Cursor Y position (CSS pixels, relative to viewport). |

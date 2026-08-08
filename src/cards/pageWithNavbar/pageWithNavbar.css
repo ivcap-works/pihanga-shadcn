@@ -37,6 +37,9 @@
   padding-left: 1rem;
   /* px-4 */
   padding-right: 1rem;
+  padding-top: 0.75rem;
+  /* py-3 */
+  padding-bottom: 0.75rem;
 }
 
 @media (min-width: 768px) {

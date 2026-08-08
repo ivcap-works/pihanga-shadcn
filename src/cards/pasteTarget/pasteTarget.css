@@ -1,5 +1,5 @@
 .pihanga-paste-target {
-  border: dashed 2px #999;
+  border: dashed 2px var(--border);
 
   .paste-target-msg-title {
     font-size: 1.2em;
@@ -13,7 +13,7 @@
 
 .pihanga-paste-target-focused {
   /* Change the border color to highlight the active element */
-  border-color: #007bff;
+  border-color: var(--ring);
   border-width: 3px;
 
   .paste-target-focus-reminder {

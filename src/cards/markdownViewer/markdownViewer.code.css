@@ -4,8 +4,13 @@
  * Works in concert with `highlight.js/styles/github.css` (imported in the
  * component) to give code a GitHub-like appearance:
  *
- *  • Fenced code blocks  →  light-gray bg, rounded border, 13 px mono
+ *  • Fenced code blocks  →  muted bg, rounded border, 13 px mono
  *  • Inline code         →  muted pill, slightly smaller than body text
+ *
+ * Colors are expressed entirely via shadcn/ui CSS variables so the component
+ * responds to both light and dark themes without any explicit dark-mode
+ * overrides here.  The `.dark` class on the root element switches
+ * --muted, --border, --foreground etc. automatically.
  *
  * These rules are intentionally scoped to elements that react-markdown
  * produces so they do not bleed into the rest of the application.
@@ -13,10 +18,10 @@
 
 /* ── Fenced code blocks ────────────────────────────────────────────────────── */
 
-/* Override highlight.js's own background so the block matches GitHub's
-   #f6f8fa rather than pure white, and clamp the font to a readable size. */
+/* Override highlight.js's own background so the block uses the theme's muted
+   surface, and clamp the font to a readable size. */
 code.hljs {
-  background-color: #f6f8fa;
+  background-color: var(--muted);
   font-size: 0.8125rem;
   /* 13 px */
   line-height: 1.65;
@@ -26,39 +31,25 @@ code.hljs {
   /* radius lives on <pre> below */
 }
 
-/* The <pre> wrapper: add GitHub-style border + padding + corner radius. */
+/* The <pre> wrapper: themed border + padding + corner radius. */
 pre:has(code.hljs) {
-  background-color: #f6f8fa;
-  border: 1px solid #d0d7de;
-  border-radius: 0.5rem;
-  /* 8 px */
+  background-color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 1rem;
   overflow-x: auto;
   margin: 0.25rem 0;
 }
 
-/* Dark-mode overrides — keep readable against the dark surface */
-@media (prefers-color-scheme: dark) {
-  code.hljs {
-    background-color: #161b22;
-    color: #c9d1d9;
-  }
-
-  pre:has(code.hljs) {
-    background-color: #161b22;
-    border-color: #30363d;
-  }
-}
-
 /* ── Typography — headings, paragraphs, lists, etc. ────────────────────────── */
 
-/* Headings: size, weight, and spacing matching GitHub's rendered markdown. */
+/* Headings: size, weight, and spacing. */
 .md-prose h1 {
   font-size: 2em;
   font-weight: 600;
   line-height: 1.25;
   padding-bottom: 0.3em;
-  border-bottom: 1px solid #d0d7de;
+  border-bottom: 1px solid var(--border);
   margin: 1.5rem 0 1rem;
 }
 
@@ -67,7 +58,7 @@ pre:has(code.hljs) {
   font-weight: 600;
   line-height: 1.25;
   padding-bottom: 0.3em;
-  border-bottom: 1px solid #d0d7de;
+  border-bottom: 1px solid var(--border);
   margin: 1.5rem 0 1rem;
 }
 
@@ -133,9 +124,9 @@ pre:has(code.hljs) {
 
 /* Blockquotes */
 .md-prose blockquote {
-  border-left: 4px solid #d0d7de;
+  border-left: 4px solid var(--border);
   padding: 0 1em;
-  color: #656d76;
+  color: var(--muted-foreground);
   margin: 0 0 1rem;
 }
 
@@ -146,13 +137,13 @@ pre:has(code.hljs) {
 /* Horizontal rules */
 .md-prose hr {
   border: 0;
-  border-top: 1px solid #d0d7de;
+  border-top: 1px solid var(--border);
   margin: 1.5rem 0;
 }
 
 /* Links */
 .md-prose a {
-  color: #0969da;
+  color: var(--primary);
   text-decoration: none;
 }
 
@@ -163,27 +154,6 @@ pre:has(code.hljs) {
 /* Strong / emphasis */
 .md-prose strong {
   font-weight: 600;
-}
-
-@media (prefers-color-scheme: dark) {
-
-  .md-prose h1,
-  .md-prose h2 {
-    border-bottom-color: #30363d;
-  }
-
-  .md-prose hr {
-    border-top-color: #30363d;
-  }
-
-  .md-prose blockquote {
-    border-left-color: #30363d;
-    color: #8b949e;
-  }
-
-  .md-prose a {
-    color: #58a6ff;
-  }
 }
 
 /* ── Tables (GitHub-like) ───────────────────────────────────────────────────── */
@@ -199,45 +169,31 @@ pre:has(code.hljs) {
 }
 
 .md-prose thead tr {
-  background-color: #f6f8fa;
+  background-color: var(--muted);
 }
 
 .md-prose th,
 .md-prose td {
-  border: 1px solid #d0d7de;
+  border: 1px solid var(--border);
   padding: 6px 13px;
   text-align: left;
   white-space: normal;
 }
 
 .md-prose tbody tr:nth-child(even) {
-  background-color: #f6f8fa;
-}
-
-@media (prefers-color-scheme: dark) {
-
-  .md-prose thead tr,
-  .md-prose tbody tr:nth-child(even) {
-    background-color: #161b22;
-  }
-
-  .md-prose th,
-  .md-prose td {
-    border-color: #30363d;
-  }
+  background-color: var(--muted);
 }
 
 /* ── Inline code ────────────────────────────────────────────────────────────── */
 
 /* Style inline `code` spans that are NOT inside a fenced block.
-   Uses rgba so it stays subtle in both light and dark themes. */
+   Uses a semi-transparent muted background so it stays subtle in both themes. */
 :not(pre)>code {
   font-size: 0.875em;
   font-family: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
-  background-color: rgba(175, 184, 193, 0.2);
-  border-radius: 0.25rem;
-  /* 4 px */
+  background-color: color-mix(in srgb, var(--muted-foreground) 15%, transparent);
+  border-radius: calc(var(--radius) - 6px);
   padding: 0.15em 0.4em;
   white-space: nowrap;
 }
@@ -253,18 +209,18 @@ pre:has(code.hljs) {
   font-size: 14px !important;
 }
 
-/* White background on edge labels with padding so descenders (g, p, y …)
-   aren't clipped. Belt-and-suspenders alongside themeVariables + inline SVG override. */
+/* Edge-label background — use the page background so the box blends in and
+   descenders (g, p, y …) aren't clipped. Adapts to dark mode via --background. */
 .mermaid-diagram .edgeLabel,
 .mermaid-diagram .edgeLabel span,
 .mermaid-diagram .edgeLabel div,
 .mermaid-diagram .edgeLabel p {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
+  background: var(--background) !important;
+  background-color: var(--background) !important;
   padding: 2px 4px !important;
   line-height: 1.4 !important;
 }
 
 .mermaid-diagram .edgeLabel rect {
-  fill: #ffffff !important;
+  fill: var(--background) !important;
 }

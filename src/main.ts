@@ -34,4 +34,5 @@ start(initState, inits, {
   disableSerializableStateCheck: true,
   isSerializable: (v) => isPlain(v) || v instanceof Date,
   rootComponent: RootComponent,
+  routeQueryParam: "p",
 });

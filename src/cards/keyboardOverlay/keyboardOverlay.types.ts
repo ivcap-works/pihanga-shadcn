@@ -55,6 +55,23 @@ export type KeyboardOverlayProps = {
   /** Shortcuts to intercept; all other key events pass through. */
   shortcuts: ShortcutDef[];
   /**
+   * When `true` (default) the wrapper `<div>` is made focusable (`tabIndex -1`)
+   * and automatically focused on mount, giving it the keyboard context so that
+   * shortcuts are reliably delivered even inside iframes or when an outer element
+   * would otherwise hold focus.
+   *
+   * Set to `false` only if you need focus to stay on a specific child element
+   * (e.g. a text input) right from the start; the document-level capture listener
+   * will still handle shortcuts, but without focus ownership.
+   */
+  captureFocus?: boolean;
+  /**
+   * When set, the overlay walks up the DOM from the cursor position looking for
+   * `data-{dataKey}` instead of the default `data-pihanga` attribute.
+   * The found value is forwarded as `dataValue` in the shortcut event.
+   */
+  dataKey?: string;
+  /**
    * Extra CSS classes applied to the wrapper `<div>`.
    *
    * Useful for layout constraints, e.g. `"h-full w-full flex"`.
@@ -72,16 +89,17 @@ export type KeyboardOverlayProps = {
 /**
  * Payload emitted by `onShortcut` whenever a registered shortcut fires.
  *
- * `dataPihanga` is the `data-pihanga` attribute of the **lowest** DOM element
- * under the cursor at the moment the key was pressed, walking up the tree
- * until a match is found.  `undefined` when no `data-pihanga` ancestor exists.
+ * `dataValue` is the value of the `data-{dataKey}` attribute (defaulting to
+ * `data-pihanga`) of the **lowest** DOM element under the cursor at the moment
+ * the key was pressed, walking up the tree until a match is found.
+ * `undefined` when no matching ancestor exists.
  */
 export type KeyboardOverlayShortcutEvent = {
   /** `ShortcutDef.id` when set, otherwise the matched `key`. */
   shortcutId: string;
   key: string;
   modifiers: Modifier[];
-  dataPihanga?: string;
+  dataValue?: string;
   cursorX: number;
   cursorY: number;
 };

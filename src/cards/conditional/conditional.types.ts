@@ -3,7 +3,7 @@ import type {PiCardRef} from "@pihanga2/core";
 
 // ── Card id ───────────────────────────────────────────────────────────────────
 
-export const CONDITIONAL_CARD = "shad/conditional";
+export const CONDITIONAL_CARD = "pi/conditional";
 
 // ── Card declaration factory ──────────────────────────────────────────────────
 
@@ -112,6 +112,16 @@ export type BreakpointMap<T = string> = Partial<Record<BreakpointName, T>>;
  * ```
  */
 export type ConditionalProps = {
+  /** The card to render when the visibility condition is met. */
+  content: PiCardRef;
+
+  /**
+   * Optional fallback card to render when **all** visibility conditions
+   * (`show`, `showOn`) evaluate to `false`.  When omitted, nothing is
+   * rendered in the hidden state (existing behaviour).
+   */
+  alternativeContent?: PiCardRef;
+
   /**
    * Manual boolean gate.  When omitted it defaults to `true` so that a
    * `showOn`-only card does not need to set it explicitly.
@@ -152,6 +162,16 @@ export type ConditionalProps = {
    */
   containerQuery?: boolean;
 
-  /** The card to render when the visibility condition is met. */
-  content: PiCardRef;
+  /**
+   * When `true`, the content card stays **mounted** even when the visibility
+   * condition is `false`.  Instead of returning `null`, the component wraps
+   * the card in a `<div style="display:none">` (hidden) or
+   * `<div style="display:contents">` (transparent pass-through when visible).
+   *
+   * Use this for expensive subtrees — such as Plate editors — where
+   * remounting from scratch on every show/hide is too costly.
+   *
+   * @default false
+   */
+  keepMounted?: boolean;
 };

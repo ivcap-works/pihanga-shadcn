@@ -808,13 +808,13 @@
   resolved "https://registry.yarnpkg.com/@oxc-project/types/-/types-0.132.0.tgz#d77243df4fe1a0a1e60e12ac6240fa898d2363ff"
   integrity sha512-FESMOxil5Se014ui/Eq8fT5uHJo6nIRwH0PfJrZJXs6Gek3ZVFOrpUv3YIZT20m+extU98Hg1Ym72U58rlsxUQ==
 
-"@pihanga2/core@^0.3.21":
-  version "0.3.21"
-  resolved "https://registry.yarnpkg.com/@pihanga2/core/-/core-0.3.21.tgz#1a0394432f17a15a74f8709e184d39172062c91a"
-  integrity sha512-BPq20naO8K07oHSLU39/8SN0o6n6NVtKip/kjD15ub8aP3Sk9bxWSMN6AQ6g6OhBSEX7cWZ/HOibuAnv7b+jhQ==
+"@pihanga2/core@^0.3.34":
+  version "0.3.34"
+  resolved "https://registry.yarnpkg.com/@pihanga2/core/-/core-0.3.34.tgz#d8874c718f3ba86138622d3eadcfe5c416d2f818"
+  integrity sha512-9wSQLl/lzpjo4bpfxm2fsvySiO8DBP/xz21Ez9EAOhKTTmTefEbMvlmhkcLIftV0UB+5vQ9pxb8SQnzX+REF5A==
   dependencies:
     "@reduxjs/toolkit" "^2.2.6"
-    deep-equal "^2.2.3"
+    fast-deep-equal "^3.1.3"
     history "^5.3.0"
     immer "^10.1.1"
     stacktrace-js "^2.0.2"

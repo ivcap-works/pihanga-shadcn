@@ -19,7 +19,7 @@ export const ModeToggleComponent = (
 
   return (
     <Button
-      variant={variant ?? "outline"}
+      variant={variant ?? "ghost"}
       size="icon"
       onClick={onClick}
       className={className}

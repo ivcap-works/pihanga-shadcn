@@ -46,7 +46,14 @@
  *        Dispatches onPlaygroundPropChanged → patches state.playgroundCurrentProps.
  */
 
-import {memo, register, registerCard, showPage, onShowPage, onInit} from "@pihanga2/core";
+import {
+  memo,
+  register,
+  registerCard,
+  showPage,
+  onShowPage,
+  onInit,
+} from "@pihanga2/core";
 import type {PiCardRef} from "@pihanga2/core";
 import {List, onListItemClicked} from "@/cards/list";
 import {Stack} from "@/cards/stack";
@@ -125,7 +132,7 @@ function buildFacetSection(
   const hasEvents = Boolean(def.registerEvents);
 
   return [
-    Typography({level: "h4", text: "Examples"}),
+    Typography({level: "h4", text: "Examples", id: "pg-examples"}),
     Tabs({
       selfManaged: false,
       value,
@@ -143,13 +150,18 @@ function buildFacetSection(
             // When the example file provides a `preview` factory, render the
             // actual card with the merged (defaultProps + facet.props) values
             // inside a centred preview container.
+            // The preview box uses `min-h-16` so it has a minimum display
+            // height, and `overflow-auto` so it scrolls rather than clips if a
+            // card renders taller than expected.  No fixed height is set so the
+            // box grows to the card's natural size.
             ...(def.preview
               ? [
                   Stack({
                     direction: "row",
                     justifyContent: "center",
                     alignItems: "center",
-                    className: "rounded-lg border bg-muted/20 p-4 min-h-16",
+                    className:
+                      "rounded-lg border bg-muted/20 p-4 min-h-16 overflow-auto",
                     content: [def.preview({...def.defaultProps, ...f.props})],
                   }),
                 ]
@@ -270,16 +282,21 @@ function buildControlsSection(
 ): PiCardRef[] {
   if (!def.controls?.length) return [];
 
-  const items: PiCardRef[] = [Typography({level: "h4", text: "Controls"})];
+  const items: PiCardRef[] = [
+    Typography({level: "h4", text: "Controls", id: "pg-controls"}),
+  ];
 
-  // Live preview box — driven by currentProps (interactive)
+  // Live preview box — driven by currentProps (interactive).
+  // No fixed height: the box grows to the card's natural size.
+  // overflow-auto ensures a scrollbar appears rather than content clipping
+  // if a card renders taller than the viewport.
   if (def.preview) {
     items.push(
       Stack({
         direction: "row",
         justifyContent: "center",
         alignItems: "center",
-        className: "rounded-lg border bg-muted/20 p-4 min-h-16",
+        className: "rounded-lg border bg-muted/20 p-4 min-h-16 overflow-auto",
         content: [def.preview(currentProps)],
       }),
     );
@@ -480,6 +497,26 @@ function buildDetailContent(
   // ── Title ──────────────────────────────────────────────────────────────────
   names.push(reg(`${p}/title`, Typography({level: "h2", text: def.title})));
 
+  // ── Section nav bar ────────────────────────────────────────────────────────
+  // Quick links to page sections so users can jump directly without scrolling.
+  // Markdown link syntax `[text](#id)` renders as real anchor elements; the
+  // nearest scrollable ancestor (the detail panel) scrolls to the target.
+  const navParts: string[] = [];
+  if (def.facets?.length) navParts.push("[Examples](#pg-examples)");
+  if (def.controls?.length) navParts.push("[Controls](#pg-controls)");
+  if (def.note) navParts.push("[Real-app usage](#pg-usage)");
+  if (navParts.length > 1) {
+    names.push(
+      reg(
+        `${p}/nav`,
+        MarkdownViewer({
+          source: navParts.join(" · "),
+          className: "text-sm",
+        }),
+      ),
+    );
+  }
+
   // ── Introduction ───────────────────────────────────────────────────────────
   if (def.introduction) {
     names.push(reg(`${p}/intro`, MarkdownViewer({source: def.introduction})));
@@ -498,7 +535,12 @@ function buildDetailContent(
 
   // ── Real-app usage note ────────────────────────────────────────────────────
   if (def.note) {
-    names.push(reg(`${p}/note-h`, Typography({level: "h4", text: "Real-app usage"})));
+    names.push(
+      reg(
+        `${p}/note-h`,
+        Typography({level: "h4", text: "Real-app usage", id: "pg-usage"}),
+      ),
+    );
     names.push(reg(`${p}/note-md`, MarkdownViewer({source: def.note})));
   }
 
@@ -606,7 +648,6 @@ function makeEventLogger(cardId: string) {
   };
 }
 
-
 // ============================================================================
 // Route helpers
 // ============================================================================
@@ -626,7 +667,9 @@ function cardIdToSlug(cardId: string): string {
  */
 function activateCardBySlug(state: AppState, slug: string): void {
   const def = PLAYGROUND_EXAMPLES.find((d) => cardIdToSlug(d.cardId) === slug);
-  if (def) {
+  // Skip reset when the same card is already active — this prevents anchor
+  // link clicks (e.g. #pg-controls) from re-initialising props/facet.
+  if (def && def.cardId !== state.playgroundSelectedCardId) {
     state.playgroundSelectedCardId = def.cardId;
     state.playgroundSelectedFacetId = def.facets?.[0]?.id;
     state.playgroundCurrentProps = {...def.defaultProps};
@@ -661,7 +704,7 @@ export function playgroundPiInit(): void {
       }
     });
 
-        onListItemClicked(r, (state: AppState, action, dispatch) => {
+    onListItemClicked(r, (state: AppState, action, dispatch) => {
       if (action.cardID === PlaygroundCard.List) {
         const cardId = String(action.itemID);
         state.playgroundSelectedCardId = cardId;
@@ -701,9 +744,14 @@ export function playgroundPiInit(): void {
 
     onPiInputCommitted(r, (state: AppState, {name, value}) => {
       // If the matching control is type "number", parse the string to a float
-      const _def = PLAYGROUND_EXAMPLES.find(d => d.cardId === state.playgroundSelectedCardId);
-      const ctrl = _def?.controls?.find(c => c.prop === name);
-      const coerced = ctrl?.type === "number" ? (parseFloat(value as string) ?? value) : value;
+      const _def = PLAYGROUND_EXAMPLES.find(
+        (d) => d.cardId === state.playgroundSelectedCardId,
+      );
+      const ctrl = _def?.controls?.find((c) => c.prop === name);
+      const coerced =
+        ctrl?.type === "number"
+          ? (parseFloat(value as string) ?? value)
+          : value;
       patchPgProp(state, name, coerced);
     });
 

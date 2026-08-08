@@ -626,7 +626,11 @@ import {registerFramework, registerCard, register} from "@pihanga2/core";
 import {SdFramework} from "./cards/framework";
 
 export function appPiInit(): void {
-  registerFramework(SdFramework({page: "app/main", theme: "light"}));
+  // theme: "system" defers to the OS preference on first load;
+  // "light" / "dark" force a specific mode.
+  // The user's choice (once they click the modeToggle) is persisted
+  // to localStorage under the key "shadcn-ui-theme".
+  registerFramework(SdFramework({page: "app/main", theme: "system"}));
   registerCard("app/main", /* … card def … */);
 }
 ```
@@ -675,18 +679,22 @@ import {
   PageWithNavbar,
   onPageWithNavbarNavigateTo,
 } from "@/cards/pageWithNavbar";
+import {ModeToggle} from "@/cards/modeToggle";
 import {memo, register, registerCard, registerFramework} from "@pihanga2/core";
 import {SdFramework} from "@/cards/framework";
 import type {AppState} from "@/app.state";
 
 export function appPiInit(): void {
-  registerFramework(SdFramework({page: "app/main", theme: "light"}));
+  registerFramework(SdFramework({page: "app/main", theme: "system"}));
 
   register((r) => {
     onPageWithNavbarNavigateTo(r, (state: AppState, {id}) => {
       state.currentPage = id;           // store active page in state
     });
   });
+
+  // Register the theme toggle button and place it in the navbar
+  registerCard("app/mode-toggle", ModeToggle({}));
 
   registerCard("app/main", PageWithNavbar({
     title: "My App",
@@ -698,6 +706,10 @@ export function appPiInit(): void {
       (s: AppState) => s.currentPage ?? "home",
       (page) => `app/page/${page}`,     // resolves to "app/page/home" etc.
     ),
+    // ── Theme toggle in the top-right of the navbar header ─────────────────
+    // Clicking the Sun/Moon button toggles light ↔ dark and persists the
+    // choice to localStorage. Remove this line to hide the toggle.
+    headerRightCard: "app/mode-toggle",
   }));
 
   registerCard("app/page/home",     /* … */);
@@ -794,7 +806,7 @@ const inits = [appPiInit, playgroundPiInit];
 //    registerFramework call from playgroundPiInit.
 export function appPiInit(): void {
   playgroundPiInit();               // no longer calls registerFramework
-  registerFramework(SdFramework({page: "app/main", theme: "light"}));
+  registerFramework(SdFramework({page: "app/main", theme: "system"}));
   // …
 }
 ```

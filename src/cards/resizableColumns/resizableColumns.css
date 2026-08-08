@@ -1,0 +1,62 @@
+/*
+ * ResizableColumns layout
+ *
+ * Divider styling options
+ * ──────────────────────
+ * Each drag handle is an 8 px flex-shrink-0 item (`::before` carries the visible line).
+ *
+ * 1. CSS custom properties (set on the container or globally):
+ *      --rg-divider-color       default background of the 1 px line
+ *      --rg-divider-hover-color background on hover / focus
+ *      --rg-divider-width       default line thickness (default 1px)
+ *      --rg-divider-hover-width line thickness on hover / focus (default 4px)
+ *
+ * 2. Override with `dividerClassName` prop — targets the 8 px hit-area element.
+ *    Use `[&::before]:bg-primary` (Tailwind arbitrary modifier) to reach the inner line:
+ *      dividerClassName="[&::before]:bg-primary [&::before]:w-[2px]"
+ *
+ * 3. Cell borders — apply a `border` class *inside* each child card.
+ *    This is the only option for 'auto' columns (no divider element exists there).
+ */
+
+.pi-resizable-columns {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+/* Each column pane — width is set via inline style from the component */
+.pi-resizable-columns-pane {
+  overflow: hidden;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+/* ── Drag handle between columns ─────────────────────────────────────────── */
+
+.pi-resizable-columns-divider {
+  flex: 0 0 8px;
+  cursor: col-resize;
+  position: relative;
+}
+
+.pi-resizable-columns-divider::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--rg-divider-width, 1px);
+  background-color: var(--rg-divider-color, hsl(var(--border, 214 32% 91%)));
+  transition: width 120ms ease, background-color 120ms ease;
+}
+
+.pi-resizable-columns-divider:hover::before,
+.pi-resizable-columns-divider:focus-visible::before {
+  width: var(--rg-divider-hover-width, 4px);
+  background-color: var(--rg-divider-hover-color,
+      hsl(var(--muted-foreground, 215 16% 47%)));
+}

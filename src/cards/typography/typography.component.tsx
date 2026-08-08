@@ -37,6 +37,7 @@ export const TypographyComponent = (
     level,
     className,
     style,
+    id,
     cardName,
     _dispatch,
     _cls,
@@ -78,6 +79,7 @@ export const TypographyComponent = (
     {
       className: cn(levelClass, className),
       style,
+      ...(id ? {id} : {}),
       "data-pihanga": cardName,
     },
     renderChildren(),

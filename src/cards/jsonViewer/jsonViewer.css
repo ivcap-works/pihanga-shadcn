@@ -7,7 +7,32 @@
  *   - Toggle icon is absolutely positioned so { and } align on the same column
  *   - String values in green, numbers in blue, booleans in teal
  *   - Adapts to light/dark via CSS variables
+ *
+ * Semantic value colours are exposed as CSS custom properties so they can be
+ * overridden per-instance or globally without touching this file.
  */
+
+/* ── Value-colour tokens (override at :root or on a parent element) ─────── */
+:root {
+  --jv-color-string: oklch(0.45 0.15 145);
+  /* green  — matches screenshot */
+  --jv-color-number: oklch(0.40 0.18 265);
+  /* blue */
+  --jv-color-boolean: oklch(0.45 0.10 188);
+  /* teal */
+  --jv-color-null: oklch(0.45 0.20 27);
+  /* red */
+  --jv-color-done: oklch(0.45 0.15 145);
+  /* copy-button success (green) */
+}
+
+.dark {
+  --jv-color-string: oklch(0.70 0.12 145);
+  --jv-color-number: oklch(0.68 0.14 265);
+  --jv-color-boolean: oklch(0.65 0.10 188);
+  --jv-color-null: oklch(0.73 0.14 27);
+  --jv-color-done: oklch(0.70 0.12 145);
+}
 
 /* ── Wrapper (positions the copy button relative to the viewer) ─────────────── */
 .jv-wrapper {
@@ -27,9 +52,9 @@
   height: 22px;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: hsl(var(--muted-foreground, 0 0% 55%));
+  color: var(--muted-foreground);
   cursor: pointer;
   opacity: 0.35;
   transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease,
@@ -43,19 +68,15 @@
 }
 
 .jv-copy-btn:hover {
-  color: hsl(var(--foreground));
-  background: hsl(var(--muted, 0 0% 96%));
-  border-color: hsl(var(--border, 0 0% 88%));
+  color: var(--foreground);
+  background: var(--muted);
+  border-color: var(--border);
 }
 
-/* "Done" state — green check mark */
+/* "Done" state — success check mark */
 .jv-copy-btn--done {
   opacity: 1;
-  color: #2e7d32;
-}
-
-.dark .jv-copy-btn--done {
-  color: #81c784;
+  color: var(--jv-color-done);
 }
 
 /* ── Container ─────────────────────────────────────────────────────────────── */
@@ -123,7 +144,7 @@
   width: 1em;
   font-size: 0.65em;
   line-height: 1;
-  color: hsl(var(--muted-foreground, 0 0% 55%));
+  color: var(--muted-foreground);
   user-select: none;
   cursor: pointer;
   display: inline-flex;
@@ -142,7 +163,7 @@
 /* ── Collapsed placeholder ──────────────────────────────────────────────────── */
 .jv-collapsed-content {
   cursor: pointer;
-  color: hsl(var(--muted-foreground, 0 0% 55%));
+  color: var(--muted-foreground);
 }
 
 .jv-collapsed-content::after {
@@ -154,56 +175,31 @@
   margin: 0;
   padding: 0;
   padding-left: 1.25em;
-  border-left: 1px solid hsl(var(--border, 0 0% 88%));
+  border-left: 1px solid var(--border);
   margin-left: 0.3em;
 }
 
 /* ── Value colours ──────────────────────────────────────────────────────────── */
 .jv-null {
-  color: #c0392b;
+  color: var(--jv-color-null);
 }
 
 .jv-undefined {
-  color: #c0392b;
+  color: var(--jv-color-null);
 }
 
 .jv-string {
-  color: #2e7d32;
+  color: var(--jv-color-string);
 }
 
-/* green  — matches screenshot */
 .jv-number {
-  color: #1565c0;
+  color: var(--jv-color-number);
 }
 
-/* blue */
 .jv-boolean {
-  color: #00796b;
+  color: var(--jv-color-boolean);
 }
 
-/* teal */
 .jv-other {
   color: var(--foreground);
-}
-
-/* ── Dark-mode overrides ───────────────────────────────────────────────────── */
-.dark .jv-string {
-  color: #81c784;
-}
-
-.dark .jv-number {
-  color: #64b5f6;
-}
-
-.dark .jv-boolean {
-  color: #4db6ac;
-}
-
-.dark .jv-null,
-.dark .jv-undefined {
-  color: #ef9a9a;
-}
-
-.dark .jv-child-fields-container {
-  border-left-color: hsl(var(--border, 0 0% 25%));
 }

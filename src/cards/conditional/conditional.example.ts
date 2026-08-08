@@ -19,16 +19,25 @@ export default definePlayground<ConditionalProps>({
           ? undefined
           : (props.showOn as string),
       containerQuery: Boolean(props.containerQuery),
+      keepMounted: Boolean(props.keepMounted),
       content: ShadBadge({
         label: "✓  visibility condition met — content is mounted",
         variant: "default",
       }),
+      alternativeContent: props.alternativeContent
+        ? ShadBadge({
+            label: "✗  condition not met — alternativeContent is shown",
+            variant: "secondary",
+          })
+        : undefined,
     }),
 
   defaultProps: {
     show: true,
     showOn: "none",
     containerQuery: false,
+    keepMounted: false,
+    alternativeContent: false,
     content: "" as string,
   },
 
@@ -97,6 +106,27 @@ export default definePlayground<ConditionalProps>({
         "Both conditions must be satisfied: `show` is `true` **and** viewport ≥ 768 px.",
       props: {show: true, showOn: "md"},
     },
+    {
+      id: "alternative-content",
+      title: "alternativeContent (show: false)",
+      description:
+        "When `show` is `false` and `alternativeContent` is set, the fallback card is rendered instead of `null`.",
+      props: {show: false, alternativeContent: true},
+    },
+    {
+      id: "alternative-breakpoint",
+      title: "alternativeContent + showOn",
+      description:
+        "Swap between two cards at the `md` breakpoint: `content` on wide viewports, `alternativeContent` on narrow ones. Resize the window to see them switch.",
+      props: {showOn: "md", alternativeContent: true},
+    },
+    {
+      id: "alternative-keep-mounted",
+      title: "alternativeContent + keepMounted",
+      description:
+        "Both `content` and `alternativeContent` stay mounted at all times. Visibility is toggled via `display:none` / `display:contents` — useful when remounting is too costly.",
+      props: {show: false, alternativeContent: true, keepMounted: true},
+    },
   ],
 
   // ── Controls ─────────────────────────────────────────────────────────────
@@ -129,6 +159,16 @@ export default definePlayground<ConditionalProps>({
       prop: "containerQuery",
       type: "boolean",
       label: "containerQuery",
+    },
+    {
+      prop: "keepMounted",
+      type: "boolean",
+      label: "keepMounted",
+    },
+    {
+      prop: "alternativeContent",
+      type: "boolean",
+      label: "alternativeContent",
     },
   ],
 
@@ -198,6 +238,43 @@ registerCard("myApp/adminSidebar", Conditional({
   show:    memo((s: AppState) => s.isAdmin),
   showOn:  "lg",
   content: "myApp/adminPanel",
+}));
+\`\`\`
+
+### Fallback with \`alternativeContent\`
+
+Supply \`alternativeContent\` to render a different card when the visibility
+condition is not met.  When omitted, nothing is rendered (original behaviour):
+
+\`\`\`ts
+// Swap between a read-only view and an edit form
+registerCard("myApp/detailView", Conditional({
+  show:               memo((s: AppState) => !s.isEditing),
+  content:            "myApp/readOnlyPanel",
+  alternativeContent: "myApp/editForm",
+}));
+\`\`\`
+
+Combine with \`showOn\` to swap two cards at a responsive breakpoint:
+
+\`\`\`ts
+// Desktop sidebar on large screens, mobile drawer on small screens
+registerCard("myApp/nav", Conditional({
+  showOn:             "lg",
+  content:            "myApp/desktopSidebar",
+  alternativeContent: "myApp/mobileDrawer",
+}));
+\`\`\`
+
+Add \`keepMounted: true\` to keep **both** cards alive in the React tree at all
+times, toggling only their CSS \`display\` — ideal when remounting is expensive:
+
+\`\`\`ts
+registerCard("myApp/editor", Conditional({
+  show:               memo((s: AppState) => s.isEditing),
+  content:            "myApp/plateEditor",
+  alternativeContent: "myApp/readOnlyView",
+  keepMounted:        true,
 }));
 \`\`\`
   `.trim(),

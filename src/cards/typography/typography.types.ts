@@ -34,6 +34,8 @@ export type TypographyProps = {
   /** Semantic level — controls the HTML element and default prose styling. */
   level?: TypographyLevel;
 
+  /** HTML `id` attribute — enables `<a href="#id">` anchor scrolling. */
+  id?: string;
   /** Additional CSS classes applied directly to the element. */
   className?: string;
   /** Inline styles applied directly to the element. */

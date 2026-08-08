@@ -470,7 +470,8 @@ import {registerFramework, registerCard, register} from "@pihanga2/core";
 import {SdFramework} from "./cards/framework";
 
 export function appPiInit(): void {
-  registerFramework(SdFramework({page: "app/main", theme: "light"}));
+  // theme: "system" follows OS preference; "light"/"dark" force a mode.
+  registerFramework(SdFramework({page: "app/main", theme: "system"}));
   registerCard("app/main", /* … your root card … */);
 }
 ```
@@ -578,7 +579,9 @@ import {SdFramework} from "@/cards/framework";
 import type {AppState} from "@/app.state";
 
 export function appPiInit(): void {
-  registerFramework(SdFramework({page: "app/main", theme: "light"}));
+  // theme: "system" follows OS preference on first load.
+  // The user's choice (via the modeToggle button) is persisted to localStorage.
+  registerFramework(SdFramework({page: "app/main", theme: "system"}));
 
   // Store the clicked nav link in state
   register((r) => {
@@ -586,6 +589,9 @@ export function appPiInit(): void {
       state.currentPage = id;
     });
   });
+
+  // Register a light/dark theme toggle button
+  registerCard("app/mode-toggle", ModeToggle({}));
 
   registerCard("app/main", PageWithNavbar({
     title: "My App",
@@ -598,6 +604,8 @@ export function appPiInit(): void {
       (s: AppState) => s.currentPage ?? "home",
       (page) => `app/page/${page}`,
     ),
+    // Sun/Moon toggle rendered top-right in the navbar header
+    headerRightCard: "app/mode-toggle",
   }));
 
   registerCard("app/page/home",     /* … */);

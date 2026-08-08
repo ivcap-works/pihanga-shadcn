@@ -7,11 +7,14 @@ import type {
   Modifier,
 } from "./keyboardOverlay.types";
 
-/** Walk up the DOM from `el` and return the first `data-pihanga` value found. */
-function findDataPihanga(el: Element | null): string | undefined {
+/** Walk up the DOM from `el` and return the first value of `data-{dataKey}` found. */
+function findDataAttribute(
+  el: Element | null,
+  dataKey: string,
+): string | undefined {
   let node: Element | null = el;
   while (node) {
-    const attr = node.getAttribute("data-pihanga");
+    const attr = node.getAttribute(`data-${dataKey}`);
     if (attr) return attr;
     node = node.parentElement;
   }
@@ -32,10 +35,20 @@ function modifiersMatch(e: KeyboardEvent, required: Modifier[]): boolean {
 export const KeyboardOverlayComponent = (
   props: PiCardProps<KeyboardOverlayProps, KeyboardOverlayEvents>,
 ): React.ReactNode => {
-  const {content, shortcuts, onShortcut, cardName, className, style} = props;
+  const {
+    content,
+    shortcuts,
+    onShortcut,
+    cardName,
+    className,
+    style,
+    captureFocus = true,
+    dataKey = "pihanga",
+  } = props;
 
   // Track cursor position passively — no re-render needed.
   const cursorPos = useRef<{x: number; y: number}>({x: 0, y: 0});
+  const divRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -56,13 +69,13 @@ export const KeyboardOverlayComponent = (
 
         const {x, y} = cursorPos.current;
         const el = document.elementFromPoint(x, y);
-        const dataPihanga = findDataPihanga(el);
+        const dataValue = findDataAttribute(el, dataKey);
 
         onShortcut({
           shortcutId: shortcut.id ?? shortcut.key,
           key: shortcut.key,
           modifiers: mods,
-          dataPihanga,
+          dataValue,
           cursorX: x,
           cursorY: y,
         });
@@ -79,11 +92,20 @@ export const KeyboardOverlayComponent = (
     };
   }, [shortcuts, onShortcut]);
 
+  function onMouseEnter() {
+    if (captureFocus) {
+      divRef.current?.focus();
+    }
+  }
+
   return (
     <div
+      ref={divRef}
+      tabIndex={captureFocus ? -1 : undefined}
+      onMouseEnter={onMouseEnter}
       data-pihanga={cardName}
       className={className}
-      style={{...style, position: "relative"}}
+      style={{...style, position: "relative", outline: "none"}}
     >
       <Card cardName={content} parentCard={cardName} />
     </div>

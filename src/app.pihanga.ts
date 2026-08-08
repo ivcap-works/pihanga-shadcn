@@ -43,6 +43,7 @@ import {
 } from "./cards/pageWithNavbar";
 import {MarkdownViewer} from "./cards/markdownViewer";
 import {FlexGrid} from "./cards/flexGrid";
+import {ModeToggle} from "./cards/modeToggle";
 
 import type {AppState} from "./app.state";
 import {
@@ -74,9 +75,12 @@ export function appPiInit(): void {
   registerFramework(
     SdFramework({
       page: AppCard.Main,
-      theme: "light",
+      theme: "system",
     }),
   );
+
+  // ── Theme toggle button (rendered in the navbar header) ────────────────────
+  registerCard("app/mode-toggle", ModeToggle({}));
 
   // ── Navigation handler ─────────────────────────────────────────────────────
   // Store the clicked nav link id in state so the memo below can switch pages.
@@ -103,6 +107,7 @@ export function appPiInit(): void {
         (seg) =>
           seg === "cards" ? AppCard.PlaygroundPage : AppCard.IntroductionPage,
       ),
+      headerRightCard: "app/mode-toggle",
     }),
   );
 

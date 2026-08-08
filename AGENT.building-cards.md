@@ -740,6 +740,74 @@ rethemable by the consumer:
 <div className="bg-white text-gray-900 border border-gray-200 rounded-xl shadow-sm">
 ```
 
+### ⚠️ CSS variables are oklch values — critical rules for card CSS files
+
+This project uses **Tailwind v4 with oklch colour values**.  The CSS custom
+properties (`--border`, `--muted`, `--foreground`, etc.) are **complete** CSS
+colour values — they are **not** HSL channel triplets.
+
+**Rule 1 — Never wrap a variable in `hsl()`:**
+
+```css
+/* ❌ Invalid — wraps a full oklch(...) value inside hsl() */
+background-color: hsl(var(--border, 214 32% 91%));
+
+/* ✅ Correct — use the variable directly */
+background-color: var(--border);
+```
+
+**Rule 2 — Never use `@media (prefers-color-scheme: dark)` in card CSS.**
+The project uses class-based dark mode (a `.dark` class on `<html>`).  A media
+query won't fire when the user toggles the theme via the `modeToggle` card.
+
+```css
+/* ❌ Wrong — ignored when the .dark class is toggled programmatically */
+@media (prefers-color-scheme: dark) {
+  .my-card { background-color: #161b22; }
+}
+
+/* ✅ Correct — use .dark class override */
+.dark .my-card { background-color: var(--card); }
+
+/* ✅ Even better — use a CSS variable that adapts automatically */
+.my-card { background-color: var(--card); }   /* no dark override needed */
+```
+
+**Rule 3 — Use `color-mix()` for alpha/transparency:**
+
+```css
+/* ❌ Wrong — hardcoded rgba */
+background: rgba(0, 0, 0, 0.3);
+
+/* ✅ Correct — theme-aware semi-transparent foreground */
+background: color-mix(in srgb, var(--foreground) 30%, transparent);
+
+/* ✅ Correct — semi-transparent background overlay */
+background: color-mix(in srgb, var(--background) 70%, transparent);
+```
+
+**Rule 4 — Expose component-level colour tokens for cards with semantic colours.**
+When a card needs colours that have no shadcn/ui equivalent (syntax highlighting,
+annotation markers, etc.), define them as CSS custom properties in `:root` / `.dark`
+rather than hardcoding hex values:
+
+```css
+/* ✅ Correct — semantic tokens with dark-mode variants */
+:root {
+  --jv-color-string:  oklch(0.45 0.15 145);   /* green */
+  --jv-color-number:  oklch(0.40 0.18 265);   /* blue */
+}
+.dark {
+  --jv-color-string:  oklch(0.70 0.12 145);
+  --jv-color-number:  oklch(0.68 0.14 265);
+}
+.jv-string { color: var(--jv-color-string); }
+
+/* ❌ Wrong — hardcoded per-class dark overrides */
+.jv-string { color: #2e7d32; }
+.dark .jv-string { color: #81c784; }
+```
+
 Standard shadcn tokens available as Tailwind utilities:
 
 | Tailwind class | CSS variable | Default (light) |

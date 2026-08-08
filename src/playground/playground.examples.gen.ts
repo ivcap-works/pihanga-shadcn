@@ -51,6 +51,8 @@ import pageWithNavbarDef from "@/cards/pageWithNavbar/pageWithNavbar.example";
 import pageWithNavbarMetaDef from "@/cards/pageWithNavbarMeta/pageWithNavbarMeta.example";
 import pasteTargetDef from "@/cards/pasteTarget/pasteTarget.example";
 import resizableDef from "@/cards/resizable/resizable.example";
+import resizableColumnsDef from "@/cards/resizableColumns/resizableColumns.example";
+import resizableGridDef from "@/cards/resizableGrid/resizableGrid.example";
 import scrollbarWithAnnotationsDef from "@/cards/scrollbarWithAnnotations/scrollbarWithAnnotations.example";
 import selectDef from "@/cards/select/select.example";
 import sheetCardDef from "@/cards/sheetCard/sheetCard.example";
@@ -99,6 +101,8 @@ import pageWithNavbarReadme from "@/cards/pageWithNavbar/README.md?raw";
 import pageWithNavbarMetaReadme from "@/cards/pageWithNavbarMeta/README.md?raw";
 import pasteTargetReadme from "@/cards/pasteTarget/README.md?raw";
 import resizableReadme from "@/cards/resizable/README.md?raw";
+import resizableColumnsReadme from "@/cards/resizableColumns/README.md?raw";
+import resizableGridReadme from "@/cards/resizableGrid/README.md?raw";
 import scrollbarWithAnnotationsReadme from "@/cards/scrollbarWithAnnotations/README.md?raw";
 import selectReadme from "@/cards/select/README.md?raw";
 import sheetCardReadme from "@/cards/sheetCard/README.md?raw";
@@ -160,6 +164,8 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...pageWithNavbarMetaDef, introduction: pageWithNavbarMetaReadme},
   {...pasteTargetDef, introduction: pasteTargetReadme},
   {...resizableDef, introduction: resizableReadme},
+  {...resizableColumnsDef, introduction: resizableColumnsReadme},
+  {...resizableGridDef, introduction: resizableGridReadme},
   {
     ...scrollbarWithAnnotationsDef,
     introduction: scrollbarWithAnnotationsReadme,

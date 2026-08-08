@@ -1,6 +1,7 @@
 /**
  * Playground definition for the `pageWithNavbar` card.
  */
+import {Box} from "@/cards/box";
 import {definePlayground} from "@/playground/definePlayground";
 import {
   PageWithNavbar,
@@ -12,7 +13,15 @@ export default definePlayground<PageWithNavbarProps>({
   cardId: "pageWithNavbar",
   title: "Page With Navbar",
 
-  preview: (props) => PageWithNavbar(props),
+  // Box sets an inline `style.height` (160 px) — a reliable definite height
+  // that PageWithNavbar's internal `height: 100%` resolves against regardless
+  // of CSS cascade order or Tailwind class-scanning issues.
+  preview: (props) =>
+    Box({
+      height: 160,
+      className: "w-full overflow-hidden",
+      singleContent: PageWithNavbar(props as PageWithNavbarProps),
+    }),
 
   defaultProps: {
     title: "My Application",
