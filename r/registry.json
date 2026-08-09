@@ -136,6 +136,10 @@
       "type": "registry:component"
     },
     {
+      "name": "keyboardOverlay",
+      "type": "registry:component"
+    },
+    {
       "name": "list",
       "type": "registry:component"
     },
@@ -180,6 +184,14 @@
       "type": "registry:component"
     },
     {
+      "name": "resizableColumns",
+      "type": "registry:component"
+    },
+    {
+      "name": "resizableGrid",
+      "type": "registry:component"
+    },
+    {
       "name": "scrollbarWithAnnotations",
       "type": "registry:component"
     },
@@ -205,6 +217,10 @@
     },
     {
       "name": "stepper",
+      "type": "registry:component"
+    },
+    {
+      "name": "suspense",
       "type": "registry:component"
     },
     {

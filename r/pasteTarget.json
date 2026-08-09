@@ -27,7 +27,7 @@
     },
     {
       "path": "cards/pasteTarget/pasteTarget.css",
-      "content": ".pihanga-paste-target {\n  border: dashed 2px #999;\n\n  .paste-target-msg-title {\n    font-size: 1.2em;\n  }\n\n  textarea:focus {\n    /* Remove the default focus outline for a cleaner look */\n    outline: none;\n  }\n}\n\n.pihanga-paste-target-focused {\n  /* Change the border color to highlight the active element */\n  border-color: #007bff;\n  border-width: 3px;\n\n  .paste-target-focus-reminder {\n    display: none;\n  }\n}",
+      "content": ".pihanga-paste-target {\n  border: dashed 2px var(--border);\n\n  .paste-target-msg-title {\n    font-size: 1.2em;\n  }\n\n  textarea:focus {\n    /* Remove the default focus outline for a cleaner look */\n    outline: none;\n  }\n}\n\n.pihanga-paste-target-focused {\n  /* Change the border color to highlight the active element */\n  border-color: var(--ring);\n  border-width: 3px;\n\n  .paste-target-focus-reminder {\n    display: none;\n  }\n}",
       "type": "registry:component",
       "target": "src/cards/pasteTarget/pasteTarget.css"
     },
