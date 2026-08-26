@@ -1,13 +1,45 @@
 import * as React from "react";
 import type {StackProps} from "./stack.types";
 
-import {Card, type PiCardProps} from "@pihanga2/core";
+import {Card, type PiCardProps, type PiCardRef} from "@pihanga2/core";
 import clsx from "clsx";
 import {Fragment} from "react";
 
 export type SelectSD = {
   root?: string;
 };
+
+/**
+ * Cheap, non-cryptographic FNV-1a hash — good enough to turn an arbitrary
+ * string into a short, stable identifier for use as a React key.
+ */
+function fnv1aHash(str: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+/**
+ * Derive a stable React key for a `PiCardRef`.
+ *
+ * - Strings (card names) are already unique — used as-is.
+ * - Inline `PiCardDef` objects have no identity of their own, and two
+ *   structurally-identical defs created on different renders are different
+ *   object references. We hash the (key-sorted) JSON content so that
+ *   identical content maps to the same key — preserving React's
+ *   reconciliation identity across re-renders/reorders — while still
+ *   appending `i` so a hash collision (or two genuinely different defs
+ *   that hash the same) can never produce a duplicate key within the list.
+ */
+function cardRefKey(cn: PiCardRef, i: number): string {
+  if (typeof cn === "string") return cn;
+  const sortedKeys = Object.keys(cn).sort();
+  const json = JSON.stringify(cn, sortedKeys);
+  return `${fnv1aHash(json)}-${i}`;
+}
 
 export const Component = (props: PiCardProps<StackProps>): React.ReactNode => {
   const {
@@ -102,14 +134,21 @@ export const Component = (props: PiCardProps<StackProps>): React.ReactNode => {
   function renderContent() {
     if (!content) return null;
 
-    return content.map((cn, i) => (
-      <Fragment key={i}>
-        <Card cardName={cn} parentCard={cardName} key={`item-${i}`} />
-        {divider && i < content.length - 1 && (
-          <Card cardName={divider} parentCard={cardName} key={`divider-${i}`} />
-        )}
-      </Fragment>
-    ));
+    return content.map((cn, i) => {
+      const key = cardRefKey(cn, i);
+      return (
+        <Fragment key={key}>
+          <Card cardName={cn} parentCard={cardName} key={`item-${key}`} />
+          {divider && i < content.length - 1 && (
+            <Card
+              cardName={divider}
+              parentCard={cardName}
+              key={`divider-${key}`}
+            />
+          )}
+        </Fragment>
+      );
+    });
   }
 
   const dataAttrs = data

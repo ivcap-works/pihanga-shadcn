@@ -21,8 +21,16 @@ function findDataAttribute(
   return undefined;
 }
 
-/** Returns `true` when the keyboard event's active modifiers exactly match the definition. */
+/**
+ * Returns `true` when the keyboard event's active modifiers match the definition.
+ *
+ * When `required` is empty every key press matches regardless of which modifier
+ * flags the OS/browser may inject (e.g. Windows can set ctrlKey on ArrowDown
+ * in some configurations). When modifiers ARE specified they must match exactly
+ * so that e.g. Ctrl+K and plain K remain distinct shortcuts.
+ */
 function modifiersMatch(e: KeyboardEvent, required: Modifier[]): boolean {
+  if (required.length === 0) return true;
   const need = new Set(required);
   return (
     (need.has("ctrl") ? e.ctrlKey : !e.ctrlKey) &&

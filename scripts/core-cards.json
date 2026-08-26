@@ -11,6 +11,7 @@
     "dialog",
     "drawer",
     "dropDownMenu",
+    "emptyCard",
     "field",
     "fileDrop",
     "flexGrid",
@@ -27,6 +28,7 @@
     "menu",
     "modeToggle",
     "navbarSearch",
+    "observable",
     "pageWithNavbar",
     "pageWithNavbarMeta",
     "pasteTarget",
@@ -43,13 +45,15 @@
     "suspense",
     "switch",
     "tabs",
+    "textArea",
     "textField",
     "toast",
     "toggleGroup",
     "typography"
   ],
   "excludeReason": {
-    "chartGraph": "recharts dependency (~200-300 KB gzipped) \u2014 published as @pihanga2/chart",
+    "chart": "recharts dependency (~200-300 KB gzipped) \u2014 published as @pihanga2/chart",
+    "codeMirror": "CodeMirror editor deps \u2014 published as @pihanga2/codemirror",
     "graphin": "heavy AntV deps (@antv/g, @antv/g6, @antv/graphin \u2014 ~5 MB install) \u2014 published as @pihanga2/graphin",
     "markdownViewer": "mermaid + remark/rehype stack \u2014 heavy markdown rendering pipeline \u2014 published as @pihanga2/markdown"
   }

@@ -81,6 +81,13 @@ export type PiInputProps = {
 
   /** Extra Tailwind / CSS classes forwarded to the underlying <input> element. */
   className?: string;
+
+  /**
+   * When true, the input grabs keyboard focus the first time it is
+   * mounted/shown (e.g. when a dialog or drawer opens). Only applies once,
+   * on mount — it does not re-focus on subsequent re-renders.
+   */
+  autoFocus?: boolean;
 };
 
 export type PiInputChangedEvent = {

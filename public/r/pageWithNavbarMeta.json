@@ -3,7 +3,9 @@
   "name": "pageWithNavbarMeta",
   "type": "registry:component",
   "description": "Pihanga pageWithNavbarMeta card component",
-  "dependencies": [],
+  "dependencies": [
+    "@pihanga2/shadcn"
+  ],
   "registryDependencies": [
     "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
     "https://ivcap-works.github.io/pihanga-shadcn/r/stack.json",

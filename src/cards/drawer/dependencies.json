@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "@pihanga2/shadcn": "UNKNOWN - add to root package.json",
+    "class-variance-authority": "^0.7.1",
+    "radix-ui": "^1.4.3",
     "vaul": "^1.1.2"
   },
   "devDependencies": {}

@@ -120,6 +120,10 @@
       "type": "registry:component"
     },
     {
+      "name": "iconCard",
+      "type": "registry:component"
+    },
+    {
       "name": "infoCard",
       "type": "registry:component"
     },
@@ -129,6 +133,10 @@
     },
     {
       "name": "jsonViewer",
+      "type": "registry:component"
+    },
+    {
+      "name": "keyboardOverlay",
       "type": "registry:component"
     },
     {
@@ -160,6 +168,10 @@
       "type": "registry:component"
     },
     {
+      "name": "observable",
+      "type": "registry:component"
+    },
+    {
       "name": "pageWithNavbar",
       "type": "registry:component"
     },
@@ -173,6 +185,14 @@
     },
     {
       "name": "resizable",
+      "type": "registry:component"
+    },
+    {
+      "name": "resizableColumns",
+      "type": "registry:component"
+    },
+    {
+      "name": "resizableGrid",
       "type": "registry:component"
     },
     {
@@ -204,11 +224,19 @@
       "type": "registry:component"
     },
     {
+      "name": "suspense",
+      "type": "registry:component"
+    },
+    {
       "name": "switch",
       "type": "registry:component"
     },
     {
       "name": "tabs",
+      "type": "registry:component"
+    },
+    {
+      "name": "textArea",
       "type": "registry:component"
     },
     {

@@ -1,4 +1,6 @@
 {
-  "dependencies": {},
+  "dependencies": {
+    "lucide-react": "^0.513.0"
+  },
   "devDependencies": {}
 }

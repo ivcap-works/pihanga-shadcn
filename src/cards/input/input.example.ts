@@ -143,6 +143,11 @@ export default definePlayground<PiInputProps>({
       type: "boolean",
       label: "Disabled",
     },
+    {
+      prop: "autoFocus",
+      type: "boolean",
+      label: "Auto-focus on show",
+    },
   ],
 
   registerEvents: (r, logEvent) => {

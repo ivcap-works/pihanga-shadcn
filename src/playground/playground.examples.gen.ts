@@ -13,7 +13,7 @@
 // imported with Vite's `?raw` suffix and merged into the definition as the
 // `introduction` field (overriding any inline value in the example file).
 //
-// Last generated: 2026-07-26T09:45:12.601Z
+// Last generated: 2026-08-26T05:32:19.093Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
@@ -47,6 +47,7 @@ import markdownViewerDef from "@/cards/markdownViewer/markdownViewer.example";
 import menuDef from "@/cards/menu/menu.example";
 import modeToggleDef from "@/cards/modeToggle/modeToggle.example";
 import navbarSearchDef from "@/cards/navbarSearch/navbarSearch.example";
+import observableDef from "@/cards/observable/observable.example";
 import pageWithNavbarDef from "@/cards/pageWithNavbar/pageWithNavbar.example";
 import pageWithNavbarMetaDef from "@/cards/pageWithNavbarMeta/pageWithNavbarMeta.example";
 import pasteTargetDef from "@/cards/pasteTarget/pasteTarget.example";
@@ -60,8 +61,10 @@ import sliderDef from "@/cards/slider/slider.example";
 import sliderValueDef from "@/cards/sliderValue/sliderValue.example";
 import stackDef from "@/cards/stack/stack.example";
 import stepperDef from "@/cards/stepper/stepper.example";
+import suspenseDef from "@/cards/suspense/suspense.example";
 import switchDef from "@/cards/switch/switch.example";
 import tabsDef from "@/cards/tabs/tabs.example";
+import textAreaDef from "@/cards/textArea/textArea.example";
 import textFieldDef from "@/cards/textField/textField.example";
 import toastDef from "@/cards/toast/toast.example";
 import toggleGroupDef from "@/cards/toggleGroup/toggleGroup.example";
@@ -97,6 +100,7 @@ import markdownViewerReadme from "@/cards/markdownViewer/README.md?raw";
 import menuReadme from "@/cards/menu/README.md?raw";
 import modeToggleReadme from "@/cards/modeToggle/README.md?raw";
 import navbarSearchReadme from "@/cards/navbarSearch/README.md?raw";
+import observableReadme from "@/cards/observable/README.md?raw";
 import pageWithNavbarReadme from "@/cards/pageWithNavbar/README.md?raw";
 import pageWithNavbarMetaReadme from "@/cards/pageWithNavbarMeta/README.md?raw";
 import pasteTargetReadme from "@/cards/pasteTarget/README.md?raw";
@@ -110,8 +114,10 @@ import sliderReadme from "@/cards/slider/README.md?raw";
 import sliderValueReadme from "@/cards/sliderValue/README.md?raw";
 import stackReadme from "@/cards/stack/README.md?raw";
 import stepperReadme from "@/cards/stepper/README.md?raw";
+import suspenseReadme from "@/cards/suspense/README.md?raw";
 import switchReadme from "@/cards/switch/README.md?raw";
 import tabsReadme from "@/cards/tabs/README.md?raw";
+import textAreaReadme from "@/cards/textArea/README.md?raw";
 import textFieldReadme from "@/cards/textField/README.md?raw";
 import toastReadme from "@/cards/toast/README.md?raw";
 import toggleGroupReadme from "@/cards/toggleGroup/README.md?raw";
@@ -160,24 +166,24 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...menuDef, introduction: menuReadme},
   {...modeToggleDef, introduction: modeToggleReadme},
   {...navbarSearchDef, introduction: navbarSearchReadme},
+  {...observableDef, introduction: observableReadme},
   {...pageWithNavbarDef, introduction: pageWithNavbarReadme},
   {...pageWithNavbarMetaDef, introduction: pageWithNavbarMetaReadme},
   {...pasteTargetDef, introduction: pasteTargetReadme},
   {...resizableDef, introduction: resizableReadme},
   {...resizableColumnsDef, introduction: resizableColumnsReadme},
   {...resizableGridDef, introduction: resizableGridReadme},
-  {
-    ...scrollbarWithAnnotationsDef,
-    introduction: scrollbarWithAnnotationsReadme,
-  },
+  {...scrollbarWithAnnotationsDef, introduction: scrollbarWithAnnotationsReadme},
   {...selectDef, introduction: selectReadme},
   {...sheetCardDef, introduction: sheetCardReadme},
   {...sliderDef, introduction: sliderReadme},
   {...sliderValueDef, introduction: sliderValueReadme},
   {...stackDef, introduction: stackReadme},
   {...stepperDef, introduction: stepperReadme},
+  {...suspenseDef, introduction: suspenseReadme},
   {...switchDef, introduction: switchReadme},
   {...tabsDef, introduction: tabsReadme},
+  {...textAreaDef, introduction: textAreaReadme},
   {...textFieldDef, introduction: textFieldReadme},
   {...toastDef, introduction: toastReadme},
   {...toggleGroupDef, introduction: toggleGroupReadme},

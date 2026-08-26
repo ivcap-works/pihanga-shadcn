@@ -17,10 +17,20 @@ export const InputComponent = (
     label,
     description,
     className,
+    autoFocus,
     cardName,
     onChanged,
     onCommitted,
   } = props;
+
+  // Focus the input once, the first time it is mounted/shown (e.g. when a
+  // dialog or drawer opens). Intentionally an empty dependency array — this
+  // must not re-fire on subsequent re-renders.
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => {
+    if (autoFocus) inputRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // `id` and `invalid` may be injected by a parent pi/field card via
   // Pihanga's extra-prop forwarding.  They are not in the official type so
@@ -92,6 +102,7 @@ export const InputComponent = (
     <div data-pihanga={cardName} className="grid w-full gap-1.5">
       {label && <Label htmlFor={fieldId}>{label}</Label>}
       <Input
+        ref={inputRef}
         id={fieldId}
         type={type}
         value={inputValue}

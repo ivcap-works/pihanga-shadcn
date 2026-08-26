@@ -4,7 +4,8 @@
   "type": "registry:component",
   "description": "Pihanga emptyCard card component",
   "dependencies": [
-    "class-variance-authority@^0.7.1"
+    "class-variance-authority@^0.7.1",
+    "lucide-react@^0.513.0"
   ],
   "registryDependencies": [
     "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
