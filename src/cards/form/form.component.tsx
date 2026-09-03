@@ -1,8 +1,8 @@
-import React, {useState, useCallback} from "react";
+import React, {useState, useCallback, useRef, useEffect} from "react";
 import {Card, type PiCardProps} from "@pihanga2/core";
 import {cn} from "@/lib/utils";
 import {FormContext, type FormContextValue} from "./form.context";
-import type {PiFormEvents, PiFormProps} from "./form.types";
+import type {FormAction, PiFormEvents, PiFormProps} from "./form.types";
 
 export const FormComponent = (
   props: PiCardProps<PiFormProps, PiFormEvents>,
@@ -12,15 +12,42 @@ export const FormComponent = (
     content = [],
     initialValues = {},
     submitLabel = "Submit",
+    hideSubmit = false,
     className,
     cardName,
     onSubmitted,
+    onCancelled,
+    onAbandoned,
   } = props;
 
   const [formData, setFormData] = useState<Record<string, unknown>>(() => ({
     ...initialValues,
   }));
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Tracks whether the form reached a "final" state (submitted or
+  // explicitly cancelled) so the unmount effect below can tell the
+  // difference between that and being torn down some other way (e.g. its
+  // parent pi/dialog was dismissed) — the latter fires `onAbandoned`.
+  const finalizedRef = useRef(false);
+  // Mirrors state in refs so the unmount effect (which only runs once) can
+  // read the latest values without re-subscribing on every keystroke.
+  const idRef = useRef(id);
+  idRef.current = id;
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+  const onAbandonedRef = useRef(onAbandoned);
+  onAbandonedRef.current = onAbandoned;
+
+  useEffect(() => {
+    return () => {
+      if (!finalizedRef.current) {
+        onAbandonedRef.current({id: idRef.current, formData: formDataRef.current});
+      }
+    };
+    // Intentionally run only on mount/unmount.
+     
+  }, []);
 
   const handleChange = useCallback((fieldName: string, value: unknown) => {
     setFormData((prev) => ({...prev, [fieldName]: value}));
@@ -44,12 +71,36 @@ export const FormComponent = (
     });
   }, []);
 
+  const doSubmit = useCallback(() => {
+    finalizedRef.current = true;
+    onSubmitted({id, formData});
+  }, [id, formData, onSubmitted]);
+
+  const doCancel = useCallback(() => {
+    finalizedRef.current = true;
+    onCancelled({id, formData});
+  }, [id, formData, onCancelled]);
+
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      onSubmitted({id, formData});
+      doSubmit();
     },
-    [id, formData, onSubmitted],
+    [doSubmit],
+  );
+
+  // Single entry point for any control nested in the form's content to
+  // trigger a top-level form action (Button's `formAction`, a field's
+  // `submitOnEnter`, etc.) — keeps all form-bindable controls consistent.
+  const requestAction = useCallback(
+    (action: FormAction) => {
+      if (action === "submit") {
+        doSubmit();
+      } else {
+        doCancel();
+      }
+    },
+    [doSubmit, doCancel],
   );
 
   const contextValue: FormContextValue = {
@@ -57,6 +108,7 @@ export const FormComponent = (
     errors,
     handleChange,
     setError,
+    requestAction,
     isInForm: true,
   };
 
@@ -70,12 +122,14 @@ export const FormComponent = (
         {content.map((cref, idx) => (
           <Card key={idx} cardName={cref} parentCard={cardName} />
         ))}
-        <button
-          type="submit"
-          className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-        >
-          {submitLabel}
-        </button>
+        {!hideSubmit && (
+          <button
+            type="submit"
+            className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+          >
+            {submitLabel}
+          </button>
+        )}
       </form>
     </FormContext.Provider>
   );

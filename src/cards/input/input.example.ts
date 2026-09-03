@@ -9,7 +9,7 @@
  */
 import {definePlayground} from "@/playground/definePlayground";
 import {
-  PiInput,
+  Input,
   onPiInputChanged,
   onPiInputCommitted,
   type PiInputProps,
@@ -19,7 +19,7 @@ export default definePlayground<PiInputProps>({
   cardId: "pi/input",
   title: "Input",
 
-  preview: (props) => PiInput(props),
+  preview: (props) => Input(props),
 
   defaultProps: {
     label: "Your email",
@@ -166,7 +166,7 @@ export default definePlayground<PiInputProps>({
 
 \`\`\`ts
 import {memo, register, registerCard} from "@pihanga2/core";
-import {PiInput, onPiInputChanged} from "@/cards/input";
+import {Input, onPiInputChanged} from "@/cards/input";
 import type {AppState} from "@/app.state";
 
 register((r) => {
@@ -175,7 +175,7 @@ register((r) => {
   });
 });
 
-registerCard("myApp/search", PiInput({
+registerCard("myApp/search", Input({
   name:        "query",
   type:        "search",
   placeholder: "Search…",
@@ -190,8 +190,8 @@ registerCard("myApp/loginForm", Form({
   content: [
     Stack({
       content: [
-        Field({ label: "Email",    fieldCard: PiInput({ name: "email",    type: "email"    }) }),
-        Field({ label: "Password", fieldCard: PiInput({ name: "password", type: "password" }) }),
+        Field({ label: "Email",    fieldCard: Input({ name: "email",    type: "email"    }) }),
+        Field({ label: "Password", fieldCard: Input({ name: "password", type: "password" }) }),
       ],
     }),
   ],

@@ -1,6 +1,4 @@
 {
-  "dependencies": {
-    "@pihanga2/shadcn": "UNKNOWN - add to root package.json"
-  },
+  "dependencies": {},
   "devDependencies": {}
 }

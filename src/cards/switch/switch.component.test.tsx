@@ -70,6 +70,7 @@ describe("shad/switch (inside pi/form)", () => {
           errors: {},
           handleChange,
           setError: () => {},
+          requestAction: () => {},
         }}
       >
         <SwitchComponent

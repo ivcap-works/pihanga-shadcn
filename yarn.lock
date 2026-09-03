@@ -808,10 +808,10 @@
   resolved "https://registry.yarnpkg.com/@oxc-project/types/-/types-0.132.0.tgz#d77243df4fe1a0a1e60e12ac6240fa898d2363ff"
   integrity sha512-FESMOxil5Se014ui/Eq8fT5uHJo6nIRwH0PfJrZJXs6Gek3ZVFOrpUv3YIZT20m+extU98Hg1Ym72U58rlsxUQ==
 
-"@pihanga2/core@0.3.38":
-  version "0.3.38"
-  resolved "https://registry.yarnpkg.com/@pihanga2/core/-/core-0.3.38.tgz#da422989491c3e7dde1c63eb622f8d77db66ff45"
-  integrity sha512-ee70nVF+qwcoM+ATWiGH1VW1q1RvMASClyizYUFQU6ZY9JLEe5c+UlLm6W/aYPg775Z49Vm8HKqRv4gwB32/Zg==
+"@pihanga2/core@^0.3.40":
+  version "0.3.40"
+  resolved "https://registry.yarnpkg.com/@pihanga2/core/-/core-0.3.40.tgz#03bc1f950d0859c5595ca8215dd04cf56978b3c8"
+  integrity sha512-4biPSkhB5XPhZkE4BHsE3voLlNzPs6+aMAqh1YYnovX+6B51V0LB2KBO18nHVjQ7HUp8iOSCynAIq7Iaa7sAUg==
   dependencies:
     "@reduxjs/toolkit" "^2.2.6"
     fast-deep-equal "^3.1.3"

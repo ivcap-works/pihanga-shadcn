@@ -4,6 +4,7 @@ import {
   type PiCardRef,
   registerActions,
 } from "@pihanga2/core";
+import type {FormAction} from "@/cards/form/form.types";
 
 export const PI_BUTTON_CARD = "pi/button";
 
@@ -159,6 +160,30 @@ export type PiButtonProps = {
 
   /** If true, indicates an async operation is pending (similar to loading but distinct). */
   isPending?: boolean;
+
+  /**
+   * When set and this button is rendered inside a `pi/form` card, clicking
+   * it requests that top-level form action instead of firing this button's
+   * own `onClicked`:
+   *
+   * - `"submit"` — same as pressing the form's native submit button; fires
+   *   the Form's `onSubmitted` event with a snapshot of the current field
+   *   values.
+   * - `"cancel"` — fires the Form's `onCancelled` event. Never submits or
+   *   resets the form.
+   *
+   * The button's native `<button type>` is derived from this prop so it can
+   * never accidentally submit a form it isn't supposed to: `"submit"` →
+   * `type="submit"`, `"cancel"` (or unset) → `type="button"`.
+   *
+   * Has no effect when the button is used outside a `pi/form` — in that case
+   * `onClicked` always fires as usual, and the native type is `"button"`.
+   *
+   * This is the button-specific counterpart of `FormFieldProps`/`name` used
+   * by form-bindable fields (`pi/input`, `pi/switch`, …) — together they
+   * form the complete `pi/form` interaction contract.
+   */
+  formAction?: FormAction;
 
   className?: string;
 };

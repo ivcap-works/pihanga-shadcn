@@ -18,6 +18,7 @@ export const InputComponent = (
     description,
     className,
     autoFocus,
+    submitOnEnter,
     cardName,
     onChanged,
     onCommitted,
@@ -88,9 +89,16 @@ export const InputComponent = (
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter" && !useFormData && type !== "file") {
-      onCommitted({name, value: localValue});
+    if (e.key !== "Enter" || type === "file") return;
+
+    if (useFormData) {
+      // Inside a form, form.formData is already current (every keystroke
+      // wrote through handleChange), so just request the form-level submit.
+      if (submitOnEnter) form.requestAction("submit");
+      return;
     }
+
+    onCommitted({name, value: localValue});
   }
 
   // Use the id injected by pi/field (for label↔control linking); fall back

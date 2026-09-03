@@ -13,6 +13,7 @@ export const TextFieldComponent = (
     type = "text",
     placeholder,
     disabled,
+    submitOnEnter,
     cardName,
     onChanged,
   } = props;
@@ -40,6 +41,12 @@ export const TextFieldComponent = (
     }
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (submitOnEnter && useFormData && e.key === "Enter") {
+      form.requestAction("submit");
+    }
+  }
+
   // Use the id injected by pi/field (for label↔control linking); fall back
   // to a locally-generated id when used standalone.
   const selfId = `${cardName}-${name ?? "field"}`;
@@ -51,6 +58,7 @@ export const TextFieldComponent = (
       type={type}
       value={value}
       onChange={handleChange}
+      onKeyDown={handleKeyDown}
       placeholder={placeholder}
       disabled={disabled}
       aria-invalid={invalid || undefined}

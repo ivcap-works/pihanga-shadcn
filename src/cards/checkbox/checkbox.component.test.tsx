@@ -85,6 +85,7 @@ describe("shad/checkbox (inside pi/form)", () => {
           errors: {},
           handleChange,
           setError: () => {},
+          requestAction: () => {},
         }}
       >
         <CheckboxComponent {...full} />

@@ -18,6 +18,17 @@
  *    devDependencies in root -> devDependencies in card; rest -> dependencies.
  * 4. Always-provided packages (react, react-dom, @pihanga2/core) are excluded.
  *
+ * NOISE FILTERING
+ * ----------------
+ * Card `*.example.ts` and `*.types.ts` files often contain JSDoc comments
+ * and markdown `note`/`example` template literals that show *illustrative*
+ * import statements as documentation text (e.g. `import {Button} from
+ * "@pihanga2/shadcn";`). These are NOT real imports and must be stripped
+ * before scanning — otherwise the generated dependencies.json ends up
+ * declaring a dependency on the package itself (or on packages that don't
+ * exist, like "@codemirror/legacy-modes"), which breaks the published npm
+ * package (`dist-lib/package.json` copies these values verbatim).
+ *
  * USAGE
  * -----
  *   node scripts/gen-card-dependencies.mjs            # write all cards
@@ -32,7 +43,7 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import {fileURLToPath} from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,10 +66,26 @@ const CARD_FILTER = (() => {
 })();
 
 // Root package.json
-const rootPkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf-8"));
+const rootPkg = JSON.parse(
+  fs.readFileSync(path.join(ROOT, "package.json"), "utf-8"),
+);
 const rootDeps = rootPkg.dependencies ?? {};
 const rootDevDeps = rootPkg.devDependencies ?? {};
-const allVersions = { ...rootDeps, ...rootDevDeps };
+const allVersions = {...rootDeps, ...rootDevDeps};
+
+/**
+ * Strips block comments and template literal strings from source content
+ * before it is scanned for import statements — see "NOISE FILTERING" above.
+ */
+function stripNoise(content) {
+  return (
+    content
+      // Block comments, including JSDoc (/** ... */)
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      // Template literal strings (handles escaped backticks/backslashes)
+      .replace(/`(?:\\.|[^`\\])*`/g, "")
+  );
+}
 
 function extractNpmImports(content) {
   const pkgs = new Set();
@@ -89,14 +116,17 @@ function resolveAlias(spec) {
     : path.join(ROOT, "src", spec.slice(2));
   for (const ext of [".tsx", ".ts", "/index.tsx", "/index.ts", ""]) {
     const candidate = base + ext;
-    try { if (fs.statSync(candidate).isFile()) return candidate; } catch {}
+    try {
+      if (fs.statSync(candidate).isFile()) return candidate;
+    } catch {}
   }
   return null;
 }
 
 function processCard(cardDir) {
   const cardName = path.basename(cardDir);
-  const sourceFiles = fs.readdirSync(cardDir)
+  const sourceFiles = fs
+    .readdirSync(cardDir)
     .filter((f) => /\.(ts|tsx)$/.test(f) && !/\.test\.(ts|tsx)$/.test(f))
     .map((f) => path.join(cardDir, f));
   if (sourceFiles.length === 0) return null;
@@ -105,16 +135,18 @@ function processCard(cardDir) {
   const warnings = [];
 
   for (const file of sourceFiles) {
-    const content = fs.readFileSync(file, "utf-8");
+    const content = stripNoise(fs.readFileSync(file, "utf-8"));
     for (const pkg of extractNpmImports(content)) allPkgs.add(pkg);
     for (const spec of extractAliasImports(content)) {
       if (!TRACEABLE_PREFIXES.some((p) => spec.startsWith(p))) continue;
       const resolved = resolveAlias(spec);
       if (!resolved) {
-        warnings.push(`  WARN [${cardName}] cannot resolve ${spec} in ${path.basename(file)}`);
+        warnings.push(
+          `  WARN [${cardName}] cannot resolve ${spec} in ${path.basename(file)}`,
+        );
         continue;
       }
-      const inner = fs.readFileSync(resolved, "utf-8");
+      const inner = stripNoise(fs.readFileSync(resolved, "utf-8"));
       for (const pkg of extractNpmImports(inner)) allPkgs.add(pkg);
     }
   }
@@ -130,31 +162,53 @@ function processCard(cardDir) {
     }
   }
 
-  // Preserve manually-added entries not detected by scanner
+  // Preserve manually-added entries not detected by scanner.
+  //
+  // Entries whose version string is still "UNKNOWN - add to root
+  // package.json" are never preserved: a genuine manual addition always has
+  // a real resolved version (the whole point of adding it to root
+  // package.json). An "UNKNOWN" entry surviving in an existing
+  // dependencies.json is almost always residue from a past false-positive
+  // detection (e.g. an import shown only in a doc comment / example
+  // template literal) and must be allowed to disappear once the scanner is
+  // fixed — otherwise stale/bogus dependencies (including self-referential
+  // "@pihanga2/shadcn") can never be cleaned up.
   const existingPath = path.join(cardDir, "dependencies.json");
   if (fs.existsSync(existingPath)) {
     let existing;
-    try { existing = JSON.parse(fs.readFileSync(existingPath, "utf-8")); } catch { existing = {}; }
+    try {
+      existing = JSON.parse(fs.readFileSync(existingPath, "utf-8"));
+    } catch {
+      existing = {};
+    }
     for (const [pkg, ver] of Object.entries(existing.dependencies ?? {})) {
+      if (String(ver).includes("UNKNOWN")) continue;
       if (!deps[pkg] && !devDeps[pkg]) {
-        warnings.push(`  WARN [${cardName}] "${pkg}" in existing file but not detected - keeping`);
+        warnings.push(
+          `  WARN [${cardName}] "${pkg}" in existing file but not detected - keeping`,
+        );
         deps[pkg] = ver;
       }
     }
     for (const [pkg, ver] of Object.entries(existing.devDependencies ?? {})) {
+      if (String(ver).includes("UNKNOWN")) continue;
       if (!deps[pkg] && !devDeps[pkg]) {
-        warnings.push(`  WARN [${cardName}] "${pkg}" in existing devDeps but not detected - keeping`);
+        warnings.push(
+          `  WARN [${cardName}] "${pkg}" in existing devDeps but not detected - keeping`,
+        );
         devDeps[pkg] = ver;
       }
     }
   }
 
-  return { deps, devDeps, warnings };
+  return {deps, devDeps, warnings};
 }
 
 // Main
 const cardsDir = path.join(ROOT, "src", "cards");
-let created = 0, updated = 0, unchanged = 0;
+let created = 0,
+  updated = 0,
+  unchanged = 0;
 const allWarnings = [];
 
 for (const entry of fs.readdirSync(cardsDir).sort()) {
@@ -165,10 +219,10 @@ for (const entry of fs.readdirSync(cardsDir).sort()) {
   const result = processCard(cardDir);
   if (!result) continue;
 
-  const { deps, devDeps, warnings } = result;
+  const {deps, devDeps, warnings} = result;
   allWarnings.push(...warnings);
 
-  const output = { dependencies: deps, devDependencies: devDeps };
+  const output = {dependencies: deps, devDependencies: devDeps};
   const newContent = JSON.stringify(output, null, 2) + "\n";
   const outPath = path.join(cardDir, "dependencies.json");
 
@@ -195,5 +249,6 @@ if (allWarnings.length > 0) {
 }
 console.log(
   `\nDone: ${created} created, ${updated} updated, ${unchanged} unchanged` +
-  (DRY_RUN ? "  (dry-run - no files written)" : "") + "."
+    (DRY_RUN ? "  (dry-run - no files written)" : "") +
+    ".",
 );

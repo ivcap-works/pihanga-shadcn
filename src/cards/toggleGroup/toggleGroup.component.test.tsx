@@ -79,6 +79,7 @@ describe("shad/toggle-group", () => {
           errors: {},
           handleChange,
           setError: () => {},
+          requestAction: () => {},
         }}
       >
         <ToggleGroupComponent

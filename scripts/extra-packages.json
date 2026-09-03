@@ -33,7 +33,7 @@
     {
       "name": "@pihanga2/codemirror",
       "key": "codemirror",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "cards": [
         "codeMirror"
       ],

@@ -62,7 +62,7 @@ import {Tabs, onTabsTabChanged} from "@/cards/tabs";
 import {MarkdownViewer} from "@/cards/markdownViewer";
 import {JsonViewer} from "@/cards/jsonViewer";
 import {Select, onPiSelectChanged} from "@/cards/select";
-import {PiInput, onPiInputChanged, onPiInputCommitted} from "@/cards/input";
+import {Input, onPiInputChanged, onPiInputCommitted} from "@/cards/input";
 import {Switch, onPiSwitchChanged} from "@/cards/switch";
 import {ToggleGroup, onPiToggleGroupChanged} from "@/cards/toggleGroup";
 
@@ -359,7 +359,7 @@ function buildControlsSection(
  * |--------------|-------------|-------------------------------------|
  * | token        | ToggleGroup | onPiToggleGroupChanged  (single)    |
  * | select       | Select      | onPiSelectChanged                   |
- * | text         | PiInput     | onPiInputCommitted (blur/Enter)     |
+ * | text         | Input     | onPiInputCommitted (blur/Enter)     |
  * | boolean      | Switch      | onPiSwitchChanged                   |
  */
 function buildControlWidget(
@@ -406,9 +406,9 @@ function buildControlWidget(
   }
 
   if (ctrl.type === "text") {
-    // PiInput fires onCommitted on blur/Enter so the detail panel rebuilds
+    // Input fires onCommitted on blur/Enter so the detail panel rebuilds
     // only when the user finishes typing — not on every keystroke.
-    return PiInput({
+    return Input({
       name: ctrl.prop,
       value: current != null ? String(current) : "",
       placeholder: ctrl.placeholder,
@@ -425,7 +425,7 @@ function buildControlWidget(
   if (ctrl.type === "number") {
     // Render a text input; `onPiInputCommitted` parses the value back to a
     // number before writing it into `playgroundCurrentProps`.
-    return PiInput({
+    return Input({
       name: ctrl.prop,
       value: current != null ? String(current) : "0",
       placeholder: ctrl.placeholder,

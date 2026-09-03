@@ -3,6 +3,7 @@ import {
   createOnAction,
   registerActions,
 } from "@pihanga2/core";
+import type {FormFieldProps} from "@/cards/form/form.types";
 
 export const PI_TEXT_FIELD_CARD = "pi/text-field";
 
@@ -22,14 +23,7 @@ export const onTextFieldChanged = createOnAction<PiTextFieldChangedEvent>(
 /** @deprecated Use `onTextFieldChanged` instead. */
 export const onPiTextFieldChanged = onTextFieldChanged;
 
-export type PiTextFieldProps = {
-  /**
-   * Field name used to bind to FormContext when inside a pi/form card.
-   * When provided the component reads its value from form state and writes
-   * back via form.handleChange.
-   */
-  name?: string;
-
+export type PiTextFieldProps = FormFieldProps & {
   /**
    * Controlled value used in standalone mode (outside a Form).
    * Ignored when `name` is set and the component is inside a pi/form.
@@ -44,6 +38,17 @@ export type PiTextFieldProps = {
 
   /** When true, the input is disabled and non-interactive. */
   disabled?: boolean;
+
+  /**
+   * When true and this field is rendered inside a `pi/form` card, pressing
+   * Enter requests the form's submit action
+   * (`FormContext.requestAction("submit")`) — equivalent to clicking a
+   * `Button` with `formAction: "submit"`.
+   *
+   * Has no effect outside a `pi/form`.
+   * @default false
+   */
+  submitOnEnter?: boolean;
 };
 
 export type PiTextFieldChangedEvent = {

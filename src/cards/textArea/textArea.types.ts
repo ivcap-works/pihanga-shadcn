@@ -4,6 +4,7 @@ import {
   createOnAction,
   registerActions,
 } from "@pihanga2/core";
+import type {FormFieldProps} from "@/cards/form/form.types";
 
 export const PI_TEXT_AREA_CARD = "pi/text-area";
 
@@ -42,14 +43,7 @@ export type PiTextAreaFieldSizing = "fixed" | "content";
 
 export type PiTextAreaResize = "none" | "vertical" | "horizontal" | "both";
 
-export type PiTextAreaProps = {
-  /**
-   * Field name used to bind to FormContext when inside a pi/form card.
-   * When provided the component reads its value from form state and writes
-   * back via form.handleChange.
-   */
-  name?: string;
-
+export type PiTextAreaProps = FormFieldProps & {
   /**
    * Controlled value used in standalone mode (outside a Form).
    * Ignored when `name` is set and the component is inside a pi/form.
@@ -114,9 +108,18 @@ export type PiTextAreaProps = {
   writingMode?: "horizontal-tb" | "vertical-rl" | "vertical-lr";
 
   /**
-   * When true, pressing Enter (without Shift/Ctrl/Meta/Alt) fires
-   * `onSubmitted` with the current text instead of inserting a newline.
-   * Shift+Enter (etc.) still inserts a newline. Default: `false`.
+   * When true, pressing Enter (without Shift/Ctrl/Meta/Alt) submits instead
+   * of inserting a newline. Shift+Enter (etc.) still inserts a newline.
+   *
+   * - Inside a `pi/form` (i.e. `name` is set and a `pi/form` ancestor is
+   *   present): requests the form's submit action
+   *   (`FormContext.requestAction("submit")`) — equivalent to clicking a
+   *   `Button` with `formAction: "submit"`, and consistent with
+   *   `pi/input`'s / `pi/text-field`'s `submitOnEnter`.
+   * - Standalone: fires this card's own `onSubmitted` event with the
+   *   current text.
+   *
+   * Default: `false`.
    */
   submitOnEnter?: boolean;
 

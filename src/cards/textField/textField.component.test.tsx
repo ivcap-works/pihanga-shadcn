@@ -61,6 +61,7 @@ describe("shad/text-field (inside pi/form)", () => {
           errors: {},
           handleChange: vi.fn(),
           setError: () => {},
+          requestAction: () => {},
         }}
       >
         <TextFieldComponent {...full} />
@@ -81,6 +82,7 @@ describe("shad/text-field (inside pi/form)", () => {
           errors: {},
           handleChange,
           setError: () => {},
+          requestAction: () => {},
         }}
       >
         <TextFieldComponent {...full} />
@@ -90,5 +92,49 @@ describe("shad/text-field (inside pi/form)", () => {
     fireEvent.change(input, {target: {value: "hi"}});
     expect(handleChange).toHaveBeenCalledWith("email", "hi");
     expect(onChanged).not.toHaveBeenCalled();
+  });
+
+  it("submitOnEnter requests the form's submit action on Enter", () => {
+    const requestAction = vi.fn();
+    const {full} = makeProps({name: "email", submitOnEnter: true});
+    const {container} = render(
+      <FormContext.Provider
+        value={{
+          isInForm: true,
+          formData: {email: "a@b.com"},
+          errors: {},
+          handleChange: vi.fn(),
+          setError: () => {},
+          requestAction,
+        }}
+      >
+        <TextFieldComponent {...full} />
+      </FormContext.Provider>,
+    );
+    const input = container.querySelector("input") as HTMLInputElement;
+    fireEvent.keyDown(input, {key: "Enter"});
+    expect(requestAction).toHaveBeenCalledWith("submit");
+  });
+
+  it("without submitOnEnter, Enter does not request the form's submit action", () => {
+    const requestAction = vi.fn();
+    const {full} = makeProps({name: "email"});
+    const {container} = render(
+      <FormContext.Provider
+        value={{
+          isInForm: true,
+          formData: {email: "a@b.com"},
+          errors: {},
+          handleChange: vi.fn(),
+          setError: () => {},
+          requestAction,
+        }}
+      >
+        <TextFieldComponent {...full} />
+      </FormContext.Provider>,
+    );
+    const input = container.querySelector("input") as HTMLInputElement;
+    fireEvent.keyDown(input, {key: "Enter"});
+    expect(requestAction).not.toHaveBeenCalled();
   });
 });

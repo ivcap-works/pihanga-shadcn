@@ -3,6 +3,7 @@ import {
   createOnAction,
   registerActions,
 } from "@pihanga2/core";
+import type {FormFieldProps} from "@/cards/form/form.types";
 
 export const PI_TOGGLE_GROUP_CARD = "pi/toggle-group";
 
@@ -39,14 +40,7 @@ export type PiToggleGroupItem = {
 // Props & Events
 // ---------------------------------------------------------------------------
 
-export type PiToggleGroupProps = {
-  /**
-   * Field name used to bind to FormContext when inside a pi/form card.
-   * When provided the component reads its selected value from form data and
-   * writes back via form.handleChange.
-   */
-  name?: string;
-
+export type PiToggleGroupProps = FormFieldProps & {
   /**
    * The list of toggle items to display.
    */

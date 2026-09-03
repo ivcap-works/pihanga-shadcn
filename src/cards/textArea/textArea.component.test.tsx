@@ -300,6 +300,7 @@ describe("shad/text-area (inside pi/form)", () => {
           errors: {},
           handleChange: vi.fn(),
           setError: () => {},
+          requestAction: () => {},
         }}
       >
         <TextAreaComponent {...full} />
@@ -320,6 +321,7 @@ describe("shad/text-area (inside pi/form)", () => {
           errors: {},
           handleChange,
           setError: () => {},
+          requestAction: () => {},
         }}
       >
         <TextAreaComponent {...full} />
@@ -346,6 +348,7 @@ describe("shad/text-area (inside pi/form)", () => {
           errors: {},
           handleChange,
           setError: () => {},
+          requestAction: () => {},
         }}
       >
         <TextAreaComponent {...full} />
@@ -358,5 +361,28 @@ describe("shad/text-area (inside pi/form)", () => {
     // just like pi/input's form-bound behaviour.
     expect(handleChange).toHaveBeenCalledTimes(2);
     expect(handleChange).toHaveBeenLastCalledWith("bio", "new bio");
+  });
+
+  it("submitOnEnter requests the form's submit action instead of firing onSubmitted", () => {
+    const requestAction = vi.fn();
+    const {full, onSubmitted} = makeProps({name: "bio", submitOnEnter: true});
+    const {container} = render(
+      <FormContext.Provider
+        value={{
+          isInForm: true,
+          formData: {bio: "hi"},
+          errors: {},
+          handleChange: vi.fn(),
+          setError: () => {},
+          requestAction,
+        }}
+      >
+        <TextAreaComponent {...full} />
+      </FormContext.Provider>,
+    );
+    const el = container.querySelector("textarea") as HTMLTextAreaElement;
+    fireEvent.keyDown(el, {key: "Enter"});
+    expect(requestAction).toHaveBeenCalledWith("submit");
+    expect(onSubmitted).not.toHaveBeenCalled();
   });
 });

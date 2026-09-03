@@ -3,6 +3,7 @@ import {
   createOnAction,
   registerActions,
 } from "@pihanga2/core";
+import type {FormFieldProps} from "@/cards/form/form.types";
 
 export const PI_SWITCH_CARD = "pi/switch";
 
@@ -23,14 +24,7 @@ export const onPiSwitchChanged = onSwitchChanged;
 // Props & Events
 // ---------------------------------------------------------------------------
 
-export type PiSwitchProps = {
-  /**
-   * Field name used to bind to FormContext when inside a pi/form card.
-   * When provided the component reads its checked state from form data and
-   * writes back via form.handleChange.
-   */
-  name?: string;
-
+export type PiSwitchProps = FormFieldProps & {
   /**
    * Controlled checked state used in standalone mode (outside a Form).
    * Ignored when `name` is set and the component is inside a pi/form.

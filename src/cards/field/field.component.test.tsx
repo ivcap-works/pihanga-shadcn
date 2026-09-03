@@ -69,6 +69,7 @@ describe("shad/field", () => {
           errors: {email: "invalid email"},
           handleChange: () => {},
           setError: () => {},
+          requestAction: () => {},
         }}
       >
         <FieldCardComponent

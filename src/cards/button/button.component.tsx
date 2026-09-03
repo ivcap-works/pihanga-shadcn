@@ -5,6 +5,7 @@ import {Button, LinkButton} from "@/registry/ui/button";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/registry/ui/tooltip";
 import {getIcon} from "@/cards/icons";
 import {useDropdownOpen} from "@/cards/dropDownMenu/dropdown-context";
+import {useFormContext} from "@/cards/form/form.context";
 
 import type {PiButtonEvents, PiButtonProps} from "./button.types";
 
@@ -38,10 +39,15 @@ export const ButtonComponent = (
     disabled,
     loading,
     isPending,
+    formAction,
   } = props;
 
   // Check if this button is inside an open dropdown menu
   const isInsideOpenDropdown = useDropdownOpen();
+
+  // Detect if we are inside a pi/form card via React context, so
+  // `formAction` can request a form-level action instead of onClicked.
+  const form = useFormContext();
 
   const beforeIcon = resolveIconByName(opts?.beforeIcon);
   const afterIcon = resolveIconByName(opts?.afterIcon);
@@ -80,9 +86,24 @@ export const ButtonComponent = (
     className: `${_cls("root")} ${className || ""}`.trim(),
   };
 
+  // When `formAction` is set and this button is inside a pi/form, clicking
+  // it requests that form-level action instead of firing this button's own
+  // onClicked.
+  const useFormAction = Boolean(formAction) && form.isInForm;
+
   const handleClick = () => {
-    onClicked({id});
+    if (useFormAction) {
+      form.requestAction(formAction!);
+    } else {
+      onClicked({id});
+    }
   };
+
+  // Native <button type> mirrors `formAction` so the button can never
+  // accidentally submit a form it isn't supposed to: "submit" is the only
+  // value that should trigger the browser's native form submit; everything
+  // else (including no formAction at all) is a plain, non-submitting button.
+  const htmlType = formAction === "submit" ? "submit" : "button";
 
   const renderButton = () => {
     if (href) {
@@ -103,6 +124,7 @@ export const ButtonComponent = (
     return (
       <Button
         {...common}
+        type={htmlType}
         data-pihanga={cardName}
         label={ariaLabel ?? label}
         onClick={handleClick}

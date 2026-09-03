@@ -976,7 +976,7 @@ search box, a settings field) is **`pi/input`** — *not* `pi/text-input`, which
 does not exist.  You do **not** need to write your own local card.
 
 ```ts
-import {PiInput, onPiInputChanged} from "@/cards/input";
+import {Input, onPiInputChanged} from "@/cards/input";
 import type {AppState} from "@/app.state";
 
 register((r) => {
@@ -985,7 +985,7 @@ register((r) => {
   });
 });
 
-registerCard("myApp/jwtField", PiInput({
+registerCard("myApp/jwtField", Input({
   label:       "JWT token",
   value:       memo((s: AppState) => s.jwtToken),   // ← bound to Redux state
   placeholder: "Paste your bearer token here…",

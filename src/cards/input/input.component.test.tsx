@@ -79,6 +79,7 @@ describe("shad/input (inside pi/form)", () => {
           errors: {},
           handleChange,
           setError: () => {},
+          requestAction: () => {},
         }}
       >
         <InputComponent
@@ -95,5 +96,64 @@ describe("shad/input (inside pi/form)", () => {
     expect(input.value).toBe("u@x");
     fireEvent.change(input, {target: {value: "u2@x"}});
     expect(handleChange).toHaveBeenCalledWith("email", "u2@x");
+  });
+
+  it("submitOnEnter requests the form's submit action instead of onCommitted", () => {
+    const requestAction = vi.fn();
+    const onCommitted = vi.fn();
+    const {container} = render(
+      <FormContext.Provider
+        value={{
+          isInForm: true,
+          formData: {email: "u@x"},
+          errors: {},
+          handleChange: vi.fn(),
+          setError: () => {},
+          requestAction,
+        }}
+      >
+        <InputComponent
+          {...({
+            cardName: "test/in",
+            name: "email",
+            submitOnEnter: true,
+            onChanged: vi.fn(),
+            onCommitted,
+          } as unknown as PiCardProps<PiInputProps, PiInputEvents>)}
+        />
+      </FormContext.Provider>,
+    );
+    const input = container.querySelector("input") as HTMLInputElement;
+    fireEvent.keyDown(input, {key: "Enter"});
+    expect(requestAction).toHaveBeenCalledWith("submit");
+    expect(onCommitted).not.toHaveBeenCalled();
+  });
+
+  it("without submitOnEnter, Enter does not request the form's submit action", () => {
+    const requestAction = vi.fn();
+    const {container} = render(
+      <FormContext.Provider
+        value={{
+          isInForm: true,
+          formData: {email: "u@x"},
+          errors: {},
+          handleChange: vi.fn(),
+          setError: () => {},
+          requestAction,
+        }}
+      >
+        <InputComponent
+          {...({
+            cardName: "test/in",
+            name: "email",
+            onChanged: vi.fn(),
+            onCommitted: vi.fn(),
+          } as unknown as PiCardProps<PiInputProps, PiInputEvents>)}
+        />
+      </FormContext.Provider>,
+    );
+    const input = container.querySelector("input") as HTMLInputElement;
+    fireEvent.keyDown(input, {key: "Enter"});
+    expect(requestAction).not.toHaveBeenCalled();
   });
 });

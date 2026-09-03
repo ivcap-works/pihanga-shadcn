@@ -3,12 +3,16 @@ import {
   createOnAction,
   registerActions,
 } from "@pihanga2/core";
+import type {FormFieldProps} from "@/cards/form/form.types";
 
 export const PI_INPUT_CARD = "pi/input";
 
-export const PiInput = createCardDeclaration<PiInputProps, PiInputEvents>(
+export const Input = createCardDeclaration<PiInputProps, PiInputEvents>(
   PI_INPUT_CARD,
 );
+
+/** @deprecated Use `Input` instead. */
+export const PiInput = Input;
 
 export const PI_INPUT_ACTION = registerActions(PI_INPUT_CARD, [
   "changed",
@@ -39,14 +43,7 @@ export const onPiInputCommitted = onInputCommitted;
 // Props & Events
 // ---------------------------------------------------------------------------
 
-export type PiInputProps = {
-  /**
-   * Field name used to bind to FormContext when inside a pi/form card.
-   * When provided the component reads its value from form state and writes
-   * back via form.handleChange.
-   */
-  name?: string;
-
+export type PiInputProps = FormFieldProps & {
   /**
    * Controlled value used in standalone mode (outside a Form).
    * Ignored when `name` is set and the component is inside a pi/form.
@@ -88,6 +85,17 @@ export type PiInputProps = {
    * on mount — it does not re-focus on subsequent re-renders.
    */
   autoFocus?: boolean;
+
+  /**
+   * When true and this input is rendered inside a `pi/form` card, pressing
+   * Enter requests the form's submit action (`FormContext.requestAction("submit")`)
+   * — equivalent to clicking a `Button` with `formAction: "submit"` — instead
+   * of (or in addition to) firing `onCommitted`.
+   *
+   * Has no effect outside a `pi/form`.
+   * @default false
+   */
+  submitOnEnter?: boolean;
 };
 
 export type PiInputChangedEvent = {

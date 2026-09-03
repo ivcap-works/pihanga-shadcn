@@ -156,7 +156,14 @@ export const TextAreaComponent = (
         debounceTimer.current = null;
         commitChange(currentValue);
       }
-      onSubmitted({name, value: currentValue});
+      if (useFormData) {
+        // Inside a form, form.formData is already current (every keystroke
+        // wrote through handleChange), so request the form-level submit —
+        // consistent with pi/input's and pi/text-field's submitOnEnter.
+        form.requestAction("submit");
+      } else {
+        onSubmitted({name, value: currentValue});
+      }
     }
   }
 
