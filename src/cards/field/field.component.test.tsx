@@ -35,6 +35,14 @@ describe("shad/field", () => {
     expect(getByText("Your full name")).toBeInTheDocument();
   });
 
+  it("omits the <label> element entirely when label is empty", () => {
+    // Prevents an empty label row from reserving vertical space and
+    // misaligning the field relative to sibling fields with a real label
+    // (e.g. a labelless Checkbox placed next to labelled text inputs).
+    const {container} = renderField({label: ""});
+    expect(container.querySelector("label")).toBeNull();
+  });
+
   it("attaches data-pihanga", () => {
     const {container} = renderField({cardName: "app/f"});
     expect(container.querySelector("[data-pihanga='app/f']")).not.toBeNull();

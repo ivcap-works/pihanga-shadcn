@@ -33,10 +33,11 @@ const LOGIN_FIELDS = Stack({
         placeholder: "••••••••",
       }),
     }),
-    Field({
-      label: "",
-      fieldCard: Checkbox({name: "remember", label: "Remember me"}),
-    }),
+    // No Field wrapper here: Checkbox already renders its own checkbox+label
+    // pair aligned via flex items-center (checkbox.component.tsx) — wrapping
+    // it in a labelless Field previously reserved an empty label row above
+    // it, misaligning it relative to the Email/Password fields' rows.
+    Checkbox({name: "remember", label: "Remember me"}),
   ],
 });
 
@@ -50,6 +51,20 @@ const PREFERENCES_FIELDS = Field({
       {value: "dark", label: "Dark"},
       {value: "system", label: "System"},
     ],
+  }),
+});
+
+// Field card for the "Submit on Enter" facet: a single input where pressing
+// Enter submits the form — no extra buttons needed, unlike the inline
+// submit/cancel facet below.
+const SUBMIT_ON_ENTER_FIELD = Field({
+  label: "Search",
+  fieldCard: Input({
+    name: "query",
+    placeholder: "Type and press Enter…",
+    // Requests the form's submit action on Enter, equivalent to clicking
+    // the default footer submit button.
+    submitOnEnter: true,
   }),
 });
 
@@ -124,6 +139,18 @@ export default definePlayground<Record<string, unknown>>({
         id: "preferences",
         content: [PREFERENCES_FIELDS],
         submitLabel: "Save",
+      },
+    },
+    {
+      id: "submit-on-enter",
+      title: "Submit on Enter",
+      description:
+        "`submitOnEnter: true` on the Input lets the user submit by pressing " +
+        "Enter, in addition to clicking the footer submit button.",
+      props: {
+        id: "submit-on-enter",
+        content: [SUBMIT_ON_ENTER_FIELD],
+        submitLabel: "Search",
       },
     },
     {
@@ -224,6 +251,33 @@ registerCard("myApp/search", TextField({
 register((r) => {
   onPiTextFieldChanged(r, (state: AppState, {value}) => {
     state.searchQuery = value;
+  });
+});
+\`\`\`
+
+**Submit on Enter** — inside a \`pi/form\`, \`Input\`'s \`submitOnEnter\` prop lets the
+user press Enter to submit, in addition to clicking the footer submit button:
+
+\`\`\`ts
+import {registerCard, register} from "@pihanga2/core";
+import {Form, onPiFormSubmitted} from "@/cards/form";
+import {Field} from "@/cards/field";
+import {Input} from "@/cards/input";
+
+registerCard("myApp/searchForm", Form({
+  submitLabel: "Search",
+  content: [
+    Field({
+      label:     "Search",
+      fieldCard: Input({name: "query", submitOnEnter: true}),
+    }),
+  ],
+}));
+
+register((r) => {
+  onPiFormSubmitted(r, (state, {formData}) => {
+    const {query} = formData as {query: string};
+    // run the search, update state, etc.
   });
 });
 \`\`\`

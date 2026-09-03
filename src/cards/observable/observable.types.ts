@@ -117,7 +117,7 @@ export type ObservableProps<S = object> = {
   id?: string;
 
   /** Single child card rendered inside the transparent wrapper `<div>`. */
-  content: PiCardRef;
+  content?: PiCardRef;
 
   /**
    * Selectively enable which interaction events are captured and reported.

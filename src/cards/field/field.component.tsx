@@ -57,7 +57,7 @@ export const FieldCardComponent = (
       className={cn(className)}
       data-pihanga={cardName}
     >
-      <FieldLabel htmlFor={fieldId}>{label}</FieldLabel>
+      {label && <FieldLabel htmlFor={fieldId}>{label}</FieldLabel>}
 
       <Card {...fieldCardProps} />
 

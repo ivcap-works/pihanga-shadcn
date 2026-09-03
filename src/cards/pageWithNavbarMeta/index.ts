@@ -6,6 +6,10 @@ import {
   type PiMetaResolveCtx,
   type PiRegisterMetaCard,
   type RegisterCardF,
+  type PiDefCtxtProps,
+  type ReduxState,
+  type StateMapper,
+  type StateMapperContext,
 } from "@pihanga2/core";
 
 import {Stack} from "@/cards/stack";
@@ -32,6 +36,33 @@ function capitalize(s: string): string {
   return s ? s.charAt(0).toLocaleUpperCase() + s.slice(1) : "";
 }
 
+/**
+ * Resolve a `PiMetaProps`-delivered prop (always a `StateMapper<T>`, per
+ * `makeLiveMetaProps` — see `@pihanga2/core`) synchronously, once, at mapper
+ * run-time. Only appropriate for props this mapper reads directly in its own
+ * body (as opposed to forwarding to a sub-card's own `resolve()`-based state
+ * mapper) — i.e. props that control the *shape* of the expansion (how many
+ * nav-link buttons, whether a footer/header-action slot exists) rather than
+ * a value a sub-card should react to on every render. See the "reactivity
+ * has one hard limit" note in AGENT.md's metacards guide.
+ */
+function resolveOnce<T>(
+  prop: StateMapper<T, ReduxState, PiDefCtxtProps> | undefined,
+): T | undefined {
+  if (typeof prop !== "function") return prop;
+  return prop({} as ReduxState, {
+    cardName: "",
+    ctxtProps: {},
+    resolve: (p: unknown) =>
+      typeof p === "function"
+        ? (p as StateMapper<unknown, ReduxState, PiDefCtxtProps>)(
+            {} as ReduxState,
+            {cardName: "", ctxtProps: {}} as StateMapperContext<PiDefCtxtProps>,
+          )
+        : p,
+  } as StateMapperContext<PiDefCtxtProps>);
+}
+
 // ── Mapper ───────────────────────────────────────────────────────────────────
 
 /**
@@ -49,11 +80,16 @@ function PageWithNavbarMetaMapper(
   props: MapperProps,
   reg: RegisterCardF,
 ): PiCardDef {
-  // ── Static props: plain types, no resolve() needed ───────────────────────
-  const navLinks = props.navLinks ?? [];
-  const iconName = props.iconName;
-  const wrapperClass = props.className;
-  const footer = props.footer;
+  // ── Structural props: read once, synchronously, to decide the SHAPE of the
+  // expansion (how many nav-link buttons, whether the footer/header-action
+  // slots exist). Per PiMetaProps, every prop — dynamic or static — arrives
+  // as a StateMapper; resolveOnce() unwraps it a single time at mapper
+  // run-time (the mapper itself only ever runs once, so these can't become
+  // reactive regardless — see AGENT.md's metacards guide).
+  const navLinks = resolveOnce(props.navLinks) ?? [];
+  const iconName = resolveOnce(props.iconName);
+  const wrapperClass = resolveOnce(props.className);
+  const footer = resolveOnce(props.footer);
 
   // ── Title (icon + text) ─────────────────────────────────────────────────
   // props.title is StateMapper<string> — a function, NOT a string.
@@ -165,13 +201,16 @@ function PageWithNavbarMetaMapper(
         );
 
   // ── Header action slots ─────────────────────────────────────────────────
-  // Static PiCardRefs — TypeScript already refuses memo() selectors here.
+  // Structural — decide whether the action-slot Stack exists at all — so
+  // read once, synchronously, like the other shape-controlling props above.
+  const headerLeftCard = resolveOnce(props.headerLeftCard);
+  const headerRightCard = resolveOnce(props.headerRightCard);
   const actionRefs: PiCardRef[] = [];
-  if (props.headerLeftCard) {
-    actionRefs.push(props.headerLeftCard);
+  if (headerLeftCard) {
+    actionRefs.push(headerLeftCard);
   }
-  if (props.headerRightCard) {
-    actionRefs.push(props.headerRightCard);
+  if (headerRightCard) {
+    actionRefs.push(headerRightCard);
   }
 
   const headerContent: PiCardRef[] = [desktopNav, mobileNav];
