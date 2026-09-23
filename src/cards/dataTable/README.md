@@ -16,6 +16,33 @@ multiple column types.
 
 **Pagination:** add `pageSize` to enable client-side pagination.
 
+**Row selection:** set `selectable` to render a checkbox column (plus a
+select-all checkbox in the header). Uncontrolled by default; pass
+`selectedRowIds` to control it yourself. Listen for `onRowsSelected` /
+`onAllRowsSelected` to react to changes.
+
+```ts
+DataTable({
+  columns: [...],
+  rows: [...],
+  selectable: true,
+});
+```
+
+**Search:** set `showSearch` to render a search box above the table that
+filters rows client-side by default (matches any column's stringified
+value). Pass `searchText` (paired with `onSearchChanged`) to control the
+search yourself, e.g. for server-side filtering.
+
+```ts
+DataTable({
+  columns: [...],
+  rows: [...],
+  showSearch: true,
+  searchPlaceholder: "Search movies…",
+});
+```
+
 **Per-cell styling:** each column definition accepts `cellStyle` and `cellClassName`
 in both static and function forms so you can colour-code individual cells based on
 their value or the full row:

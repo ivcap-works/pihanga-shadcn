@@ -18,6 +18,9 @@ export const DATA_TABLE_ACTION = registerActions(DATA_TABLE_CARD, [
   "show_detail",
   "hide_detail",
   "page_changed",
+  "rows_selected",
+  "all_rows_selected",
+  "search_changed",
 ]);
 
 export const onDataTableRowClicked = createOnAction<DataTableRowClickedEvent>(
@@ -35,6 +38,18 @@ export const onDataTableHideDetail = createOnAction<DataTableDetailEvent>(
 export const onDataTablePageChanged = createOnAction<DataTablePageChangedEvent>(
   DATA_TABLE_ACTION.PAGE_CHANGED,
 );
+export const onDataTableRowsSelected =
+  createOnAction<DataTableRowsSelectedEvent>(
+    DATA_TABLE_ACTION.ROWS_SELECTED,
+  );
+export const onDataTableAllRowsSelected =
+  createOnAction<DataTableAllRowsSelectedEvent>(
+    DATA_TABLE_ACTION.ALL_ROWS_SELECTED,
+  );
+export const onDataTableSearchChanged =
+  createOnAction<DataTableSearchChangedEvent>(
+    DATA_TABLE_ACTION.SEARCH_CHANGED,
+  );
 
 // ---------------------------------------------------------------------------
 // Column type definitions
@@ -214,6 +229,31 @@ export type DataTableProps<T = Record<string, unknown>> = {
   /** Fallback text when `rows` is empty and `emptyCard` is not set */
   emptyText?: string;
 
+  // --- Row selection ---
+  /**
+   * When true, a checkbox column is rendered so rows can be selected.
+   * Selection state is uncontrolled unless `selectedRowIds` is provided.
+   */
+  selectable?: boolean;
+  /**
+   * Ids of the currently selected rows.
+   * When provided, selection becomes controlled — pair with `onRowsSelected`
+   * to update it from your redux store.
+   */
+  selectedRowIds?: (string | number)[];
+
+  // --- Search ---
+  /** Show a search input above the table that filters rows client-side. */
+  showSearch?: boolean;
+  /** Placeholder text for the search input. */
+  searchPlaceholder?: string;
+  /**
+   * Current search text.
+   * When provided the search box becomes controlled — pair with
+   * `onSearchChanged` to filter `rows` yourself (e.g. server-side).
+   */
+  searchText?: string;
+
   className?: string;
 };
 
@@ -244,12 +284,32 @@ export type DataTablePageChangedEvent = {
   pageSize: number;
 };
 
+export type DataTableRowsSelectedEvent<T = Record<string, unknown>> = {
+  /** All currently-selected rows (on the current page unless server-driven) */
+  selected: DataTableRow<T>[];
+};
+
+export type DataTableAllRowsSelectedEvent<T = Record<string, unknown>> = {
+  /** Whether the header checkbox selected (true) or cleared (false) all rows */
+  selected: boolean;
+  /** Rows affected by the select-all toggle (visible/paginated rows) */
+  rows: DataTableRow<T>[];
+};
+
+export type DataTableSearchChangedEvent = {
+  /** New search text */
+  text: string;
+};
+
 export type DataTableEvents = {
   onRowClicked: DataTableRowClickedEvent;
   onSortChanged: DataTableSortChangedEvent;
   onShowDetail: DataTableDetailEvent;
   onHideDetail: DataTableDetailEvent;
   onPageChanged: DataTablePageChangedEvent;
+  onRowsSelected: DataTableRowsSelectedEvent;
+  onAllRowsSelected: DataTableAllRowsSelectedEvent;
+  onSearchChanged: DataTableSearchChangedEvent;
 };
 
 // ---------------------------------------------------------------------------

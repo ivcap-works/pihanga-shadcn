@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import {cn} from "@/lib/utils";
 import {Badge} from "@/components/ui/badge";
+import {Input} from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -183,17 +184,41 @@ export const DataTableComponent = (
     emptyText = "No data",
     className,
     cardName,
+    selectable = false,
+    selectedRowIds: selectedRowIdsProp,
+    showSearch = false,
+    searchPlaceholder = "Search…",
+    searchText: searchTextProp,
     onRowClicked,
     onSortChanged,
     onShowDetail,
     onHideDetail,
     onPageChanged,
+    onRowsSelected,
+    onAllRowsSelected,
+    onSearchChanged,
   } = props;
 
   // ── Expanded-rows state ──────────────────────────────────────────────────
   const [expandedRows, setExpandedRows] = useState<Set<string | number>>(
     new Set(),
   );
+
+  // ── Selection state (uncontrolled; props override when present) ──────────
+  const [localSelectedIds, setLocalSelectedIds] = useState<
+    Set<string | number>
+  >(new Set(selectedRowIdsProp ?? []));
+  const selectedIds =
+    selectedRowIdsProp !== undefined
+      ? new Set(selectedRowIdsProp)
+      : localSelectedIds;
+
+  // ── Search state (uncontrolled; props override when present) ─────────────
+  const [localSearchText, setLocalSearchText] = useState<string>(
+    searchTextProp ?? "",
+  );
+  const activeSearchText =
+    searchTextProp !== undefined ? searchTextProp : localSearchText;
 
   // ── Sort state (uncontrolled; props override when present) ───────────────
   const [localSortKey, setLocalSortKey] = useState<string | undefined>(
@@ -214,12 +239,30 @@ export const DataTableComponent = (
   // ── Derived flags ────────────────────────────────────────────────────────
   const hasDetailRows = rows.some((row) => row.detailCard != null);
   // Total column count used for detail-row colSpan
-  const colCount = columns.length + (hasDetailRows ? 1 : 0);
+  const colCount =
+    columns.length + (hasDetailRows ? 1 : 0) + (selectable ? 1 : 0);
+
+  // ── Search-filtered rows ─────────────────────────────────────────────────
+  // Only filters client-side when `searchText` is uncontrolled; when the
+  // caller controls `searchText` they are expected to filter `rows` themselves
+  // (e.g. server-side search) so we pass the rows through unchanged.
+  const searchedRows = useMemo(() => {
+    if (!showSearch || !activeSearchText.trim()) return rows;
+    if (searchTextProp !== undefined) return rows;
+    const needle = activeSearchText.trim().toLowerCase();
+    return rows.filter((row) =>
+      Object.values(row.data as Record<string, unknown>).some((value) =>
+        String(value ?? "")
+          .toLowerCase()
+          .includes(needle),
+      ),
+    );
+  }, [rows, showSearch, activeSearchText, searchTextProp]);
 
   // ── Sorted rows ──────────────────────────────────────────────────────────
   const sortedRows = useMemo(() => {
-    if (!activeSortKey) return rows;
-    return [...rows].sort((a, b) => {
+    if (!activeSortKey) return searchedRows;
+    return [...searchedRows].sort((a, b) => {
       const av = (a.data as Record<string, unknown>)[activeSortKey];
       const bv = (b.data as Record<string, unknown>)[activeSortKey];
       if (av == null && bv == null) return 0;
@@ -228,7 +271,7 @@ export const DataTableComponent = (
       const cmp = av < bv ? -1 : av > bv ? 1 : 0;
       return activeSortAsc ? cmp : -cmp;
     });
-  }, [rows, activeSortKey, activeSortAsc]);
+  }, [searchedRows, activeSortKey, activeSortAsc]);
 
   // ── Paginated slice ──────────────────────────────────────────────────────
   const paginatedRows = useMemo(() => {
@@ -273,12 +316,76 @@ export const DataTableComponent = (
     }
   };
 
+  const emitSelected = (ids: Set<string | number>) => {
+    const selected = sortedRows.filter((row) => ids.has(row.id));
+    onRowsSelected({selected});
+  };
+
+  const handleRowSelectToggle = (
+    row: DataTableRowType,
+    e: React.MouseEvent | React.ChangeEvent,
+  ) => {
+    e.stopPropagation();
+    const next = new Set(selectedIds);
+    if (next.has(row.id)) {
+      next.delete(row.id);
+    } else {
+      next.add(row.id);
+    }
+    if (selectedRowIdsProp === undefined) {
+      setLocalSelectedIds(next);
+    }
+    emitSelected(next);
+  };
+
+  const allOnPageSelected =
+    paginatedRows.length > 0 &&
+    paginatedRows.every((row) => selectedIds.has(row.id));
+
+  const handleSelectAllToggle = () => {
+    const selectAll = !allOnPageSelected;
+    const next = new Set(selectedIds);
+    for (const row of paginatedRows) {
+      if (selectAll) {
+        next.add(row.id);
+      } else {
+        next.delete(row.id);
+      }
+    }
+    if (selectedRowIdsProp === undefined) {
+      setLocalSelectedIds(next);
+    }
+    onAllRowsSelected({selected: selectAll, rows: paginatedRows});
+    emitSelected(next);
+  };
+
+  const handleSearchChange = (text: string) => {
+    if (searchTextProp === undefined) {
+      setLocalSearchText(text);
+    }
+    onSearchChanged({text});
+  };
+
   // ── Cell padding ─────────────────────────────────────────────────────────
   const cellPad = compact ? "py-1 px-2" : "py-2 px-3";
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className={cn("w-full", className)} data-pihanga={cardName}>
+      {/* ── Search bar ─────────────────────────────────────────────────────── */}
+      {showSearch && (
+        <div className="mb-2 px-2">
+          <Input
+            type="search"
+            value={activeSearchText}
+            placeholder={searchPlaceholder}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="max-w-xs"
+            aria-label="Search table"
+          />
+        </div>
+      )}
+
       <Table>
         {caption && <TableCaption>{caption}</TableCaption>}
 
@@ -289,6 +396,19 @@ export const DataTableComponent = (
           }
         >
           <TableRow>
+            {/* Select-all checkbox header cell */}
+            {selectable && (
+              <TableHead className="w-10 px-2">
+                <input
+                  type="checkbox"
+                  aria-label="Select all rows"
+                  checked={allOnPageSelected}
+                  onChange={handleSelectAllToggle}
+                  className="h-4 w-4 rounded border-input accent-primary"
+                />
+              </TableHead>
+            )}
+
             {/* Expand-toggle placeholder header cell */}
             {hasDetailRows && (
               <TableHead className="w-10 px-2" aria-label="Row details" />
@@ -344,6 +464,7 @@ export const DataTableComponent = (
             paginatedRows.map((row, rowIdx) => {
               const isExpanded = expandedRows.has(row.id);
               const isStriped = striped && rowIdx % 2 === 1;
+              const isSelected = selectedIds.has(row.id);
 
               return (
                 <React.Fragment key={row.id}>
@@ -353,9 +474,24 @@ export const DataTableComponent = (
                       isStriped && "bg-muted/30",
                       hoverable && "cursor-pointer",
                     )}
+                    data-state={isSelected ? "selected" : undefined}
                     data-expanded={isExpanded || undefined}
                     onClick={() => handleRowClick(row)}
                   >
+                    {/* Row selection checkbox */}
+                    {selectable && (
+                      <TableCell className="w-10 px-2">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select row ${row.id}`}
+                          checked={isSelected}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => handleRowSelectToggle(row, e)}
+                          className="h-4 w-4 rounded border-input accent-primary"
+                        />
+                      </TableCell>
+                    )}
+
                     {/* Expand / collapse toggle */}
                     {hasDetailRows && (
                       <TableCell className="w-10 px-2">

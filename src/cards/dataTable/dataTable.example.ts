@@ -1,12 +1,35 @@
+import {registerCard} from "@pihanga2/core";
 import {definePlayground} from "@/playground/definePlayground";
 import {
   DataTable,
+  DataTableRowDetail,
   onDataTableRowClicked,
   onDataTableSortChanged,
   onDataTablePageChanged,
   onDataTableShowDetail,
   onDataTableHideDetail,
+  onDataTableRowsSelected,
+  onDataTableAllRowsSelected,
+  onDataTableSearchChanged,
 } from "./index";
+
+// Register a single shared detail-panel template used by every row in the
+// "Expandable rows" facet below. The DataTable passes the clicked row via
+// `ctxtProps`, so a plain state-mapper function here delivers the correct
+// row data for whichever row is expanded (see DataTableRowDetail docs).
+const ROW_DETAIL_CARD = "playground/data-table/row-detail";
+registerCard(
+  ROW_DETAIL_CARD,
+  DataTableRowDetail({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    row: (_, ctx: any) => ctx.ctxtProps?.row,
+    fields: [
+      {key: "title", type: "title"},
+      {key: "director", label: "Director"},
+      {key: "plot", type: "muted"},
+    ],
+  }),
+);
 
 export default definePlayground<Record<string, unknown>>({
   cardId: "shad/data-table",
@@ -298,6 +321,109 @@ export default definePlayground<Record<string, unknown>>({
         striped: true,
       },
     },
+    {
+      id: "expandable-rows",
+      title: "Expandable rows",
+      description:
+        "Click the '>' chevron at the start of a row to reveal a full-width detail card below it (title, director, and plot in this example).",
+      props: {
+        columns: [
+          {key: "title", title: "Title", sortable: true},
+          {
+            key: "year",
+            title: "Year",
+            type: "number",
+            sortable: true,
+            align: "right",
+            width: "80px",
+          },
+          {
+            key: "genre",
+            title: "Genre",
+            type: "badge",
+            variants: {
+              "Sci-Fi": "default",
+              Drama: "secondary",
+              Comedy: "outline",
+            },
+          },
+        ],
+        rows: [
+          {
+            id: "1",
+            data: {
+              title: "Inception",
+              year: 2010,
+              genre: "Sci-Fi",
+              director: "Christopher Nolan",
+              plot: "A thief who steals corporate secrets through dream-sharing technology is given the inverse task of planting an idea into the mind of a CEO.",
+            },
+            detailCard: ROW_DETAIL_CARD,
+          },
+          {
+            id: "2",
+            data: {
+              title: "The Godfather",
+              year: 1972,
+              genre: "Drama",
+              director: "Francis Ford Coppola",
+              plot: "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
+            },
+            detailCard: ROW_DETAIL_CARD,
+          },
+          {
+            id: "3",
+            data: {
+              title: "Superbad",
+              year: 2007,
+              genre: "Comedy",
+              director: "Greg Mottola",
+              plot: "Two co-dependent high school seniors are forced to deal with separation anxiety after their plan to stage a booze-soaked party goes awry.",
+            },
+            detailCard: ROW_DETAIL_CARD,
+          },
+        ],
+        striped: true,
+      },
+    },
+    {
+      id: "selectable-searchable",
+      title: "Selection + search",
+      description:
+        "Checkbox row selection with a select-all header checkbox, plus a client-side search box filtering across all columns.",
+      props: {
+        columns: [
+          {key: "title", title: "Title", sortable: true},
+          {
+            key: "year",
+            title: "Year",
+            type: "number",
+            sortable: true,
+            align: "right",
+            width: "80px",
+          },
+          {
+            key: "genre",
+            title: "Genre",
+            type: "badge",
+            variants: {
+              "Sci-Fi": "default",
+              Drama: "secondary",
+              Comedy: "outline",
+            },
+          },
+        ],
+        rows: [
+          {id: "1", data: {title: "Inception", year: 2010, genre: "Sci-Fi"}},
+          {id: "2", data: {title: "The Godfather", year: 1972, genre: "Drama"}},
+          {id: "3", data: {title: "Superbad", year: 2007, genre: "Comedy"}},
+        ],
+        selectable: true,
+        showSearch: true,
+        searchPlaceholder: "Search movies…",
+        striped: true,
+      },
+    },
   ],
 
   controls: [
@@ -305,6 +431,8 @@ export default definePlayground<Record<string, unknown>>({
     {prop: "hoverable", type: "boolean", label: "Hoverable rows"},
     {prop: "compact", type: "boolean", label: "Compact"},
     {prop: "stickyHeader", type: "boolean", label: "Sticky header"},
+    {prop: "selectable", type: "boolean", label: "Selectable rows"},
+    {prop: "showSearch", type: "boolean", label: "Show search"},
     {
       prop: "caption",
       type: "text",
@@ -333,6 +461,22 @@ export default definePlayground<Record<string, unknown>>({
     // Fires when a row's detail panel is collapsed.
     onDataTableHideDetail(r, (state, ev) => {
       logEvent(state, "onDataTableHideDetail", ev as Record<string, unknown>);
+    });
+    // Fires when the set of selected rows changes.
+    onDataTableRowsSelected(r, (state, ev) => {
+      logEvent(state, "onDataTableRowsSelected", ev as Record<string, unknown>);
+    });
+    // Fires when the select-all header checkbox is toggled.
+    onDataTableAllRowsSelected(r, (state, ev) => {
+      logEvent(
+        state,
+        "onDataTableAllRowsSelected",
+        ev as Record<string, unknown>,
+      );
+    });
+    // Fires as the user types in the search box.
+    onDataTableSearchChanged(r, (state, ev) => {
+      logEvent(state, "onDataTableSearchChanged", ev as Record<string, unknown>);
     });
   },
 

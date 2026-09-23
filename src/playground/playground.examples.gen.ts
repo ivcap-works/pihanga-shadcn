@@ -13,13 +13,15 @@
 // imported with Vite's `?raw` suffix and merged into the definition as the
 // `introduction` field (overriding any inline value in the example file).
 //
-// Last generated: 2026-08-26T05:32:19.093Z
+// Last generated: 2026-09-23T07:09:09.194Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
+import attachmentDef from "@/cards/attachment/attachment.example";
 import avatarDef from "@/cards/avatar/avatar.example";
 import badgeDef from "@/cards/badge/badge.example";
 import boxDef from "@/cards/box/box.example";
+import bubbleDef from "@/cards/bubble/bubble.example";
 import buttonDef from "@/cards/button/button.example";
 import chartDef from "@/cards/chart/chart.example";
 import checkboxDef from "@/cards/checkbox/checkbox.example";
@@ -45,6 +47,7 @@ import loadingOverlayDef from "@/cards/loadingOverlay/loadingOverlay.example";
 import loadingSkeletonDef from "@/cards/loadingSkeleton/loading-skeleton.example";
 import markdownViewerDef from "@/cards/markdownViewer/markdownViewer.example";
 import menuDef from "@/cards/menu/menu.example";
+import messageDef from "@/cards/message/message.example";
 import modeToggleDef from "@/cards/modeToggle/modeToggle.example";
 import navbarSearchDef from "@/cards/navbarSearch/navbarSearch.example";
 import observableDef from "@/cards/observable/observable.example";
@@ -70,9 +73,11 @@ import toastDef from "@/cards/toast/toast.example";
 import toggleGroupDef from "@/cards/toggleGroup/toggleGroup.example";
 import typographyDef from "@/cards/typography/typography.example";
 
+import attachmentReadme from "@/cards/attachment/README.md?raw";
 import avatarReadme from "@/cards/avatar/README.md?raw";
 import badgeReadme from "@/cards/badge/README.md?raw";
 import boxReadme from "@/cards/box/README.md?raw";
+import bubbleReadme from "@/cards/bubble/README.md?raw";
 import buttonReadme from "@/cards/button/README.md?raw";
 import chartReadme from "@/cards/chart/README.md?raw";
 import checkboxReadme from "@/cards/checkbox/README.md?raw";
@@ -98,6 +103,7 @@ import loadingOverlayReadme from "@/cards/loadingOverlay/README.md?raw";
 import loadingSkeletonReadme from "@/cards/loadingSkeleton/README.md?raw";
 import markdownViewerReadme from "@/cards/markdownViewer/README.md?raw";
 import menuReadme from "@/cards/menu/README.md?raw";
+import messageReadme from "@/cards/message/README.md?raw";
 import modeToggleReadme from "@/cards/modeToggle/README.md?raw";
 import navbarSearchReadme from "@/cards/navbarSearch/README.md?raw";
 import observableReadme from "@/cards/observable/README.md?raw";
@@ -136,9 +142,11 @@ import typographyReadme from "@/cards/typography/README.md?raw";
  * README content injected automatically as the `introduction` field.
  */
 export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
+  {...attachmentDef, introduction: attachmentReadme},
   {...avatarDef, introduction: avatarReadme},
   {...badgeDef, introduction: badgeReadme},
   {...boxDef, introduction: boxReadme},
+  {...bubbleDef, introduction: bubbleReadme},
   {...buttonDef, introduction: buttonReadme},
   {...chartDef, introduction: chartReadme},
   {...checkboxDef, introduction: checkboxReadme},
@@ -164,6 +172,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...loadingSkeletonDef, introduction: loadingSkeletonReadme},
   {...markdownViewerDef, introduction: markdownViewerReadme},
   {...menuDef, introduction: menuReadme},
+  {...messageDef, introduction: messageReadme},
   {...modeToggleDef, introduction: modeToggleReadme},
   {...navbarSearchDef, introduction: navbarSearchReadme},
   {...observableDef, introduction: observableReadme},

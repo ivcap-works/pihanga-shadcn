@@ -4,7 +4,6 @@
   "type": "registry:component",
   "description": "Pihanga sheetCard card component",
   "dependencies": [
-    "@pihanga2/shadcn",
     "@radix-ui/react-dialog@^1.1.15",
     "class-variance-authority@^0.7.1",
     "lucide-react@^0.513.0",

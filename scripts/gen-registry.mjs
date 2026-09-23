@@ -87,8 +87,10 @@ const EXCLUDE_PATTERNS = [
  * Value: the official shadcn registry name for the `npx shadcn add <name>` command
  */
 const OFFICIAL_SHADCN_UI = new Map([
+  ["attachment", "attachment"],
   ["avatar", "avatar"],
   ["badge", "badge"],
+  ["bubble", "bubble"],
   ["calendar", "calendar"],
   ["card", "card"],
   ["context-menu", "context-menu"],
@@ -100,6 +102,7 @@ const OFFICIAL_SHADCN_UI = new Map([
   ["input", "input"],
   ["label", "label"],
   ["menubar", "menubar"],
+  ["message", "message"],
   ["resizable", "resizable"],
   ["select", "select"],
   ["separator", "separator"],

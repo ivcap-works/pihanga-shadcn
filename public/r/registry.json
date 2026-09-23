@@ -40,6 +40,10 @@
       "type": "registry:ui"
     },
     {
+      "name": "attachment",
+      "type": "registry:component"
+    },
+    {
       "name": "avatar",
       "type": "registry:component"
     },
@@ -49,6 +53,10 @@
     },
     {
       "name": "box",
+      "type": "registry:component"
+    },
+    {
+      "name": "bubble",
       "type": "registry:component"
     },
     {
@@ -157,6 +165,10 @@
     },
     {
       "name": "menu",
+      "type": "registry:component"
+    },
+    {
+      "name": "message",
       "type": "registry:component"
     },
     {

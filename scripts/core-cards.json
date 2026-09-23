@@ -1,8 +1,10 @@
 {
   "cards": [
+    "attachment",
     "avatar",
     "badge",
     "box",
+    "bubble",
     "button",
     "checkbox",
     "collapsibleCard",
@@ -26,6 +28,7 @@
     "loadingOverlay",
     "loadingSkeleton",
     "menu",
+    "message",
     "modeToggle",
     "navbarSearch",
     "observable",
