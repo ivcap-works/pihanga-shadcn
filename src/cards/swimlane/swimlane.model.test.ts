@@ -20,6 +20,7 @@ import {
   describeSwimlaneTarget,
   ingestSwimlaneEvents,
   projectPending,
+  relatedCallIds,
 } from "./swimlane.model";
 import {buildDemoModel} from "./swimlane.demo";
 import type {SwimlaneModel} from "./swimlane.types";
@@ -134,6 +135,28 @@ describe("swimlane model", () => {
     expect(m.rows).toHaveLength(0);
     expect(m.laneOrder.length).toBeGreaterThan(0);
     expect(m.pending.length).toBeGreaterThan(0);
+  });
+
+  it("infers call parents from the caller's innermost open activity", () => {
+    const m = buildDemoModel({t0: 0, complete: true});
+    expect(m.spans.c2.parent).toBe("c1"); // gateway → auth while handling POST /checkout
+    expect(m.spans.c1.parent).toBeUndefined(); // client has no open activity
+    expect(relatedCallIds(m, "c3")).toEqual(["c4", "c5", "c6", "c7", "c8", "c9"]);
+    expect(m.spans.c10.parent).toBe("c8"); // notifier self-call while processing order.created
+    expect(m.spans.c11.parent).toBe("c8"); // email.sent callback sent from that activity
+  });
+
+  it("an explicit parentId overrides inference", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [
+      {type: "call", kind: "sync", id: "p1", from: "a", to: "b", label: "one"},
+      {type: "call", kind: "sync", id: "p2", from: "a", to: "b", label: "two"},
+      // b is handling p1 and p2; the default guess would be p2 (innermost)
+      {type: "call", kind: "sync", id: "k", from: "b", to: "c", label: "child", parentId: "p1"},
+    ]);
+    expect(m.spans.k.parent).toBe("p1");
+    expect(relatedCallIds(m, "p1")).toEqual(["k"]);
+    expect(relatedCallIds(m, "p2")).toEqual([]);
   });
 
   it("describes targets", () => {

@@ -18,7 +18,11 @@ deployment. Lanes and calls stream in while the diagram is displayed.
   flashes. Waiting time turns red after `timeoutMs`.
 - **Hover / click:** wide invisible hit zones over arrows, activities, state
   dots and ghost rows emit `onHoverChanged` (enter/leave only, never on
-  pointer move) and `onItemClicked`. Hovering highlights the whole call chain.
+  pointer move) and `onItemClicked`. Hovering highlights the whole call chain,
+  plus (more lightly) the transitions that process creates and receives: its
+  outgoing calls, messages and events, and their replies. Causality comes
+  from an optional `parentId` on calls, or is inferred from the caller's
+  innermost open activity.
 
 Each row is its own fixed-height SVG in normal document flow, so the page (or
 the nearest scroll container) scrolls — never the diagram itself.

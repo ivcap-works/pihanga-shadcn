@@ -121,7 +121,10 @@ function applyOne(m: SwimlaneModel, ev: SwimlaneEvent, ts: number): void {
     case "state":
       cur[ev.lane].state = ev.state;
       break;
-    case "call":
+    case "call": {
+      // causality: explicit parentId, else the innermost open activity of the caller
+      const callerActs = cur[ev.from]?.acts ?? [];
+      const parent = ev.parentId ?? callerActs[callerActs.length - 1];
       m.spans[ev.id] = {
         id: ev.id,
         kind: ev.kind,
@@ -132,8 +135,10 @@ function applyOne(m: SwimlaneModel, ev: SwimlaneEvent, ts: number): void {
         end: ev.kind === "event" ? ts : undefined,
         status: ev.kind === "event" ? "done" : "open",
       };
+      if (parent && parent !== ev.id) m.spans[ev.id].parent = parent;
       if (ev.kind !== "event") cur[ev.to].acts.push(ev.id);
       break;
+    }
     case "reply":
     case "done": {
       const s = m.spans[ev.id];
@@ -228,6 +233,17 @@ export function projectPending(
     out.push({id: `g-${p.id}`, pending: p, pre, post: snap});
   }
   return out;
+}
+
+/**
+ * Direct children of call `id`: calls made while it was being handled.
+ * Their call/reply transitions (and outstanding replies) are the transitions
+ * the process "creates and receives".
+ */
+export function relatedCallIds(m: Pick<SwimlaneModel, "spans">, id: string): string[] {
+  const out: string[] = [];
+  for (const s of Object.values(m.spans)) if (s.parent === id) out.push(s.id);
+  return out.sort((a, b) => m.spans[a].start - m.spans[b].start);
 }
 
 /** Does a row (or ghost row) involve the call chain `id`? */

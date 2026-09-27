@@ -48,7 +48,7 @@ outstanding messages) comes from props.
 |---|---|---|
 | `lane` | yes (first time only) | adds the lane to `laneOrder`; a repeat only updates `laneLabels` |
 | `state` | yes | sets `current[lane].state` |
-| `call` | yes | creates a span; `sync`/`async` push the id onto `current[to].acts`; `sync` also adds a pending `reply` |
+| `call` | yes | creates a span (with `parent`, see §3.5); `sync`/`async` push the id onto `current[to].acts`; `sync` also adds a pending `reply` |
 | `reply` | yes | closes the span and the activity; resolves the pending reply; stores `route` |
 | `done` | yes | closes an `async` activity; stores `route` |
 | `expect` | **no** | adds a pending `expect` |
@@ -102,6 +102,21 @@ stored in the model.
 Newest-first is the right order for nested synchronous calls, where the
 innermost reply returns first. For concurrent or fan-out calls it is only an
 estimate (see §8).
+
+### 3.5 Causality (`span.parent`)
+
+Every call span records the call whose processing caused it. The parent is
+`ev.parentId` if the stream provides one; otherwise it is inferred at ingest
+time as the **innermost open activity on the caller's lane**
+(`current[from].acts.at(-1)`, read before the new call is pushed).
+`relatedCallIds(model, id)` returns the direct children of `id`, ordered by
+start time.
+
+Inference is exact when a service handles one request at a time, including
+nested and self-calls. When a service handles several requests concurrently,
+it attributes a call to the most recently opened one. Streams that know the
+real causality (for example OpenTelemetry parent span ids) should send
+`parentId`.
 
 ## 4. Rendering
 
@@ -183,10 +198,19 @@ spans many rows, so moving from one of its segments to the next fires
 ### 5.3 Highlighting
 
 The hovered call id (or the `highlightId` prop when nothing is hovered)
-becomes `hid`. The parent passes `hl = hid` only to rows where
-`rowTouches(row, eventId, hid)` is true: the call arrow, reply arrow, every
-activity segment and the ghost reply. All other rows keep `hl = null`, so
-`memo()` skips them.
+becomes `hid`. There are two levels:
+
+| Level | Rows | Prop | Class |
+|---|---|---|---|
+| primary: the call itself | rows where `rowTouches(row, eventId, hid)` is true — call arrow, reply arrow, every activity segment, ghost reply | `hl = hid` | `swl-hl` (3 px) |
+| related: transitions the process creates and receives | rows whose event id is a direct child of `hid` (`relatedCallIds`) — outgoing calls, async messages and events, and the replies coming back, including outstanding (ghost) replies | `rel = true` | `swl-hl-rel` (2 px) |
+
+The related set is memoised on `[hid, model.spans]` and sent in
+`onHoverChanged` as `related`. All other rows keep `hl = null` and
+`rel = false`, so `memo()` skips them. Only direct children are included;
+grandchildren (for example a notifier's own calls while processing
+`order.created`) belong to the child's activity and light up when that
+activity is hovered.
 
 ### 5.4 Memoisation contract
 
@@ -247,6 +271,10 @@ self-contained, so no neighbouring rows are needed to draw a slice.
 vary each row's height by `ts` delta (clamped), or render a time ruler in the
 gutter. Keep the half-row split at `height/2`.
 
+**Deeper causality highlighting:** walk `relatedCallIds` recursively
+(guarding against cycles) to build the related set, and optionally add a
+third class per depth.
+
 **Different ghost ordering:** change only `projectPending` (for example sort
 by `since + timeoutMs`, or by an `eta` you add to `SwimlaneExpectEvent`).
 
@@ -258,6 +286,8 @@ card (Dialog, Sheet) from it; pass `highlightId` to keep the chain lit.
 
 - Ghost order is a heuristic (newest first); it can be wrong for concurrent
   calls.
+- Inferred parents (§3.5) are a best guess for services handling several
+  requests at once; send `parentId` when the true causality is known.
 - Nested activities are offset by stack index. If a call in the middle of the
   stack finishes first, the remaining bars shift sideways by 5 px at that row.
 - Arrow labels are not collision-checked; long labels between adjacent lanes
@@ -271,10 +301,12 @@ card (Dialog, Sheet) from it; pass `highlightId` to keep the chain lit.
 
 - `swimlane.model.test.ts`: ingest semantics, implicit lanes, `fulfils`, ring
   buffer and span GC, Immer safety (frozen, unshared, earlier rows keep their
-  identity), projection, description.
+  identity), projection, description, parent inference and `parentId`
+  override.
 - `swimlane.component.test.tsx`: row counts, vertical names, the pending
   toggle, hover enter/leave deduplication and highlighting, click payloads,
-  `highlightId`, horizontal growth when a lane is added, and the `now` prop.
+  `highlightId`, related-transition highlighting, horizontal growth when a
+  lane is added, and the `now` prop.
 
 Vitest cannot load `@pihanga2/core`'s dist (it uses extension-less ESM
 imports), so both test files `vi.mock` the few runtime helpers called at

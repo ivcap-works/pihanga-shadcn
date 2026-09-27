@@ -75,6 +75,8 @@
 .pihanga-swimlane .swl-ar-ghost { stroke: var(--muted-foreground); stroke-dasharray: 7 4; }
 .pihanga-swimlane .swl-ar-ghost.swl-overdue { stroke: var(--destructive); }
 .pihanga-swimlane .swl-ar.swl-hl { stroke: var(--swl-hl); stroke-width: 3; }
+/* transitions created / received by the highlighted process */
+.pihanga-swimlane .swl-ar.swl-hl-rel { stroke: var(--swl-hl); stroke-width: 2; }
 
 .pihanga-swimlane .swl-mk-sync { fill: var(--swl-sync); }
 .pihanga-swimlane .swl-mk-async { fill: none; stroke: var(--swl-async); stroke-width: 1.5; }

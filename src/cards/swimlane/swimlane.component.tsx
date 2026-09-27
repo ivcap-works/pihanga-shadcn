@@ -16,7 +16,7 @@ import {
   type SwimlaneTarget,
   type SwimlaneTargetKind,
 } from "./swimlane.types";
-import {describeSwimlaneTarget, formatTs, projectPending, rowTouches} from "./swimlane.model";
+import {describeSwimlaneTarget, formatTs, projectPending, relatedCallIds, rowTouches} from "./swimlane.model";
 
 import "./swimlane.css";
 
@@ -120,6 +120,8 @@ function drawArrow(
     kind: SwimlaneTargetKind;
     rowId?: number;
     hl: boolean;
+    /** Secondary highlight: a transition created/received by the hovered process. */
+    rel?: boolean;
   },
 ) {
   const i1 = idx(a.from);
@@ -127,7 +129,7 @@ function drawArrow(
   if (i1 < 0 || i2 < 0) return;
   const x1 = laneX(g, i1);
   const x2 = laneX(g, i2);
-  const cls = clsx("swl-ar", a.cls, a.hl && "swl-hl");
+  const cls = clsx("swl-ar", a.cls, a.hl ? "swl-hl" : a.rel && "swl-hl-rel");
   const markerEnd = `url(#${g.mk}-${a.marker})`;
   const hitData = {"data-kind": a.kind, "data-id": a.hitId, "data-row": a.rowId};
   if (a.from === a.to) {
@@ -182,9 +184,11 @@ type RowCommon = {
   laneLabels: Record<string, string>;
   width: number;
   hl: string | null;
+  /** True when this row's transition belongs to a child of the highlighted call. */
+  rel?: boolean;
 };
 
-const RealRow = memo(function RealRow({row, g, laneOrder, laneLabels, width, hl}: RowCommon & {row: SwimlaneRow}) {
+const RealRow = memo(function RealRow({row, g, laneOrder, laneLabels, width, hl, rel}: RowCommon & {row: SwimlaneRow}) {
   const p: Parts = {visuals: [], hits: []};
   const idx = (l: string) => laneOrder.indexOf(l);
   drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels);
@@ -194,7 +198,7 @@ const RealRow = memo(function RealRow({row, g, laneOrder, laneLabels, width, hl}
       const [cls, marker] = CALL_STYLE[ev.kind];
       drawArrow(p, g, idx, {
         from: ev.from, to: ev.to, cls, marker, label: ev.label,
-        hitId: ev.id, kind: "transition", rowId: row.id, hl: hl === ev.id,
+        hitId: ev.id, kind: "transition", rowId: row.id, hl: hl === ev.id, rel,
       });
       break;
     }
@@ -203,7 +207,7 @@ const RealRow = memo(function RealRow({row, g, laneOrder, laneLabels, width, hl}
         drawArrow(p, g, idx, {
           from: row.route.to, to: row.route.from,
           cls: ev.ok ? "swl-ar-reply" : "swl-ar-error", marker: ev.ok ? "reply" : "error",
-          label: ev.label, hitId: ev.id, kind: "transition", rowId: row.id, hl: hl === ev.id,
+          label: ev.label, hitId: ev.id, kind: "transition", rowId: row.id, hl: hl === ev.id, rel,
         });
       }
       break;
@@ -257,7 +261,7 @@ const RealRow = memo(function RealRow({row, g, laneOrder, laneLabels, width, hl}
 });
 
 const GhostRow = memo(function GhostRow({
-  row, g, laneOrder, laneLabels, width, hl, now,
+  row, g, laneOrder, laneLabels, width, hl, rel, now,
 }: RowCommon & {row: SwimlaneGhostRow; now: number}) {
   const p: Parts = {visuals: [], hits: []};
   const pd = row.pending;
@@ -266,7 +270,7 @@ const GhostRow = memo(function GhostRow({
   drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels);
   drawArrow(p, g, (l) => laneOrder.indexOf(l), {
     from: pd.from, to: pd.to, cls: clsx("swl-ar-ghost", overdue && "swl-overdue"), marker: "ghost",
-    label: `⌛ ${pd.label}`, hitId: pd.id, kind: "pending", hl: hl === pd.id,
+    label: `⌛ ${pd.label}`, hitId: pd.id, kind: "pending", hl: hl === pd.id, rel,
   });
   return (
     <svg className="swl-row swl-ghost" width={width} height={g.rowH}>
@@ -281,7 +285,7 @@ const GhostRow = memo(function GhostRow({
 
 const NowRow = memo(function NowRow({
   snap, count, g, laneOrder, laneLabels, width,
-}: Omit<RowCommon, "hl"> & {snap: SwimlaneLanesSnapshot; count: number}) {
+}: Omit<RowCommon, "hl" | "rel"> & {snap: SwimlaneLanesSnapshot; count: number}) {
   const p: Parts = {visuals: [], hits: []};
   drawLanes(p, g, laneOrder, snap, snap, null, laneLabels);
   return (
@@ -295,9 +299,14 @@ const NowRow = memo(function NowRow({
 });
 
 function PendingZone(
-  props: Omit<RowCommon, "hl"> & {model: SwimlaneModel; hid: string | null; clock?: number},
+  props: Omit<RowCommon, "hl" | "rel"> & {
+    model: SwimlaneModel;
+    hid: string | null;
+    related: ReadonlySet<string>;
+    clock?: number;
+  },
 ) {
-  const {model, hid, clock, ...common} = props;
+  const {model, hid, related, clock, ...common} = props;
   const [tick, setNow] = useState(() => Date.now());
   const now = clock ?? tick;
   const any = model.pending.length > 0;
@@ -313,7 +322,14 @@ function PendingZone(
     <>
       <NowRow snap={model.current} count={model.pending.length} {...common} />
       {ghosts.map((gr) => (
-        <GhostRow key={gr.id} row={gr} now={now} hl={hid && rowTouches(gr, gr.pending.id, hid) ? hid : null} {...common} />
+        <GhostRow
+          key={gr.id}
+          row={gr}
+          now={now}
+          hl={hid && rowTouches(gr, gr.pending.id, hid) ? hid : null}
+          rel={related.has(gr.pending.id)}
+          {...common}
+        />
       ))}
     </>
   );
@@ -443,9 +459,10 @@ export const SwimlaneComponent = (props: PiCardProps<SwimlaneProps, SwimlaneEven
 
   const details = (t: SwimlaneTarget) => {
     const m = modelRef.current;
+    const related = t.kind === "state" ? undefined : relatedCallIds(m, t.id);
     return t.kind === "pending"
-      ? {pending: m.pending.find((p) => p.id === t.id), span: m.spans[t.id]}
-      : {span: m.spans[t.id]};
+      ? {pending: m.pending.find((p) => p.id === t.id), span: m.spans[t.id], related}
+      : {span: m.spans[t.id], related};
   };
 
   const placeTip = (x: number, y: number) => {
@@ -499,6 +516,12 @@ export const SwimlaneComponent = (props: PiCardProps<SwimlaneProps, SwimlaneEven
   // ── highlighting: only rows touching the chain get a new `hl` prop ───────
   const hid =
     hovered && hovered.kind !== "state" ? hovered.id : highlightId ?? null;
+  // children of the highlighted call: transitions the process creates/receives
+  const {spans} = model;
+  const related = useMemo<ReadonlySet<string>>(
+    () => new Set(hid ? relatedCallIds({spans}, hid) : []),
+    [hid, spans],
+  );
 
   // ── auto-follow (page or nearest scroll container) ───────────────────────
   const follow = useRef(true);
@@ -533,10 +556,11 @@ export const SwimlaneComponent = (props: PiCardProps<SwimlaneProps, SwimlaneEven
             key={r.id}
             row={r}
             hl={hid && rowTouches(r, "id" in r.event ? r.event.id : undefined, hid) ? hid : null}
+            rel={"id" in r.event && r.event.type !== "done" && related.has(r.event.id)}
             {...common}
           />
         ))}
-        {showPending && <PendingZone model={model} hid={hid} clock={clock} {...common} />}
+        {showPending && <PendingZone model={model} hid={hid} related={related} clock={clock} {...common} />}
       </div>
       <div ref={tipRef} className="swl-tooltip" role="tooltip" />
     </div>

@@ -116,6 +116,13 @@ export type SwimlaneCallEvent = SwimlaneEventBase & {
   label: string;
   /** For `sync`: when the expected reply becomes overdue (ms after `ts`). */
   timeoutMs?: number;
+  /**
+   * Id of the call whose processing caused this call (like a trace's parent
+   * span id). When omitted it is inferred at ingest time as the innermost
+   * activity open on the `from` lane — exact for sequential processing, a
+   * best guess when one service handles several requests concurrently.
+   */
+  parentId?: string;
 };
 
 /** Reply to an earlier `sync` call (drawn from callee back to caller). */
@@ -223,6 +230,8 @@ export type SwimlaneSpan = {
   end?: number;
   status: "open" | "ok" | "error" | "done";
   result?: string;
+  /** Call whose processing caused this one (explicit `parentId` or inferred). */
+  parent?: string;
 };
 
 export type SwimlaneModel = {
@@ -309,6 +318,11 @@ export type SwimlaneHoverChangedEvent = {
   span?: SwimlaneSpan;
   /** Outstanding message details when `target.kind === "pending"`. */
   pending?: SwimlanePending;
+  /**
+   * Calls made while handling the hovered call (its direct children). Their
+   * call and reply transitions are highlighted as well.
+   */
+  related?: string[];
   clientX?: number;
   clientY?: number;
 };

@@ -92,6 +92,28 @@ describe("shad/swimlane component", () => {
     );
   });
 
+  it("hovering a process also highlights the transitions it creates and receives", () => {
+    const {container, onHoverChanged} = renderSwimlane();
+    const hit = container.querySelector("[data-kind='activity'][data-id='c3']")!;
+    fireEvent.pointerOver(hit);
+    const rel = (id: string) =>
+      [...container.querySelectorAll(`[data-kind='transition'][data-id='${id}'], [data-kind='pending'][data-id='${id}']`)]
+        .map((h) => h.closest("svg")!.querySelector(".swl-ar")!.getAttribute("class")!);
+    // own chain: call createOrder (c3) + its outstanding reply → primary highlight
+    expect(rel("c3").every((c) => c.includes("swl-hl") && !c.includes("swl-hl-rel"))).toBe(true);
+    // children: validate (self), reserve, charge ×2 (incl. error reply), order.created, audit.log
+    for (const id of ["c4", "c5", "c6", "c7", "c8", "c9"]) {
+      const cls = rel(id);
+      expect(cls.length, id).toBeGreaterThan(0);
+      expect(cls.every((c) => c.includes("swl-hl-rel")), id).toBe(true);
+    }
+    // sync children highlight both directions (call + reply)
+    expect(rel("c6")).toHaveLength(2);
+    // unrelated: verify token belongs to the gateway's handling of c1
+    expect(rel("c2").some((c) => /swl-hl/.test(c))).toBe(false);
+    expect(onHoverChanged.mock.calls[0][0].related).toEqual(["c4", "c5", "c6", "c7", "c8", "c9"]);
+  });
+
   it("applies external highlightId", () => {
     const {container} = renderSwimlane({highlightId: "c6"});
     expect(container.querySelectorAll(".swl-ar.swl-hl")).toHaveLength(2); // call + error reply
