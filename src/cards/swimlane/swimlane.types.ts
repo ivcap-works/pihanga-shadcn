@@ -278,6 +278,14 @@ export type SwimlaneProps = {
   /** `top` offset for the sticky header (e.g. height of a navbar). Default 0. */
   stickyTop?: number;
 
+  /**
+   * Clock (epoch ms) used for "waiting …" timers and overdue detection of
+   * outstanding messages. When omitted the card ticks its own wall clock
+   * (4×/s, only while something is outstanding). Pass it to drive the card
+   * entirely from props — e.g. for replaying a recorded trace or for tests.
+   */
+  now?: number;
+
   className?: string;
 };
 

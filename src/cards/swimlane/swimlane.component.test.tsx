@@ -16,7 +16,10 @@ import {fireEvent, render} from "@testing-library/react";
 import type {PiCardProps} from "@pihanga2/core";
 
 import {SwimlaneComponent} from "./swimlane.component";
+import {produce} from "immer";
+
 import {buildDemoModel} from "./swimlane.demo";
+import {ingestSwimlaneEvents} from "./swimlane.model";
 import type {SwimlaneEvents, SwimlaneProps} from "./swimlane.types";
 
 function renderSwimlane(props: Partial<SwimlaneProps> = {}) {
@@ -92,5 +95,52 @@ describe("shad/swimlane component", () => {
   it("applies external highlightId", () => {
     const {container} = renderSwimlane({highlightId: "c6"});
     expect(container.querySelectorAll(".swl-ar.swl-hl")).toHaveLength(2); // call + error reply
+  });
+});
+
+describe("shad/swimlane is driven entirely by props", () => {
+  const base = produce({m: buildDemoModel({t0: 0})}, () => undefined).m;
+  const widths = (c: HTMLElement) =>
+    [...c.querySelectorAll("svg[width]")].map((s) => Number(s.getAttribute("width"))).filter((w) => w > 0);
+
+  it("a new lane in the model extends header and every row horizontally", () => {
+    const {container, rerender} = renderSwimlane({model: base});
+    const before = widths(container);
+    const next = produce(base, (d) => {
+      ingestSwimlaneEvents(d, [
+        {type: "lane", lane: "billing", label: "billing-svc", ts: 99_000},
+        {type: "call", kind: "event", id: "b1", from: "orders", to: "billing", label: "invoice", ts: 99_100},
+      ]);
+    });
+    rerender(
+      <SwimlaneComponent
+        {...({cardName: "test/swimlane", model: next, autoFollow: false, now: 0,
+          onHoverChanged: () => undefined, onItemClicked: () => undefined} as unknown as PiCardProps<SwimlaneProps, SwimlaneEvents>)}
+      />,
+    );
+    const after = widths(container);
+    // every svg (header + all rows) grew by exactly one lane width
+    expect(new Set(before)).toEqual(new Set([before[0]]));
+    expect(new Set(after)).toEqual(new Set([before[0] + 104]));
+    expect([...container.querySelectorAll(".swl-lane-name")].map((n) => n.textContent)).toContain("billing-svc");
+    // two new rows were appended; existing rows are kept
+    const rows = container.querySelectorAll("svg.swl-row:not(.swl-ghost):not(.swl-now)");
+    expect(rows).toHaveLength(base.rows.length + 2);
+  });
+
+  it("uses the `now` prop for waiting timers and overdue state", () => {
+    const x1 = base.pending.find((p) => p.id === "x1")!;
+    const {container, rerender, onHoverChanged, onItemClicked} = renderSwimlane({model: base, now: x1.since + 1000});
+    const label = () => container.querySelector("[data-id='x1']")!.closest("svg")!.querySelector(".swl-ts")!;
+    expect(label().textContent).toBe("waiting 1.0s");
+    expect(label().classList.contains("swl-overdue")).toBe(false);
+    rerender(
+      <SwimlaneComponent
+        {...({cardName: "test/swimlane", model: base, autoFollow: false, now: x1.since + 9000,
+          onHoverChanged, onItemClicked} as unknown as PiCardProps<SwimlaneProps, SwimlaneEvents>)}
+      />,
+    );
+    expect(label().textContent).toBe("waiting 9.0s");
+    expect(label().classList.contains("swl-overdue")).toBe(true);
   });
 });

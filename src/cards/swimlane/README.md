@@ -35,3 +35,9 @@ inside any reducer, or use the ready-made wiring:
   Batch events (e.g. once per animation frame) to avoid a re-render storm.
 
 The model keeps at most `maxRows` rows (default 2000).
+
+Everything visible — lanes (including new ones, which widen the diagram),
+rows, run states, activities and outstanding messages — is derived from the
+`model` prop. Pass `now` to drive the “waiting” timers from props too (e.g.
+when replaying a recorded trace). See `DESIGN.md` for the implementation and
+extension points.

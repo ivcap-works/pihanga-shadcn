@@ -294,16 +294,19 @@ const NowRow = memo(function NowRow({
   );
 });
 
-function PendingZone(props: Omit<RowCommon, "hl"> & {model: SwimlaneModel; hid: string | null}) {
-  const {model, hid, ...common} = props;
-  const [now, setNow] = useState(() => Date.now());
+function PendingZone(
+  props: Omit<RowCommon, "hl"> & {model: SwimlaneModel; hid: string | null; clock?: number},
+) {
+  const {model, hid, clock, ...common} = props;
+  const [tick, setNow] = useState(() => Date.now());
+  const now = clock ?? tick;
   const any = model.pending.length > 0;
   useEffect(() => {
-    // only the ghost rows tick (for the "waiting" timer)
-    if (!any) return;
+    // only the ghost rows tick (for the "waiting" timer); a `now` prop disables the ticker
+    if (!any || clock != null) return;
     const iv = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(iv);
-  }, [any]);
+  }, [any, clock]);
   const {current, pending} = model;
   const ghosts = useMemo(() => projectPending(current, pending), [current, pending]);
   return (
@@ -401,6 +404,7 @@ export const SwimlaneComponent = (props: PiCardProps<SwimlaneProps, SwimlaneEven
     headerHeight = DEF_HEADER_HEIGHT,
     gutterWidth = DEF_GUTTER_WIDTH,
     stickyTop = 0,
+    now: clock,
     className,
     onHoverChanged,
     onItemClicked,
@@ -460,7 +464,7 @@ export const SwimlaneComponent = (props: PiCardProps<SwimlaneProps, SwimlaneEven
     const tip = tipRef.current;
     if (tip) {
       if (next && showTooltip) {
-        tip.textContent = describeSwimlaneTarget(modelRef.current, next);
+        tip.textContent = describeSwimlaneTarget(modelRef.current, next, clock ?? Date.now());
         tip.style.display = "block";
         placeTip(e.clientX, e.clientY);
       } else {
@@ -532,7 +536,7 @@ export const SwimlaneComponent = (props: PiCardProps<SwimlaneProps, SwimlaneEven
             {...common}
           />
         ))}
-        {showPending && <PendingZone model={model} hid={hid} {...common} />}
+        {showPending && <PendingZone model={model} hid={hid} clock={clock} {...common} />}
       </div>
       <div ref={tipRef} className="swl-tooltip" role="tooltip" />
     </div>
