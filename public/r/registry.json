@@ -266,6 +266,10 @@
     {
       "name": "typography",
       "type": "registry:component"
+    },
+    {
+      "name": "swimlane",
+      "type": "registry:component"
     }
   ]
 }
