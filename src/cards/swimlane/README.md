@@ -20,7 +20,9 @@ deployment. Lanes and calls stream in while the diagram is displayed.
   dots and ghost rows emit `onHoverChanged` (enter/leave only, never on
   pointer move) and `onItemClicked`. Hovering highlights the whole call chain,
   plus (more lightly) the transitions that process creates and receives: its
-  outgoing calls, messages and events, and their replies. Causality comes
+  outgoing calls, messages and events, and their replies. Hovering a call or
+  reply arrow also marks the caller-side process (activity) that sent it and
+  receives the reply — only that activity. Causality comes
   from an optional `parentId` on calls, or is inferred from the caller's
   innermost open activity.
 

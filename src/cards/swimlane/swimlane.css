@@ -64,6 +64,9 @@
 .pihanga-swimlane .swl-act path { fill: none; stroke: var(--swl-sync); stroke-width: 1; }
 .pihanga-swimlane .swl-act.swl-hl rect { fill: var(--swl-hl); }
 .pihanga-swimlane .swl-act.swl-hl path { stroke: var(--swl-hl); }
+/* the caller-side process that sends / receives a hovered transition */
+.pihanga-swimlane .swl-act.swl-hl-proc rect { fill: color-mix(in srgb, var(--swl-hl) 45%, var(--swl-act-fill)); }
+.pihanga-swimlane .swl-act.swl-hl-proc path { stroke: var(--swl-hl); stroke-width: 2; }
 
 /* arrows */
 .pihanga-swimlane .swl-ar { fill: none; stroke-width: 1.5; }

@@ -51,6 +51,8 @@ function drawLanes(
   post: SwimlaneLanesSnapshot,
   hl: string | null,
   laneLabels: Record<string, string>,
+  /** Activity of the process that sends/receives the hovered transition. */
+  proc: string | null = null,
 ) {
   laneOrder.forEach((l, i) => {
     const x = laneX(g, i);
@@ -75,7 +77,7 @@ function drawLanes(
           (starts ? ` M${ax},${y1} H${ax + 10}` : "") +
           (ends ? ` M${ax},${y2} H${ax + 10}` : "");
         p.visuals.push(
-          <g key={`a-${a}-${half}`} className={clsx("swl-act", hl === a && "swl-hl")}>
+          <g key={`a-${a}-${half}`} className={clsx("swl-act", hl === a ? "swl-hl" : proc === a && "swl-hl-proc")}>
             <rect x={ax} y={y1} width={10} height={y2 - y1} />
             <path d={d} />
           </g>,
@@ -186,12 +188,14 @@ type RowCommon = {
   hl: string | null;
   /** True when this row's transition belongs to a child of the highlighted call. */
   rel?: boolean;
+  /** Call id of the process (activity) that sends/receives the hovered transition. */
+  proc?: string | null;
 };
 
-const RealRow = memo(function RealRow({row, g, laneOrder, laneLabels, width, hl, rel}: RowCommon & {row: SwimlaneRow}) {
+const RealRow = memo(function RealRow({row, g, laneOrder, laneLabels, width, hl, rel, proc}: RowCommon & {row: SwimlaneRow}) {
   const p: Parts = {visuals: [], hits: []};
   const idx = (l: string) => laneOrder.indexOf(l);
-  drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels);
+  drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels, proc);
   const ev = row.event;
   switch (ev.type) {
     case "call": {
@@ -261,13 +265,13 @@ const RealRow = memo(function RealRow({row, g, laneOrder, laneLabels, width, hl,
 });
 
 const GhostRow = memo(function GhostRow({
-  row, g, laneOrder, laneLabels, width, hl, rel, now,
+  row, g, laneOrder, laneLabels, width, hl, rel, proc, now,
 }: RowCommon & {row: SwimlaneGhostRow; now: number}) {
   const p: Parts = {visuals: [], hits: []};
   const pd = row.pending;
   const waited = now - pd.since;
   const overdue = pd.timeoutMs != null && waited > pd.timeoutMs;
-  drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels);
+  drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels, proc);
   drawArrow(p, g, (l) => laneOrder.indexOf(l), {
     from: pd.from, to: pd.to, cls: clsx("swl-ar-ghost", overdue && "swl-overdue"), marker: "ghost",
     label: `⌛ ${pd.label}`, hitId: pd.id, kind: "pending", hl: hl === pd.id, rel,
@@ -284,10 +288,10 @@ const GhostRow = memo(function GhostRow({
 });
 
 const NowRow = memo(function NowRow({
-  snap, count, g, laneOrder, laneLabels, width,
+  snap, count, g, laneOrder, laneLabels, width, proc,
 }: Omit<RowCommon, "hl" | "rel"> & {snap: SwimlaneLanesSnapshot; count: number}) {
   const p: Parts = {visuals: [], hits: []};
-  drawLanes(p, g, laneOrder, snap, snap, null, laneLabels);
+  drawLanes(p, g, laneOrder, snap, snap, null, laneLabels, proc);
   return (
     <svg className="swl-row swl-now" width={width} height={g.rowH}>
       <text className="swl-now-lbl" x={0} y={g.mid + 3}>now</text>
@@ -299,14 +303,15 @@ const NowRow = memo(function NowRow({
 });
 
 function PendingZone(
-  props: Omit<RowCommon, "hl" | "rel"> & {
+  props: Omit<RowCommon, "hl" | "rel" | "proc"> & {
     model: SwimlaneModel;
     hid: string | null;
     related: ReadonlySet<string>;
+    procId: string | null;
     clock?: number;
   },
 ) {
-  const {model, hid, related, clock, ...common} = props;
+  const {model, hid, related, procId, clock, ...common} = props;
   const [tick, setNow] = useState(() => Date.now());
   const now = clock ?? tick;
   const any = model.pending.length > 0;
@@ -320,7 +325,12 @@ function PendingZone(
   const ghosts = useMemo(() => projectPending(current, pending), [current, pending]);
   return (
     <>
-      <NowRow snap={model.current} count={model.pending.length} {...common} />
+      <NowRow
+        snap={model.current}
+        count={model.pending.length}
+        proc={procId && rowTouches({pre: model.current, post: model.current}, undefined, procId) ? procId : null}
+        {...common}
+      />
       {ghosts.map((gr) => (
         <GhostRow
           key={gr.id}
@@ -328,6 +338,7 @@ function PendingZone(
           now={now}
           hl={hid && rowTouches(gr, gr.pending.id, hid) ? hid : null}
           rel={related.has(gr.pending.id)}
+          proc={procId && rowTouches(gr, undefined, procId) ? procId : null}
           {...common}
         />
       ))}
@@ -395,6 +406,15 @@ function Defs({mk}: {mk: string}) {
   );
 }
 
+/**
+ * For a hovered transition (call / reply arrow, or outstanding reply): the
+ * call id of the caller-side activity that sent it / receives the reply.
+ */
+function processOf(m: Pick<SwimlaneModel, "spans">, t: SwimlaneTarget): string | null {
+  if (t.kind !== "transition" && t.kind !== "pending") return null;
+  return m.spans[t.id]?.parent ?? null;
+}
+
 function scrollParent(el: HTMLElement | null): HTMLElement | null {
   for (let e = el?.parentElement; e; e = e.parentElement) {
     const oy = getComputedStyle(e).overflowY;
@@ -460,9 +480,10 @@ export const SwimlaneComponent = (props: PiCardProps<SwimlaneProps, SwimlaneEven
   const details = (t: SwimlaneTarget) => {
     const m = modelRef.current;
     const related = t.kind === "state" ? undefined : relatedCallIds(m, t.id);
+    const process = processOf(m, t) ?? undefined;
     return t.kind === "pending"
-      ? {pending: m.pending.find((p) => p.id === t.id), span: m.spans[t.id], related}
-      : {span: m.spans[t.id], related};
+      ? {pending: m.pending.find((p) => p.id === t.id), span: m.spans[t.id], related, process}
+      : {span: m.spans[t.id], related, process};
   };
 
   const placeTip = (x: number, y: number) => {
@@ -522,6 +543,9 @@ export const SwimlaneComponent = (props: PiCardProps<SwimlaneProps, SwimlaneEven
     () => new Set(hid ? relatedCallIds({spans}, hid) : []),
     [hid, spans],
   );
+  // hovering a transition: also mark the process on the caller side that sent
+  // the call / receives the reply (the parent activity) — only that activity
+  const procId = hovered ? processOf(model, hovered) : null;
 
   // ── auto-follow (page or nearest scroll container) ───────────────────────
   const follow = useRef(true);
@@ -557,10 +581,11 @@ export const SwimlaneComponent = (props: PiCardProps<SwimlaneProps, SwimlaneEven
             row={r}
             hl={hid && rowTouches(r, "id" in r.event ? r.event.id : undefined, hid) ? hid : null}
             rel={"id" in r.event && r.event.type !== "done" && related.has(r.event.id)}
+            proc={procId && rowTouches(r, undefined, procId) ? procId : null}
             {...common}
           />
         ))}
-        {showPending && <PendingZone model={model} hid={hid} related={related} clock={clock} {...common} />}
+        {showPending && <PendingZone model={model} hid={hid} related={related} procId={procId} clock={clock} {...common} />}
       </div>
       <div ref={tipRef} className="swl-tooltip" role="tooltip" />
     </div>

@@ -114,6 +114,38 @@ describe("shad/swimlane component", () => {
     expect(onHoverChanged.mock.calls[0][0].related).toEqual(["c4", "c5", "c6", "c7", "c8", "c9"]);
   });
 
+  it("hovering a reply also highlights the receiving process — and only that activity", () => {
+    const {container, onHoverChanged} = renderSwimlane();
+    // c5 = orders → inventory "reserve items"; its reply is received by orders' createOrder activity (c3)
+    const replyHit = [...container.querySelectorAll("[data-kind='transition'][data-id='c5']")].find(
+      (h) => h.closest("svg")!.querySelector(".swl-ar-reply"),
+    )!;
+    fireEvent.pointerOver(replyHit);
+    const proc = [...container.querySelectorAll(".swl-act.swl-hl-proc")];
+    expect(proc.length).toBeGreaterThan(1);
+    const c3Hits = container.querySelectorAll("[data-kind='activity'][data-id='c3']").length;
+    // every segment of c3 (the "now" row draws two more, without hit zones), nothing else
+    expect(proc).toHaveLength(c3Hits + 2);
+    // all highlighted segments sit on the orders lifeline, at c3's stack position
+    const xs = new Set(proc.map((g) => g.querySelector("rect")!.getAttribute("x")));
+    expect(xs.size).toBe(1);
+    // none of the receiving process's other transitions are highlighted
+    for (const id of ["c4", "c6", "c7", "c8", "c9"]) {
+      const arrows = [...container.querySelectorAll(`[data-kind='transition'][data-id='${id}']`)]
+        .map((h) => h.closest("svg")!.querySelector(".swl-ar")!.getAttribute("class")!);
+      expect(arrows.some((c) => /swl-hl/.test(c)), id).toBe(false);
+    }
+    // the hovered call itself stays primary (call + reply)
+    expect(container.querySelectorAll(".swl-ar.swl-hl")).toHaveLength(2);
+    expect(onHoverChanged.mock.calls[0][0]).toMatchObject({process: "c3"});
+  });
+
+  it("hovering an activity does not mark a caller process", () => {
+    const {container} = renderSwimlane();
+    fireEvent.pointerOver(container.querySelector("[data-kind='activity'][data-id='c3']")!);
+    expect(container.querySelectorAll(".swl-hl-proc")).toHaveLength(0);
+  });
+
   it("applies external highlightId", () => {
     const {container} = renderSwimlane({highlightId: "c6"});
     expect(container.querySelectorAll(".swl-ar.swl-hl")).toHaveLength(2); // call + error reply

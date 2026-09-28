@@ -204,9 +204,14 @@ becomes `hid`. There are two levels:
 |---|---|---|---|
 | primary: the call itself | rows where `rowTouches(row, eventId, hid)` is true — call arrow, reply arrow, every activity segment, ghost reply | `hl = hid` | `swl-hl` (3 px) |
 | related: transitions the process creates and receives | rows whose event id is a direct child of `hid` (`relatedCallIds`) — outgoing calls, async messages and events, and the replies coming back, including outstanding (ghost) replies | `rel = true` | `swl-hl-rel` (2 px) |
+| process: the caller-side activity (transition / pending hover only) | rows whose `pre`/`post` contain `procId = spans[hovered.id].parent` — every segment of the activity that sent the call and receives its reply, including the "now" and ghost rows | `proc = procId` | `swl-hl-proc` on `.swl-act` (tinted fill, 2 px outline) |
 
 The related set is memoised on `[hid, model.spans]` and sent in
-`onHoverChanged` as `related`. All other rows keep `hl = null` and
+`onHoverChanged` as `related`. The process level exists because
+overlapping activities on one lane make it hard to see which request a reply
+lands on. It marks only that activity; its other transitions are not
+highlighted. The process id is sent as `process` in `onHoverChanged` and
+`onItemClicked`. All other rows keep `hl = null` and
 `rel = false`, so `memo()` skips them. Only direct children are included;
 grandchildren (for example a notifier's own calls while processing
 `order.created`) belong to the child's activity and light up when that

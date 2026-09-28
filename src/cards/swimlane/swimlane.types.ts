@@ -323,6 +323,11 @@ export type SwimlaneHoverChangedEvent = {
    * call and reply transitions are highlighted as well.
    */
   related?: string[];
+  /**
+   * For a hovered transition: call id of the caller-side process (activity)
+   * that sent the call and receives its reply. That activity is highlighted.
+   */
+  process?: string;
   clientX?: number;
   clientY?: number;
 };
@@ -331,6 +336,8 @@ export type SwimlaneItemClickedEvent = {
   target: SwimlaneTarget;
   span?: SwimlaneSpan;
   pending?: SwimlanePending;
+  related?: string[];
+  process?: string;
 };
 
 export type SwimlaneEvents = {
