@@ -40,6 +40,10 @@
       "type": "registry:ui"
     },
     {
+      "name": "attachment",
+      "type": "registry:component"
+    },
+    {
       "name": "avatar",
       "type": "registry:component"
     },
@@ -49,6 +53,10 @@
     },
     {
       "name": "box",
+      "type": "registry:component"
+    },
+    {
+      "name": "bubble",
       "type": "registry:component"
     },
     {
@@ -160,11 +168,19 @@
       "type": "registry:component"
     },
     {
+      "name": "message",
+      "type": "registry:component"
+    },
+    {
       "name": "modeToggle",
       "type": "registry:component"
     },
     {
       "name": "navbarSearch",
+      "type": "registry:component"
+    },
+    {
+      "name": "observable",
       "type": "registry:component"
     },
     {
@@ -229,6 +245,10 @@
     },
     {
       "name": "tabs",
+      "type": "registry:component"
+    },
+    {
+      "name": "textArea",
       "type": "registry:component"
     },
     {

@@ -3,7 +3,9 @@
   "name": "iconCard",
   "type": "registry:component",
   "description": "Pihanga iconCard card component",
-  "dependencies": [],
+  "dependencies": [
+    "lucide-react@^0.513.0"
+  ],
   "registryDependencies": [
     "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
     "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-lib-utils.json",

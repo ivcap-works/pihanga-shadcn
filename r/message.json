@@ -1,0 +1,43 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "message",
+  "type": "registry:component",
+  "description": "Pihanga message card component",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",
+    "message"
+  ],
+  "files": [
+    {
+      "path": "cards/message/index.ts",
+      "content": "import {registerCardComponent} from \"@pihanga2/core\";\n\nimport {MessageComponent} from \"./message.component\";\nimport {MessageGroupComponent} from \"./messageGroup.component\";\nimport {MESSAGE_CARD, MESSAGE_GROUP_CARD} from \"./message.types\";\n\nexport * from \"./message.types\";\n\nregisterCardComponent({\n  name: MESSAGE_CARD,\n  component: MessageComponent,\n});\n\nregisterCardComponent({\n  name: MESSAGE_GROUP_CARD,\n  component: MessageGroupComponent,\n});\n",
+      "type": "registry:component",
+      "target": "src/cards/message/index.ts"
+    },
+    {
+      "path": "cards/message/message.component.tsx",
+      "content": "import * as React from \"react\";\nimport {Card, type PiCardProps} from \"@pihanga2/core\";\nimport {\n  Message,\n  MessageAvatar,\n  MessageContent,\n  MessageFooter,\n  MessageHeader,\n} from \"@/components/ui/message\";\nimport type {MessageProps} from \"./message.types\";\n\nexport const MessageComponent = (\n  props: PiCardProps<MessageProps>,\n): React.ReactNode => {\n  const {\n    align = \"start\",\n    avatarCard,\n    headerCard,\n    contentCard,\n    footerCard,\n    className,\n    avatarClassName,\n    contentClassName,\n    headerClassName,\n    footerClassName,\n    style,\n    cardName,\n  } = props;\n\n  return (\n    <Message\n      align={align}\n      className={className}\n      style={style}\n      data-pihanga={cardName}\n    >\n      {avatarCard && (\n        <MessageAvatar className={avatarClassName}>\n          <Card cardName={avatarCard} parentCard={cardName} />\n        </MessageAvatar>\n      )}\n\n      <MessageContent className={contentClassName}>\n        {headerCard && (\n          <MessageHeader className={headerClassName}>\n            <Card cardName={headerCard} parentCard={cardName} />\n          </MessageHeader>\n        )}\n\n        <Card cardName={contentCard} parentCard={cardName} />\n\n        {footerCard && (\n          <MessageFooter className={footerClassName}>\n            <Card cardName={footerCard} parentCard={cardName} />\n          </MessageFooter>\n        )}\n      </MessageContent>\n    </Message>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/message/message.component.tsx"
+    },
+    {
+      "path": "cards/message/message.types.ts",
+      "content": "import {createCardDeclaration, type PiCardRef} from \"@pihanga2/core\";\nimport type React from \"react\";\n\nexport const MESSAGE_CARD = \"shad/message\";\n\nexport const Message = createCardDeclaration<MessageProps>(MESSAGE_CARD);\n\nexport type MessageProps = {\n  /**\n   * Alignment of the message row.\n   * - `\"start\"` — sender / left-hand messages (default).\n   * - `\"end\"` — receiver / current-user messages (right-hand side).\n   * @default \"start\"\n   */\n  align?: \"start\" | \"end\";\n\n  /**\n   * Pihanga card reference rendered inside `MessageAvatar`\n   * (typically a `shad/avatar` card). Omit to render no avatar slot.\n   */\n  avatarCard?: PiCardRef;\n\n  /**\n   * Pihanga card reference rendered above the message surface, inside\n   * `MessageHeader` (e.g. a sender name via `shad/typography`).\n   */\n  headerCard?: PiCardRef;\n\n  /**\n   * Pihanga card reference rendered as the message surface itself.\n   * Typically a `shad/bubble` card, but any card works — including\n   * \"large\" content such as a `markdown-viewer` or `shad/data-table` card.\n   */\n  contentCard: PiCardRef;\n\n  /**\n   * Pihanga card reference rendered below the message surface, inside\n   * `MessageFooter` (e.g. delivery status, timestamps, or action buttons).\n   */\n  footerCard?: PiCardRef;\n\n  /** Additional Tailwind classes applied to the root `Message` element. */\n  className?: string;\n  /** Additional Tailwind classes applied to `MessageAvatar`. */\n  avatarClassName?: string;\n  /** Additional Tailwind classes applied to `MessageContent`. */\n  contentClassName?: string;\n  /** Additional Tailwind classes applied to `MessageHeader`. */\n  headerClassName?: string;\n  /** Additional Tailwind classes applied to `MessageFooter`. */\n  footerClassName?: string;\n\n  /** Inline styles applied to the root `Message` element. */\n  style?: React.CSSProperties;\n};\n\n// ---------------------------------------------------------------------------\n// shad/message-group — stack consecutive messages from the same sender.\n// ---------------------------------------------------------------------------\n\nexport const MESSAGE_GROUP_CARD = \"shad/message-group\";\n\nexport const MessageGroup =\n  createCardDeclaration<MessageGroupProps>(MESSAGE_GROUP_CARD);\n\nexport type MessageGroupProps = {\n  /** Ordered list of `shad/message` (or other) card refs to stack. */\n  content: PiCardRef[];\n  /** Additional Tailwind classes applied to the root element. */\n  className?: string;\n  /** Inline styles applied to the root element. */\n  style?: React.CSSProperties;\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/message/message.types.ts"
+    },
+    {
+      "path": "cards/message/messageGroup.component.tsx",
+      "content": "import * as React from \"react\";\nimport {Card, type PiCardProps} from \"@pihanga2/core\";\nimport {MessageGroup} from \"@/components/ui/message\";\nimport type {MessageGroupProps} from \"./message.types\";\n\nexport const MessageGroupComponent = (\n  props: PiCardProps<MessageGroupProps>,\n): React.ReactNode => {\n  const {content, className, style, cardName} = props;\n\n  return (\n    <MessageGroup className={className} style={style} data-pihanga={cardName}>\n      {content.map((cn, i) => (\n        <Card cardName={cn} parentCard={cardName} key={i} />\n      ))}\n    </MessageGroup>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "src/cards/message/messageGroup.component.tsx"
+    },
+    {
+      "path": "cards/message/README.md",
+      "content": "Lays out a single message row in a conversation: avatar, header, message\nsurface, and footer.\n\nBuilt on the [shadcn Message](https://ui.shadcn.com/docs/components/base/message)\nprimitives (`Message`, `MessageAvatar`, `MessageContent`, `MessageHeader`,\n`MessageFooter`).\n\n`shad/message` owns the row layout only — render the visible message\nsurface with a `shad/bubble` card (or any other card) via `contentCard`.\n\n## Slots\n\n| Prop | Slot | Description |\n|---|---|---|\n| `avatarCard` | `MessageAvatar` | Optional avatar, anchored to the bottom of the row. |\n| `headerCard` | `MessageHeader` | Sender name / status, above the surface. |\n| `contentCard` | *(required)* | The message surface — typically a `shad/bubble` card. |\n| `footerCard` | `MessageFooter` | Delivery status, timestamp, or action buttons. |\n\n## Large content\n\n`contentCard` accepts **any** Pihanga card — not just `shad/bubble`. Use a\n`markdown-viewer` card directly (optionally wrapped in a ghost `shad/bubble`)\nto render rich assistant output, a `shad/data-table` for tabular results, or\nan `shad/attachment-group` for file/image attachments.\n\n## Alignment\n\nSet `align: \"end\"` for the current user's messages; `\"start\"` (default) for\nthe other party. Alignment also flips the row direction so the avatar sits\non the opposite side.\n\n## Grouping\n\nUse `shad/message-group` to stack consecutive messages from the same\nsender. Render an empty `MessageAvatar` slot (omit `avatarCard`) on the\nearlier messages and only set it on the last one to keep them visually\naligned.\n",
+      "type": "registry:file",
+      "target": "src/cards/message/README.md"
+    }
+  ]
+}

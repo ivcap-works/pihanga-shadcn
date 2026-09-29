@@ -4,7 +4,9 @@
   "type": "registry:component",
   "description": "Pihanga tabs card component",
   "dependencies": [
-    "@radix-ui/react-tabs@^1.1.13"
+    "@radix-ui/react-select@^2.2.6",
+    "@radix-ui/react-tabs@^1.1.13",
+    "lucide-react@^0.513.0"
   ],
   "registryDependencies": [
     "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json",

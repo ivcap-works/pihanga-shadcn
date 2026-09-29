@@ -4,14 +4,14 @@
   "type": "registry:component",
   "description": "Pihanga markdownViewer card component",
   "dependencies": [
-    "highlight.js@^11.11.1",
     "mermaid@^11.15.0",
-    "react-markdown@^9.0.0",
+    "react-markdown@^10.1.0",
     "rehype-highlight@^7.0.2",
-    "rehype-katex@^7.0.0",
-    "remark-gfm@^4.0.0",
+    "rehype-katex@^7.0.1",
+    "remark-gfm@^4.0.1",
     "remark-math@^6.0.0",
-    "unified@^11.0.0"
+    "unified@^11.0.5",
+    "highlight.js@^11.11.1"
   ],
   "registryDependencies": [
     "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json"

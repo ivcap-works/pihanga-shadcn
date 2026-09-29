@@ -4,9 +4,9 @@
   "type": "registry:component",
   "description": "Pihanga codeMirror card component",
   "dependencies": [
-    "@codemirror/language@^6.12.0",
-    "@codemirror/state@^6.7.0",
-    "@uiw/react-codemirror@^4.25.0"
+    "@codemirror/language@^6.12.4",
+    "@codemirror/state@^6.7.1",
+    "@uiw/react-codemirror@^4.25.11"
   ],
   "registryDependencies": [
     "https://ivcap-works.github.io/pihanga-shadcn/r/pihanga-base.json"
