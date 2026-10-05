@@ -2,7 +2,14 @@ import React, {useLayoutEffect, useRef, useState, useCallback} from "react";
 import type {PiCardProps} from "@pihanga2/core";
 import {JsonView, allExpanded, defaultStyles} from "react-json-view-lite";
 import {Copy, Check} from "lucide-react";
-import "react-json-view-lite/dist/index.css";
+// Note: react-json-view-lite's own CSS is intentionally NOT imported here.
+// Every style-name it defines is overridden below by `compactStyles` (the
+// `jv-*` classes), whose rules live entirely in "./jsonViewer.css". Importing
+// the library's own dist/index.css pulled in dead styles and, worse, caused
+// Vite to copy that CSS file into our build tree, which rollup then
+// referenced via a broken "../../node_modules/react-json-view-lite/..."
+// relative path once published to npm (external deps aren't republished with
+// the package). See jsonViewer.css for the real, already-overridden styles.
 import "./jsonViewer.css";
 
 import {getIconElement} from "@/cards/icons";

@@ -81,6 +81,7 @@ const external = [
   "clsx",
   "tailwind-merge",
   "sonner",
+  "vaul", // used by drawer card — in dependencies.json, not bundled
   "react-drag-drop-files", // used by fileDrop card — in dependencies.json, not bundled
   // ── Excluded-card deps (guard; should never appear in core source) ─────────
   "lodash",

@@ -12,7 +12,7 @@ TAR_FILE=${ROOT_DIR}/${DOMAIN}-${GIT_SHORT}-$(shell echo ${GIT_BRANCH} | sed -e 
 .DEFAULT_GOAL := help
 
 .PHONY: help install dev build build-preview gen-playground gen-registry \
-        build-core build-core-dry publish \
+        build-core build-core-dry gen-card-schema publish \
         build-extras build-extras-dry build-graphin build-chart build-markdown \
         publish-graphin publish-chart publish-markdown publish-all \
         check lint lint-fix type-check \
@@ -53,6 +53,9 @@ build-core: install ## Build @pihanga2/shadcn npm package into dist-lib/
 
 build-core-dry: ## Preview @pihanga2/shadcn build without writing files (dry-run)
 	node scripts/build-core.mjs --dry-run
+
+gen-card-schema: ## (Re)generate dist-lib/cards.schema.json from the just-built dist-lib/ (also runs automatically as part of build-core)
+	node scripts/schema/extract-card-schemas.mjs
 
 publish: check build-core ## Build and publish @pihanga2/shadcn to npm
 	cd ${ROOT_DIR}/dist-lib && npm publish --access public
