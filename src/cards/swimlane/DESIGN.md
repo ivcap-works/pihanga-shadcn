@@ -40,11 +40,12 @@ The card never stores domain data itself. It renders whatever `model` it is
 given, so everything visible (lanes, rows, run states, activities,
 outstanding messages) comes from props.
 
-## 2a. Time, steps, state labels, outcome states, lane clicks, `meta`, row ids and lane seeding
+## 2a. Time, steps, state labels, outcome states, lane clicks, `meta`, row ids, lane seeding and per-lane activity colour
 
-These address feedback #1–#5, #7, #8, #9 and #10 from §8a without changing
-the row model's shape (`SwimlaneRow` still holds exactly one event; see
-§3.2):
+These address feedback #1–#5, #7, #8, #9 and #10 from §8a (plus one
+ad-hoc request, per-lane activity colour, noted at the end) without
+changing the row model's shape (`SwimlaneRow` still holds exactly one
+event; see §3.2):
 
 - **`formatTs?: (ts: number) => string`** replaces the default
   `formatTs` export (local `HH:MM:SS.mmm`) for the timestamp column, and is
@@ -142,6 +143,33 @@ the row model's shape (`SwimlaneRow` still holds exactly one event; see
   pre-populates what those checks look at. A later `lane` event for a
   seeded lane only updates its label/meta (still no row), same as a repeat
   `lane` event for any other lane.
+- **`announce?: boolean` on `SwimlaneLaneEvent`** (also #10, for lanes that
+  only become known mid-stream — `lanes` seeding only covers lanes knowable
+  before `createSwimlaneModel` runs): `applyOne`'s `"lane"` case computes
+  `isNew = !cur[ev.lane]` *before* creating the lane, then skips the row
+  push (`return` before the `m.rows.push(row)` at the end of `applyOne`)
+  when `!isNew || ev.announce === false` — i.e. for an already-known lane
+  (as before) or for a brand-new lane that opted out. Label/meta/activity
+  style updates still run unconditionally first, so `announce: false` only
+  ever changes whether a row is drawn, never whether the lane is registered
+  or styled. `announce` is only consulted the moment a lane transitions
+  from unknown to known; a later `lane` event for an already-known lane
+  takes the `!isNew` branch regardless of its own `announce` value, so
+  there is no way to retroactively force a "joined" row for a lane that is
+  already known.
+- **Per-lane activity bar colour** (`activityClassName`/`activityStyle` on
+  `SwimlaneLaneEvent`/`SwimlaneSeedLane`): stored as `SwimlaneModel
+  .laneActivityClassName`/`.laneActivityStyle` (`Record<string, …>`,
+  "most recent `lane` event wins", same pattern as `laneLabels`/`laneMeta`).
+  `drawLanes` in `swimlane.component.tsx` takes both maps as extra
+  parameters (defaulting to `{}` so existing call sites and the `Omit<RowCommon, …>`
+  shape used by `NowRow` keep working unchanged) and applies, per lane, the
+  class to the activity `<g>` (alongside `swl-act`/`swl-hl`/`swl-hl-proc`)
+  and the style to both the `<rect>` (fill) and `<path>` (stroke) that make
+  up the bar. This was not one of the 13 requests in §8a; it was asked
+  about directly ("can I colour the activity bar per lane?") and implemented
+  the same way as the rest of §2a: additive, optional, defaulting to no
+  change in appearance when unset.
 
 ## 3. Model
 
@@ -414,7 +442,7 @@ it limits the view, not implementation order.
 | 7 | ✅ Click events on lane headers and the timestamp column | ~~No hit zone on the lane name/header dot~~ → `"lane"` target kind (§2a); the timestamp column was already covered by `"step"` (#3) | High |
 | 8 | ✅ An optional `meta` payload on events, echoed back in hover/click events | ~~Side table rebuilt on every refresh~~ → `meta` on events, echoed in `onHoverChanged`/`onItemClicked` (§2a) | High |
 | 9 | ✅ Stable, caller-chosen row ids | ~~Ids renumber on every rebuild~~ → `rowId` on events (§2a) | Medium |
-| 10 | ✅ Declare lanes up front with no "joined" row | ~~Seed lanes ourselves (reimplemented ingest)~~ → `createSwimlaneModel({lanes})` (§2a) | Medium |
+| 10 | ✅ Declare lanes up front with no "joined" row | ~~Seed lanes ourselves (reimplemented ingest)~~ → `createSwimlaneModel({lanes})` for lanes known up front, or `announce: false` on a `lane` event for ones that aren't (§2a) | Medium |
 | 12 | Lane width that fits the container | `laneWidth` is a fixed pixel size; a server-rendered guess based on lane count under-uses the available width with few lanes | Medium |
 | 13 | A distinct status for calls cut off before a reply | `SwimlaneSpan.status` is only `open`/`ok`/`error`/`done`; a call whose activity ended before it was answered is drawn as an error reply labelled "abandoned" | Low |
 
@@ -510,8 +538,15 @@ how the card is built.
 - **#10 (lanes without a "joined" row)** — implemented as proposed, but as
   `lanes?: SwimlaneSeedLane[]` (not `string[]`) so a seed can also carry a
   `label`, initial `state` and `meta`, covering the same ground a `lane`
-  event would. A "silent" flag on the `lane` event was correctly judged
-  unnecessary once seeding exists; no pushback on that call.
+  event would. Originally judged a "silent" flag on the `lane` event
+  unnecessary once seeding exists — that call needs revising: seeding only
+  covers lanes knowable *before* `createSwimlaneModel` runs, not ones a live
+  stream only reveals mid-run, which has no "rebuild the model" moment to
+  seed into. Added `announce?: boolean` on `SwimlaneLaneEvent` for that
+  case, per the follow-up request — implemented as proposed, with the
+  "`applyOne` itself decides whether to push a row" refactor suggested
+  there (`isNew` computed up front, one `return` guard covers both
+  no-row cases) rather than a caller-side special case.
 - **#12 (lane width that fits the container)** — partial pushback on the
   shape of the fix, not the goal. The report blames the server for not
   seeing the browser window, but the *component* already renders into the
@@ -568,9 +603,14 @@ part of this public styling surface — only the root element takes `style`.
   buffer and span GC, Immer safety (frozen, unshared, earlier rows keep their
   identity), projection, description, parent inference and `parentId`
   override, caller-supplied `rowId` (used, falls back on collision, survives
-  a full model rebuild), and lane seeding (`createSwimlaneModel({lanes})`
+  a full model rebuild), lane seeding (`createSwimlaneModel({lanes})`
   produces no row, a later `lane` event for a seeded lane only updates
-  label/meta, a call referencing a seeded lane adds no implicit row).
+  label/meta, a call referencing a seeded lane adds no implicit row),
+  per-lane `activityClassName`/`activityStyle` (from both a `lane` event and
+  a `lanes` seed, most recent wins), and `announce: false` (registers the
+  lane with no row, combines with activity colour/meta on the same event,
+  has no further effect once the lane is already known, and does not affect
+  lanes added implicitly by a referencing call).
 - `swimlane.component.test.tsx`: row counts, vertical names, the pending
   toggle, hover enter/leave deduplication and highlighting, click payloads,
   `highlightId`, related-transition highlighting, horizontal growth when a
@@ -583,8 +623,11 @@ part of this public styling surface — only the root element takes `style`.
   `state`/`lane` targets (including that it's `undefined` when absent), that
   an error reply gets the red `✗` mark while a successful one still gets the
   green `✓` (§7a), a `state` target with a string `rowId` resolving
-  correctly, seeded lanes rendering in the header with no row, and the
-  `style` prop applying to the root element alongside `className`.
+  correctly, seeded lanes rendering in the header with no row, the `style`
+  prop applying to the root element alongside `className`, a lane's
+  `activityClassName`/`activityStyle` applying to (only) its own activity
+  bars, and a lane announced with `announce: false` rendering in the header
+  with no row.
 
 Vitest cannot load `@pihanga2/core`'s dist (it uses extension-less ESM
 imports), so both test files `vi.mock` the few runtime helpers called at

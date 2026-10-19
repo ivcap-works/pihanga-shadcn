@@ -145,6 +145,32 @@ export type SwimlaneLaneEvent = SwimlaneEventBase & {
   lane: string;
   /** Display name (defaults to `lane`). */
   label?: string;
+  /**
+   * Extra class(es) added to this lane's activity bar (the `<g className="swl-act">`
+   * drawn on the lifeline while the lane is handling a call), alongside the
+   * default `swl-act`/highlight classes. Use this to give different lane
+   * *types* their own themed colour via CSS (e.g. `.swl-act-tool rect {
+   * fill: var(--my-tool-color); }`) instead of hard-coding colours per lane.
+   * Most recent `lane` event for a lane wins, same as `label`/`meta`.
+   */
+  activityClassName?: string;
+  /**
+   * Inline style merged onto the activity bar's `<rect>` (fill) and `<path>`
+   * (border) elements, for one-off colours that don't warrant a CSS class.
+   * Takes precedence over `activityClassName`'s rules for any property it
+   * sets. Most recent `lane` event for a lane wins, same as `label`/`meta`.
+   */
+  activityStyle?: React.CSSProperties;
+  /**
+   * When `false`, this event still registers the lane (and updates its
+   * label/meta/activity style exactly as usual) but produces no row — as if
+   * the lane had been present from the start via `createSwimlaneModel({lanes})`.
+   * Only has an effect the first time a lane is seen: a later `lane` event
+   * for an already-known lane never produces a row regardless of
+   * `announce` (same as today), so there is no way to retroactively force a
+   * "joined" row to appear for a lane once it is known. Default `true`.
+   */
+  announce?: boolean;
 };
 
 /** A service changed its run state. */
@@ -301,6 +327,10 @@ export type SwimlaneModel = {
   laneLabels: Record<string, string>;
   /** Caller `meta` from each lane's `lane` event(s), most recent wins. */
   laneMeta: Record<string, unknown>;
+  /** `activityClassName` from each lane's `lane` event(s)/seed, most recent wins. */
+  laneActivityClassName: Record<string, string>;
+  /** `activityStyle` from each lane's `lane` event(s)/seed, most recent wins. */
+  laneActivityStyle: Record<string, React.CSSProperties>;
   /** Current snapshot (== `post` of the last row). */
   current: SwimlaneLanesSnapshot;
   rows: SwimlaneRow[];

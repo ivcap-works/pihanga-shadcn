@@ -79,7 +79,24 @@ the nearest scroll container) scrolls — never the diagram itself.
   seeds `laneOrder`, `laneLabels`, `laneMeta` and the initial run state
   directly, so every seeded lane is present from the start with no `lane`
   row (no grey "joined" box). A later `lane` event for an already-seeded
-  lane only updates its label/meta, same as for any other known lane.
+  lane only updates its label/meta, same as for any other known lane. For a
+  lane that only becomes known *while the stream is already running* (so it
+  cannot be seeded up front), set `announce: false` on that lane's first
+  `lane` event instead — it still registers the lane (label/meta/activity
+  style included) but produces no row either. `announce` only matters the
+  first time a lane is seen; it has no effect on a later `lane` event for an
+  already-known lane, which never produces a row regardless.
+- **Per-lane activity bar colour:** a `lane` event (or a `createSwimlaneModel({lanes})`
+  seed) may carry `activityClassName?: string` and/or
+  `activityStyle?: React.CSSProperties`, applied to that lane's activity bar
+  (the rectangle drawn on the lifeline while the lane is handling a call) —
+  so different lane *types* (e.g. "tool" vs. "agent" activities) can be
+  told apart at a glance. Prefer `activityClassName` with your own CSS rule
+  (e.g. `.swl-act-tool rect { fill: var(--my-tool-color); }`) to stay
+  theme-token-friendly across light/dark mode; `activityStyle` sets inline
+  `fill`/`stroke` directly for one-off colours. Both apply to every call
+  handled by that lane, not to one call in particular — the per-call
+  highlight classes (`swl-hl`, `swl-hl-proc`) still layer on top.
 
 ### State and actions
 

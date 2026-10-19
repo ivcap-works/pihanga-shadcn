@@ -62,6 +62,10 @@ function drawLanes(
   laneLabels: Record<string, string>,
   /** Activity of the process that sends/receives the hovered transition. */
   proc: string | null = null,
+  /** Per-lane extra class for the activity bar (`SwimlaneLaneEvent.activityClassName`). */
+  laneActivityClassName: Record<string, string> = {},
+  /** Per-lane inline style for the activity bar (`SwimlaneLaneEvent.activityStyle`). */
+  laneActivityStyle: Record<string, React.CSSProperties> = {},
 ) {
   laneOrder.forEach((l, i) => {
     const x = laneX(g, i);
@@ -85,10 +89,23 @@ function drawLanes(
           `M${ax},${y1} V${y2} M${ax + 10},${y1} V${y2}` +
           (starts ? ` M${ax},${y1} H${ax + 10}` : "") +
           (ends ? ` M${ax},${y2} H${ax + 10}` : "");
+        // `activityStyle` is applied to both the rect (normally filled, not
+        // stroked) and the path (normally stroked, not filled) — set `fill`
+        // for the bar's background and `stroke` for its border; the same
+        // object on both elements is harmless since each only renders with
+        // the properties it has a value for.
+        const actStyle = laneActivityStyle[l];
         p.visuals.push(
-          <g key={`a-${a}-${half}`} className={clsx("swl-act", hl === a ? "swl-hl" : proc === a && "swl-hl-proc")}>
-            <rect x={ax} y={y1} width={10} height={y2 - y1} />
-            <path d={d} />
+          <g
+            key={`a-${a}-${half}`}
+            className={clsx(
+              "swl-act",
+              laneActivityClassName[l],
+              hl === a ? "swl-hl" : proc === a && "swl-hl-proc",
+            )}
+          >
+            <rect x={ax} y={y1} width={10} height={y2 - y1} style={actStyle} />
+            <path d={d} style={actStyle} />
           </g>,
         );
         p.hits.push(
@@ -193,6 +210,10 @@ type RowCommon = {
   g: Geo;
   laneOrder: string[];
   laneLabels: Record<string, string>;
+  /** Per-lane extra class for the activity bar (`SwimlaneLaneEvent.activityClassName`). */
+  laneActivityClassName: Record<string, string>;
+  /** Per-lane inline style for the activity bar (`SwimlaneLaneEvent.activityStyle`). */
+  laneActivityStyle: Record<string, React.CSSProperties>;
   width: number;
   hl: string | null;
   /** True when this row's transition belongs to a child of the highlighted call. */
@@ -204,7 +225,7 @@ type RowCommon = {
 };
 
 const RealRow = memo(function RealRow({
-  row, g, laneOrder, laneLabels, width, hl, rel, proc, fmtTs, grouped, stepHl,
+  row, g, laneOrder, laneLabels, laneActivityClassName, laneActivityStyle, width, hl, rel, proc, fmtTs, grouped, stepHl,
 }: RowCommon & {
   row: SwimlaneRow;
   /** Shares `step` with the previous row: draw a tie mark instead of a timestamp. */
@@ -214,7 +235,7 @@ const RealRow = memo(function RealRow({
 }) {
   const p: Parts = {visuals: [], hits: []};
   const idx = (l: string) => laneOrder.indexOf(l);
-  drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels, proc);
+  drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels, proc, laneActivityClassName, laneActivityStyle);
   const ev = row.event;
   switch (ev.type) {
     case "call": {
@@ -311,13 +332,14 @@ const RealRow = memo(function RealRow({
 const DEF_FORMAT_WAIT = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
 
 const GhostRow = memo(function GhostRow({
-  row, g, laneOrder, laneLabels, width, hl, rel, proc, now, formatWait = DEF_FORMAT_WAIT,
+  row, g, laneOrder, laneLabels, laneActivityClassName, laneActivityStyle, width, hl, rel, proc, now,
+  formatWait = DEF_FORMAT_WAIT,
 }: RowCommon & {row: SwimlaneGhostRow; now: number; formatWait?: (ms: number) => string}) {
   const p: Parts = {visuals: [], hits: []};
   const pd = row.pending;
   const waited = now - pd.since;
   const overdue = pd.timeoutMs != null && waited > pd.timeoutMs;
-  drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels, proc);
+  drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels, proc, laneActivityClassName, laneActivityStyle);
   drawArrow(p, g, (l) => laneOrder.indexOf(l), {
     from: pd.from, to: pd.to, cls: clsx("swl-ar-ghost", overdue && "swl-overdue"), marker: "ghost",
     label: `⌛ ${pd.label}`, hitId: pd.id, kind: "pending", hl: hl === pd.id, rel,
@@ -334,10 +356,10 @@ const GhostRow = memo(function GhostRow({
 });
 
 const NowRow = memo(function NowRow({
-  snap, count, g, laneOrder, laneLabels, width, proc,
+  snap, count, g, laneOrder, laneLabels, laneActivityClassName, laneActivityStyle, width, proc,
 }: Omit<RowCommon, "hl" | "rel"> & {snap: SwimlaneLanesSnapshot; count: number}) {
   const p: Parts = {visuals: [], hits: []};
-  drawLanes(p, g, laneOrder, snap, snap, null, laneLabels, proc);
+  drawLanes(p, g, laneOrder, snap, snap, null, laneLabels, proc, laneActivityClassName, laneActivityStyle);
   return (
     <svg className="swl-row swl-now" width={width} height={g.rowH}>
       <text className="swl-now-lbl" x={0} y={g.mid + 3}>now</text>
@@ -513,7 +535,15 @@ export const SwimlaneComponent = (props: PiCardProps<SwimlaneProps, SwimlaneEven
     [laneWidth, rowHeight, gutterWidth, mk],
   );
   const width = gutterWidth + model.laneOrder.length * laneWidth + 140; // + room for labels
-  const common = {g, laneOrder: model.laneOrder, laneLabels: model.laneLabels, width, fmtTs};
+  const common = {
+    g,
+    laneOrder: model.laneOrder,
+    laneLabels: model.laneLabels,
+    laneActivityClassName: model.laneActivityClassName,
+    laneActivityStyle: model.laneActivityStyle,
+    width,
+    fmtTs,
+  };
 
   const rootRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);

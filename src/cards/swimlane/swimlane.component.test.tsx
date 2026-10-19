@@ -416,6 +416,37 @@ describe("shad/swimlane with a caller-chosen `rowId`", () => {
     expect([...container.querySelectorAll(".swl-lane-name")].map((n) => n.textContent)).toContain("Pre-seeded");
     expect(container.querySelectorAll("svg.swl-row:not(.swl-ghost):not(.swl-now)")).toHaveLength(0);
   });
+
+  it("a lane announced with announce: false renders in the header with no row", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [{type: "lane", lane: "quiet", label: "Quiet", announce: false}]);
+    const {container} = renderSwimlane({model: m});
+    expect([...container.querySelectorAll(".swl-lane-name")].map((n) => n.textContent)).toContain("Quiet");
+    expect(container.querySelectorAll("svg.swl-row:not(.swl-ghost):not(.swl-now)")).toHaveLength(0);
+  });
+});
+
+describe("shad/swimlane per-lane activity colour (activityClassName / activityStyle)", () => {
+  it("applies the lane's activityClassName and activityStyle to its activity bar", () => {
+    const base = buildDemoModel({t0: 0});
+    const next = produce(base, (d) => {
+      ingestSwimlaneEvents(d, [
+        {type: "lane", lane: "gateway", activityClassName: "swl-act-tool", activityStyle: {fill: "rgb(255, 0, 0)"}},
+      ]);
+    });
+    const {container} = renderSwimlane({model: next});
+    const bars = [...container.querySelectorAll(".swl-act.swl-act-tool")];
+    expect(bars.length).toBeGreaterThan(0);
+    const rect = bars[0].querySelector("rect")!;
+    expect(rect.style.fill).toBe("rgb(255, 0, 0)");
+  });
+
+  it("does not apply a class/style to lanes without one", () => {
+    const {container} = renderSwimlane();
+    const bars = [...container.querySelectorAll(".swl-act")];
+    expect(bars.length).toBeGreaterThan(0);
+    for (const b of bars) expect(b.classList.contains("swl-act-tool")).toBe(false);
+  });
 });
 
 describe("shad/swimlane is driven entirely by props", () => {

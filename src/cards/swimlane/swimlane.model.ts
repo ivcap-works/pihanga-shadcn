@@ -15,6 +15,7 @@
  * ever referenced from two places in the state tree (Immer-safe, serialisable).
  */
 import type {PiRegister, ReduxState} from "@pihanga2/core";
+import type React from "react";
 
 import {
   DEF_MAX_ROWS,
@@ -38,6 +39,10 @@ export type SwimlaneSeedLane = {
   /** Initial run state. Default `"created"`, same as an ordinary `lane` event. */
   state?: SwimlaneRunState;
   meta?: unknown;
+  /** See `SwimlaneLaneEvent.activityClassName`. */
+  activityClassName?: string;
+  /** See `SwimlaneLaneEvent.activityStyle`. */
+  activityStyle?: React.CSSProperties;
 };
 
 export function createSwimlaneModel(
@@ -46,6 +51,8 @@ export function createSwimlaneModel(
   const laneOrder: string[] = [];
   const laneLabels: Record<string, string> = {};
   const laneMeta: Record<string, unknown> = {};
+  const laneActivityClassName: Record<string, string> = {};
+  const laneActivityStyle: Record<string, React.CSSProperties> = {};
   const current: SwimlaneLanesSnapshot = {};
   for (const l of opts.lanes ?? []) {
     if (current[l.lane]) continue; // ignore duplicates, first wins
@@ -53,11 +60,15 @@ export function createSwimlaneModel(
     current[l.lane] = {state: l.state ?? "created", acts: []};
     if (l.label) laneLabels[l.lane] = l.label;
     if ("meta" in l) laneMeta[l.lane] = l.meta;
+    if (l.activityClassName) laneActivityClassName[l.lane] = l.activityClassName;
+    if (l.activityStyle) laneActivityStyle[l.lane] = l.activityStyle;
   }
   return {
     laneOrder,
     laneLabels,
     laneMeta,
+    laneActivityClassName,
+    laneActivityStyle,
     current,
     rows: [],
     pending: [],
@@ -145,13 +156,21 @@ function applyOne(m: SwimlaneModel, ev: SwimlaneEvent, ts: number): void {
   let route: SwimlaneRow["route"];
 
   switch (ev.type) {
-    case "lane":
+    case "lane": {
       if (ev.label) m.laneLabels[ev.lane] = ev.label;
       if ("meta" in ev) m.laneMeta[ev.lane] = ev.meta;
-      if (cur[ev.lane]) return; // already known → only a label/meta update
-      cur[ev.lane] = {state: "created", acts: []};
-      m.laneOrder.push(ev.lane);
+      if (ev.activityClassName) m.laneActivityClassName[ev.lane] = ev.activityClassName;
+      if (ev.activityStyle) m.laneActivityStyle[ev.lane] = ev.activityStyle;
+      const isNew = !cur[ev.lane];
+      if (isNew) {
+        cur[ev.lane] = {state: "created", acts: []};
+        m.laneOrder.push(ev.lane);
+      }
+      // no row for: an already-known lane (label/meta/style-only update), or
+      // a brand-new lane whose announcement opted out via `announce: false`
+      if (!isNew || ev.announce === false) return;
       break;
+    }
     case "state":
       cur[ev.lane].state = ev.state;
       break;

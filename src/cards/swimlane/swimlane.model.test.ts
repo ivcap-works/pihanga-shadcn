@@ -99,6 +99,60 @@ describe("swimlane model", () => {
     expect(m.pending.find((p) => p.id === "x1")?.meta).toEqual({ref: "expect-1"});
   });
 
+  it("stores per-lane activityClassName/activityStyle from a `lane` event, most recent wins", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [
+      {type: "lane", lane: "a", activityClassName: "swl-act-tool", activityStyle: {fill: "red"}},
+      {type: "lane", lane: "a", activityStyle: {fill: "blue"}}, // label/meta-style update, no new row
+    ]);
+    expect(m.laneActivityClassName.a).toBe("swl-act-tool");
+    expect(m.laneActivityStyle.a).toEqual({fill: "blue"});
+    expect(m.rows).toHaveLength(1); // only the first `lane` event creates a row
+  });
+
+  it("seeds per-lane activityClassName/activityStyle via createSwimlaneModel({lanes})", () => {
+    const m = createSwimlaneModel({
+      lanes: [{lane: "a", activityClassName: "swl-act-tool", activityStyle: {fill: "red", stroke: "darkred"}}],
+    });
+    expect(m.laneActivityClassName.a).toBe("swl-act-tool");
+    expect(m.laneActivityStyle.a).toEqual({fill: "red", stroke: "darkred"});
+  });
+
+  it("a `lane` event with announce: false registers the lane but produces no row", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [{type: "lane", lane: "a", label: "Alpha", announce: false}]);
+    expect(m.laneOrder).toEqual(["a"]);
+    expect(m.laneLabels.a).toBe("Alpha");
+    expect(m.current.a).toEqual({state: "created", acts: []});
+    expect(m.rows).toHaveLength(0);
+  });
+
+  it("announce: false still has an effect alongside activity colour/meta on the same event", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [
+      {type: "lane", lane: "a", activityClassName: "swl-act-tool", meta: {ref: "A"}, announce: false},
+    ]);
+    expect(m.laneActivityClassName.a).toBe("swl-act-tool");
+    expect(m.laneMeta.a).toEqual({ref: "A"});
+    expect(m.rows).toHaveLength(0);
+  });
+
+  it("announce: false has no effect once the lane is already known (still no row, as usual)", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [
+      {type: "lane", lane: "a"}, // announces normally, 1 row
+      {type: "lane", lane: "a", label: "Alpha", announce: false}, // already known either way
+    ]);
+    expect(m.rows).toHaveLength(1);
+    expect(m.laneLabels.a).toBe("Alpha");
+  });
+
+  it("a lane referenced implicitly by a call is still announced with a row (announce defaults to true)", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [{type: "call", kind: "event", id: "e1", from: "a", to: "b", label: "x"}]);
+    expect(m.rows.map((r) => r.event.type)).toEqual(["lane", "lane", "call"]);
+  });
+
   it("uses a caller-supplied `rowId` as the row's id instead of the internal counter", () => {
     const m = createSwimlaneModel();
     ingestSwimlaneEvents(m, [
