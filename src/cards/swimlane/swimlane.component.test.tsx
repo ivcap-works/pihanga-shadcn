@@ -19,7 +19,7 @@ import {SwimlaneComponent} from "./swimlane.component";
 import {produce} from "immer";
 
 import {buildDemoModel} from "./swimlane.demo";
-import {ingestSwimlaneEvents} from "./swimlane.model";
+import {createSwimlaneModel, ingestSwimlaneEvents} from "./swimlane.model";
 import type {SwimlaneEvents, SwimlaneProps} from "./swimlane.types";
 
 function renderSwimlane(props: Partial<SwimlaneProps> = {}) {
@@ -46,6 +46,12 @@ describe("shad/swimlane component", () => {
     expect(container.querySelectorAll("svg.swl-row:not(.swl-ghost):not(.swl-now)")).toHaveLength(model.rows.length);
     expect(container.querySelectorAll("svg.swl-ghost")).toHaveLength(model.pending.length);
     expect(container.querySelectorAll("svg.swl-now")).toHaveLength(1);
+  });
+
+  it("applies the `style` prop to the root element, alongside `className`", () => {
+    const {container} = renderSwimlane({style: {maxWidth: 640}});
+    const root = container.querySelector("[data-pihanga='test/swimlane']") as HTMLElement;
+    expect(root.style.maxWidth).toBe("640px");
   });
 
   it("renders vertical lane names in the header", () => {
@@ -146,9 +152,269 @@ describe("shad/swimlane component", () => {
     expect(container.querySelectorAll(".swl-hl-proc")).toHaveLength(0);
   });
 
+  it("draws an error mark (not a green tick) for a reply that arrived as an error", () => {
+    const {container} = renderSwimlane();
+    // c6 ("402 declined") is the only non-ok reply in the demo script; both
+    // rows (the call and its reply) share data-id="c6", the reply row is
+    // the second one and is the one with the "fulfilled" mark
+    const c6Rows = [...container.querySelectorAll("[data-kind='transition'][data-id='c6']")].map(
+      (h) => h.closest("svg")!,
+    );
+    const errorRow = c6Rows[c6Rows.length - 1];
+    const ok = errorRow.querySelector(".swl-ok")!;
+    expect(ok).not.toBeNull();
+    expect(ok.classList.contains("swl-ok-error")).toBe(true);
+    expect(ok.textContent).toContain("✗");
+    expect(ok.textContent).not.toContain("✓");
+    // a successful reply still gets the green tick
+    const c7Rows = [...container.querySelectorAll("[data-kind='transition'][data-id='c7']")].map(
+      (h) => h.closest("svg")!,
+    );
+    const okMark = c7Rows[c7Rows.length - 1].querySelector(".swl-ok")!;
+    expect(okMark.classList.contains("swl-ok-error")).toBe(false);
+    expect(okMark.textContent).toContain("✓");
+    expect(okMark.textContent).not.toContain("✗");
+  });
+
   it("applies external highlightId", () => {
     const {container} = renderSwimlane({highlightId: "c6"});
     expect(container.querySelectorAll(".swl-ar.swl-hl")).toHaveLength(2); // call + error reply
+  });
+
+  it("formats row timestamps with a custom formatTs prop", () => {
+    const {container} = renderSwimlane({formatTs: (ts) => `virtual-${ts}`});
+    const first = container.querySelector("svg.swl-row:not(.swl-ghost):not(.swl-now) .swl-ts")!;
+    expect(first.textContent).toMatch(/^virtual-\d+$/);
+  });
+
+  it("formats the outstanding 'waiting …' timers with a custom formatWait prop", () => {
+    const x1 = buildDemoModel({t0: 0}).pending.find((p) => p.id === "x1")!;
+    const {container} = renderSwimlane({
+      model: buildDemoModel({t0: 0}),
+      now: x1.since + 2500,
+      formatWait: (ms) => `${ms}ms`,
+    });
+    const label = container.querySelector("[data-id='x1']")!.closest("svg")!.querySelector(".swl-ts")!;
+    expect(label.textContent).toBe("waiting 2500ms");
+  });
+
+  it("groups rows that share a `step`: no repeated timestamp, a tie mark instead", () => {
+    const base = buildDemoModel({t0: 0});
+    const next = produce(base, (d) => {
+      ingestSwimlaneEvents(d, [
+        {type: "state", lane: "gateway", state: "degraded", ts: 99_000, step: "s1"},
+        {type: "call", kind: "event", id: "g1", from: "gateway", to: "orders", label: "ping", ts: 99_000, step: "s1"},
+      ]);
+    });
+    const {container} = renderSwimlane({model: next});
+    const rows = [...container.querySelectorAll("svg.swl-row:not(.swl-ghost):not(.swl-now)")];
+    const last = rows[rows.length - 1];
+    const prev = rows[rows.length - 2];
+    // first row of the step still shows its timestamp
+    expect(prev.querySelector(".swl-ts")).not.toBeNull();
+    // second row of the same step shows a tie mark, not a timestamp
+    expect(last.classList.contains("swl-grouped")).toBe(true);
+    expect(last.querySelector(".swl-ts")).toBeNull();
+    expect(last.querySelector(".swl-ts-tie")).not.toBeNull();
+  });
+
+  it("does not group rows with different (or missing) `step`", () => {
+    const base = buildDemoModel({t0: 0});
+    const next = produce(base, (d) => {
+      ingestSwimlaneEvents(d, [
+        {type: "state", lane: "gateway", state: "degraded", ts: 99_000, step: "s1"},
+        {type: "call", kind: "event", id: "g1", from: "gateway", to: "orders", label: "ping", ts: 99_500, step: "s2"},
+      ]);
+    });
+    const {container} = renderSwimlane({model: next});
+    const rows = [...container.querySelectorAll("svg.swl-row:not(.swl-ghost):not(.swl-now)")];
+    const last = rows[rows.length - 1];
+    expect(last.classList.contains("swl-grouped")).toBe(false);
+    expect(last.querySelector(".swl-ts")).not.toBeNull();
+  });
+
+  it("hides the state-dot label when showLabel is false, shows it by default", () => {
+    const base = buildDemoModel({t0: 0});
+    const next = produce(base, (d) => {
+      ingestSwimlaneEvents(d, [
+        {type: "state", lane: "gateway", state: "degraded", ts: 99_000},
+        {type: "state", lane: "gateway", state: "running", ts: 99_100, showLabel: false},
+      ]);
+    });
+    const {container} = renderSwimlane({model: next});
+    const rows = [...container.querySelectorAll("svg.swl-row:not(.swl-ghost):not(.swl-now)")];
+    const withLabel = rows[rows.length - 2];
+    const withoutLabel = rows[rows.length - 1];
+    expect(withLabel.querySelector(".swl-lbl-muted")).not.toBeNull();
+    expect(withLabel.querySelector(".swl-dot-degraded")).not.toBeNull();
+    expect(withoutLabel.querySelector(".swl-lbl-muted")).toBeNull();
+    expect(withoutLabel.querySelector(".swl-dot-running")).not.toBeNull();
+  });
+
+  it("draws the new one-shot outcome states (in_progress / succeeded / failed)", () => {
+    const base = buildDemoModel({t0: 0});
+    const next = produce(base, (d) => {
+      ingestSwimlaneEvents(d, [
+        {type: "state", lane: "gateway", state: "in_progress", ts: 99_000},
+        {type: "state", lane: "gateway", state: "succeeded", ts: 99_100},
+        {type: "state", lane: "gateway", state: "failed", ts: 99_200},
+      ]);
+    });
+    const {container} = renderSwimlane({model: next});
+    expect(container.querySelector(".swl-dot-in_progress")).not.toBeNull();
+    expect(container.querySelector(".swl-dot-succeeded")).not.toBeNull();
+    expect(container.querySelector(".swl-dot-failed")).not.toBeNull();
+  });
+
+  it("hovering a timestamp highlights every row of its step and reports them", () => {
+    const base = buildDemoModel({t0: 0});
+    const next = produce(base, (d) => {
+      ingestSwimlaneEvents(d, [
+        {type: "state", lane: "gateway", state: "degraded", ts: 99_000, step: "s1"},
+        {type: "call", kind: "event", id: "g1", from: "gateway", to: "orders", label: "ping", ts: 99_000, step: "s1"},
+      ]);
+    });
+    const {container, onHoverChanged} = renderSwimlane({model: next});
+    const rows = [...container.querySelectorAll("svg.swl-row:not(.swl-ghost):not(.swl-now)")];
+    const first = rows[rows.length - 2];
+    const second = rows[rows.length - 1];
+    const stepHit = first.querySelector("[data-kind='step']")!;
+    fireEvent.pointerOver(stepHit);
+    expect(first.classList.contains("swl-hl-step")).toBe(true);
+    expect(second.classList.contains("swl-hl-step")).toBe(true);
+    expect(onHoverChanged).toHaveBeenCalledTimes(1);
+    const call = onHoverChanged.mock.calls[0][0];
+    expect(call.target).toMatchObject({kind: "step"});
+    expect(call.steps).toHaveLength(2);
+  });
+
+  it("clicking a timestamp emits onItemClicked with the step's rows", () => {
+    const base = buildDemoModel({t0: 0});
+    const next = produce(base, (d) => {
+      ingestSwimlaneEvents(d, [
+        {type: "state", lane: "gateway", state: "degraded", ts: 99_000, step: "s1"},
+        {type: "call", kind: "event", id: "g1", from: "gateway", to: "orders", label: "ping", ts: 99_000, step: "s1"},
+      ]);
+    });
+    const {container, onItemClicked} = renderSwimlane({model: next});
+    const rows = [...container.querySelectorAll("svg.swl-row:not(.swl-ghost):not(.swl-now)")];
+    const stepHit = rows[rows.length - 2].querySelector("[data-kind='step']")!;
+    fireEvent.click(stepHit);
+    expect(onItemClicked).toHaveBeenCalledTimes(1);
+    const payload = onItemClicked.mock.calls[0][0];
+    expect(payload.target.kind).toBe("step");
+    expect(payload.steps).toHaveLength(2);
+  });
+
+  it("rows without a `step` are their own step when their timestamp is hovered", () => {
+    const {container, onHoverChanged} = renderSwimlane();
+    const rows = [...container.querySelectorAll("svg.swl-row:not(.swl-ghost):not(.swl-now)")];
+    const stepHit = rows[0].querySelector("[data-kind='step']")!;
+    fireEvent.pointerOver(stepHit);
+    expect(rows[0].classList.contains("swl-hl-step")).toBe(true);
+    expect(rows[1].classList.contains("swl-hl-step")).toBe(false);
+    expect(onHoverChanged.mock.calls[0][0].steps).toHaveLength(1);
+  });
+
+  it("hovering a lane header reports a `lane` target", () => {
+    const {container, onHoverChanged} = renderSwimlane();
+    const laneHit = container.querySelector("[data-kind='lane'][data-id='gateway']")!;
+    fireEvent.pointerOver(laneHit);
+    expect(onHoverChanged).toHaveBeenCalledTimes(1);
+    expect(onHoverChanged.mock.calls[0][0].target).toMatchObject({kind: "lane", id: "gateway"});
+  });
+
+  it("clicking a lane header emits onItemClicked with a `lane` target", () => {
+    const {container, onItemClicked} = renderSwimlane();
+    const laneHit = container.querySelector("[data-kind='lane'][data-id='gateway']")!;
+    fireEvent.click(laneHit);
+    expect(onItemClicked).toHaveBeenCalledTimes(1);
+    expect(onItemClicked.mock.calls[0][0].target).toMatchObject({kind: "lane", id: "gateway"});
+  });
+
+  it("every lane gets its own header hit zone", () => {
+    const {container} = renderSwimlane();
+    const model = buildDemoModel({t0: 0});
+    expect(container.querySelectorAll("[data-kind='lane']")).toHaveLength(model.laneOrder.length);
+  });
+});
+
+describe("shad/swimlane echoes caller `meta` in hover/click events", () => {
+  function modelWithMeta() {
+    const base = buildDemoModel({t0: 0});
+    return produce(base, (d) => {
+      ingestSwimlaneEvents(d, [
+        {type: "lane", lane: "billing", label: "billing-svc", ts: 99_000, meta: {kind: "lane", ref: "L1"}},
+        {type: "state", lane: "billing", state: "running", ts: 99_100, meta: {kind: "state", ref: "S1"}},
+        {
+          type: "call",
+          kind: "sync",
+          id: "m1",
+          from: "gateway",
+          to: "billing",
+          label: "charge",
+          ts: 99_200,
+          meta: {kind: "call", ref: "C1"},
+        },
+      ]);
+    });
+  }
+
+  it("echoes a call's `meta` for its transition and activity targets", () => {
+    const {container, onHoverChanged} = renderSwimlane({model: modelWithMeta()});
+    const hit = container.querySelector("[data-kind='transition'][data-id='m1']")!;
+    fireEvent.pointerOver(hit);
+    expect(onHoverChanged.mock.calls[0][0].meta).toEqual({kind: "call", ref: "C1"});
+  });
+
+  it("echoes a call's `meta` for its implied outstanding reply (pending)", () => {
+    const {container, onHoverChanged} = renderSwimlane({model: modelWithMeta()});
+    const hit = container.querySelector("[data-kind='pending'][data-id='m1']")!;
+    fireEvent.pointerOver(hit);
+    expect(onHoverChanged.mock.calls[0][0].meta).toEqual({kind: "call", ref: "C1"});
+  });
+
+  it("echoes a state event's `meta`", () => {
+    const {container, onItemClicked} = renderSwimlane({model: modelWithMeta()});
+    const hit = container.querySelector("[data-kind='state'][data-lane='billing']")!;
+    fireEvent.click(hit);
+    expect(onItemClicked.mock.calls[0][0].meta).toEqual({kind: "state", ref: "S1"});
+  });
+
+  it("echoes a lane event's `meta`", () => {
+    const {container, onItemClicked} = renderSwimlane({model: modelWithMeta()});
+    const hit = container.querySelector("[data-kind='lane'][data-id='billing']")!;
+    fireEvent.click(hit);
+    expect(onItemClicked.mock.calls[0][0].meta).toEqual({kind: "lane", ref: "L1"});
+  });
+
+  it("omits `meta` when the event carried none", () => {
+    const {container, onHoverChanged} = renderSwimlane();
+    const hit = container.querySelector("[data-kind='transition'][data-id='c3']")!;
+    fireEvent.pointerOver(hit);
+    expect(onHoverChanged.mock.calls[0][0].meta).toBeUndefined();
+  });
+});
+
+describe("shad/swimlane with a caller-chosen `rowId`", () => {
+  it("resolves a `state` target's meta/description even when the row has a string `rowId`", () => {
+    const base = buildDemoModel({t0: 0});
+    const next = produce(base, (d) => {
+      ingestSwimlaneEvents(d, [
+        {type: "state", lane: "gateway", state: "degraded", ts: 99_000, rowId: "evt-99", meta: {ref: "S-99"}},
+      ]);
+    });
+    const {container, onHoverChanged} = renderSwimlane({model: next});
+    const hit = container.querySelector("[data-kind='state'][data-row='evt-99']")!;
+    fireEvent.pointerOver(hit);
+    expect(onHoverChanged.mock.calls[0][0].meta).toEqual({ref: "S-99"});
+  });
+
+  it("seeded lanes render in the header with no corresponding row", () => {
+    const m = createSwimlaneModel({lanes: [{lane: "pre-seeded", label: "Pre-seeded"}]});
+    const {container} = renderSwimlane({model: m});
+    expect([...container.querySelectorAll(".swl-lane-name")].map((n) => n.textContent)).toContain("Pre-seeded");
+    expect(container.querySelectorAll("svg.swl-row:not(.swl-ghost):not(.swl-now)")).toHaveLength(0);
   });
 });
 

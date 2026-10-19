@@ -27,16 +27,38 @@ import {
   type SwimlanePending,
   type SwimlaneRow,
   type SwimlaneRowEvent,
+  type SwimlaneRowId,
+  type SwimlaneRunState,
   type SwimlaneTarget,
 } from "./swimlane.types";
 
+export type SwimlaneSeedLane = {
+  lane: string;
+  label?: string;
+  /** Initial run state. Default `"created"`, same as an ordinary `lane` event. */
+  state?: SwimlaneRunState;
+  meta?: unknown;
+};
+
 export function createSwimlaneModel(
-  opts: {maxRows?: number} = {},
+  opts: {maxRows?: number; lanes?: SwimlaneSeedLane[]} = {},
 ): SwimlaneModel {
+  const laneOrder: string[] = [];
+  const laneLabels: Record<string, string> = {};
+  const laneMeta: Record<string, unknown> = {};
+  const current: SwimlaneLanesSnapshot = {};
+  for (const l of opts.lanes ?? []) {
+    if (current[l.lane]) continue; // ignore duplicates, first wins
+    laneOrder.push(l.lane);
+    current[l.lane] = {state: l.state ?? "created", acts: []};
+    if (l.label) laneLabels[l.lane] = l.label;
+    if ("meta" in l) laneMeta[l.lane] = l.meta;
+  }
   return {
-    laneOrder: [],
-    laneLabels: {},
-    current: {},
+    laneOrder,
+    laneLabels,
+    laneMeta,
+    current,
     rows: [],
     pending: [],
     spans: {},
@@ -51,6 +73,16 @@ function copySnapshot(s: SwimlaneLanesSnapshot): SwimlaneLanesSnapshot {
     out[k] = {state: s[k].state, acts: [...s[k].acts]};
   }
   return out;
+}
+
+/**
+ * The id to assign a new row for `ev`: its own `rowId` when set and not
+ * already in use by an existing row, the model's internal counter
+ * otherwise. See `SwimlaneEventBase.rowId`.
+ */
+function rowId(m: SwimlaneModel, ev: SwimlaneEvent): SwimlaneRowId {
+  if (ev.rowId != null && !m.rows.some((r) => r.id === ev.rowId)) return ev.rowId;
+  return ++m.seq;
 }
 
 /** Lanes an event refers to (used to add lanes implicitly). */
@@ -104,6 +136,7 @@ function applyOne(m: SwimlaneModel, ev: SwimlaneEvent, ts: number): void {
       label: ev.label,
       since: ts,
       timeoutMs: ev.timeoutMs,
+      meta: ev.meta,
     });
     return;
   }
@@ -114,7 +147,8 @@ function applyOne(m: SwimlaneModel, ev: SwimlaneEvent, ts: number): void {
   switch (ev.type) {
     case "lane":
       if (ev.label) m.laneLabels[ev.lane] = ev.label;
-      if (cur[ev.lane]) return; // already known → only a label update
+      if ("meta" in ev) m.laneMeta[ev.lane] = ev.meta;
+      if (cur[ev.lane]) return; // already known → only a label/meta update
       cur[ev.lane] = {state: "created", acts: []};
       m.laneOrder.push(ev.lane);
       break;
@@ -134,6 +168,7 @@ function applyOne(m: SwimlaneModel, ev: SwimlaneEvent, ts: number): void {
         start: ts,
         end: ev.kind === "event" ? ts : undefined,
         status: ev.kind === "event" ? "done" : "open",
+        meta: ev.meta,
       };
       if (parent && parent !== ev.id) m.spans[ev.id].parent = parent;
       if (ev.kind !== "event") cur[ev.to].acts.push(ev.id);
@@ -176,11 +211,12 @@ function applyOne(m: SwimlaneModel, ev: SwimlaneEvent, ts: number): void {
       label: `reply: ${ev.label}`,
       since: ts,
       timeoutMs: ev.timeoutMs,
+      meta: ev.meta,
     });
   }
 
   const row: SwimlaneRow = {
-    id: ++m.seq,
+    id: rowId(m, ev),
     event: {...ev, ts} as SwimlaneRowEvent,
     pre,
     post: copySnapshot(cur),
@@ -258,6 +294,19 @@ export function rowTouches(
   return false;
 }
 
+/**
+ * Identifies the "step" a row belongs to: rows that share an explicit
+ * `step` value, or the row itself when it has none (a step of one event).
+ */
+export function stepKeyOf(r: Pick<SwimlaneRow, "id" | "event">): string {
+  return r.event.step != null ? `step:${r.event.step}` : `row:${r.id}`;
+}
+
+/** Every row belonging to the same step as `t` (see `stepKeyOf`), in `model.rows` order. */
+export function stepRows(m: SwimlaneModel, stepId: string): SwimlaneRow[] {
+  return m.rows.filter((r) => stepKeyOf(r) === stepId);
+}
+
 export function formatTs(t: number): string {
   const d = new Date(t);
   const p = (n: number, w = 2) => String(n).padStart(w, "0");
@@ -269,11 +318,24 @@ export function describeSwimlaneTarget(
   m: SwimlaneModel,
   t: SwimlaneTarget,
   now: number = Date.now(),
+  fmtTs: (ts: number) => string = formatTs,
 ): string {
   if (t.kind === "state") {
-    const r = m.rows.find((x) => x.id === t.rowId);
+    // `rowId` may come from a DOM dataset (always a string) or be set
+    // programmatically as a number, so compare stringified.
+    const r = m.rows.find((x) => String(x.id) === String(t.rowId));
     if (!r || r.event.type !== "state") return t.id;
-    return `${t.lane} → ${r.event.state} at ${formatTs(r.event.ts)}`;
+    return `${t.lane} → ${r.event.state} at ${fmtTs(r.event.ts)}`;
+  }
+  if (t.kind === "step") {
+    const rows = stepRows(m, t.id);
+    if (rows.length === 0) return t.id;
+    const kinds = rows.map((r) => r.event.type).join(", ");
+    return `step at ${fmtTs(rows[0].event.ts)} · ${rows.length} event${rows.length === 1 ? "" : "s"} (${kinds})`;
+  }
+  if (t.kind === "lane") {
+    const s = m.current[t.id];
+    return `${m.laneLabels[t.id] ?? t.id}${s ? ` · ${s.state}` : ""}`;
   }
   if (t.kind === "pending") {
     const p = m.pending.find((x) => x.id === t.id);
@@ -290,7 +352,7 @@ export function describeSwimlaneTarget(
   const dur = s.end != null ? `${s.end - s.start} ms` : `running ${now - s.start} ms`;
   const res = s.result ? ` (${s.result})` : "";
   if (t.kind === "activity") {
-    return `${s.to} handling "${s.label}" from ${s.from} · started ${formatTs(s.start)} · ${dur}${res}`;
+    return `${s.to} handling "${s.label}" from ${s.from} · started ${fmtTs(s.start)} · ${dur}${res}`;
   }
   return `${s.kind.toUpperCase()} ${s.from} → ${s.to}: "${s.label}" · ${s.status}${res} · ${dur}`;
 }

@@ -21,6 +21,8 @@ import {
   ingestSwimlaneEvents,
   projectPending,
   relatedCallIds,
+  stepKeyOf,
+  stepRows,
 } from "./swimlane.model";
 import {buildDemoModel} from "./swimlane.demo";
 import type {SwimlaneModel} from "./swimlane.types";
@@ -79,6 +81,89 @@ describe("swimlane model", () => {
     ]);
     expect(m.rows).toHaveLength(1);
     expect(m.laneLabels.a).toBe("Alpha");
+  });
+
+  it("carries caller `meta` from `lane`, `state`, `call` and `expect` events onto the model", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [
+      {type: "lane", lane: "a", meta: {ref: "lane-a"}},
+      {type: "state", lane: "a", state: "running", meta: {ref: "state-1"}},
+      {type: "call", kind: "sync", id: "c1", from: "a", to: "b", label: "hi", meta: {ref: "call-1"}},
+      {type: "expect", id: "x1", from: "b", to: "a", label: "cb", meta: {ref: "expect-1"}},
+    ]);
+    expect(m.laneMeta.a).toEqual({ref: "lane-a"});
+    const stateRow = m.rows.find((r) => r.event.type === "state")!;
+    expect(stateRow.event).toMatchObject({meta: {ref: "state-1"}});
+    expect(m.spans.c1.meta).toEqual({ref: "call-1"});
+    expect(m.pending.find((p) => p.id === "c1")?.meta).toEqual({ref: "call-1"}); // implied reply
+    expect(m.pending.find((p) => p.id === "x1")?.meta).toEqual({ref: "expect-1"});
+  });
+
+  it("uses a caller-supplied `rowId` as the row's id instead of the internal counter", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [
+      {type: "lane", lane: "a"},
+      {type: "lane", lane: "b"},
+      {type: "call", kind: "event", id: "e1", from: "a", to: "b", label: "x", rowId: "evt-42"},
+    ]);
+    const row = m.rows[m.rows.length - 1];
+    expect(row.id).toBe("evt-42");
+  });
+
+  it("falls back to an internal id when a caller-supplied `rowId` collides with an existing row", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [
+      {type: "lane", lane: "a", rowId: "dup"},
+      {type: "lane", lane: "b", rowId: "dup"}, // collides with the row above
+    ]);
+    expect(m.rows[0].id).toBe("dup");
+    expect(m.rows[1].id).not.toBe("dup");
+    expect(typeof m.rows[1].id).toBe("number");
+  });
+
+  it("row ids survive a full model rebuild (e.g. after a rollback) when every event carries its own id", () => {
+    // seeded lanes (#10) so no implicit `lane` row needs its own rowId
+    const build = () => {
+      const m = createSwimlaneModel({lanes: [{lane: "a"}, {lane: "b"}]});
+      ingestSwimlaneEvents(m, [
+        {type: "call", kind: "event", id: "e1", from: "a", to: "b", label: "x", rowId: "r1"},
+        {type: "state", lane: "a", state: "running", rowId: "r2"},
+      ]);
+      return m;
+    };
+    const first = build();
+    const second = build(); // simulates rebuilding from scratch on every refresh
+    expect(second.rows.map((r) => r.id)).toEqual(first.rows.map((r) => r.id));
+    expect(second.rows.map((r) => r.id)).toEqual(["r1", "r2"]);
+  });
+
+  it("seeds lanes via createSwimlaneModel({lanes}) with no row and no 'joined' box", () => {
+    const m = createSwimlaneModel({
+      lanes: [
+        {lane: "a", label: "Alpha", state: "running", meta: {ref: "A"}},
+        {lane: "b"},
+      ],
+    });
+    expect(m.laneOrder).toEqual(["a", "b"]);
+    expect(m.laneLabels.a).toBe("Alpha");
+    expect(m.laneMeta.a).toEqual({ref: "A"});
+    expect(m.current.a).toEqual({state: "running", acts: []});
+    expect(m.current.b).toEqual({state: "created", acts: []});
+    expect(m.rows).toHaveLength(0); // no "joined" row for either seeded lane
+  });
+
+  it("a `lane` event for an already-seeded lane only updates label/meta, still no row", () => {
+    const m = createSwimlaneModel({lanes: [{lane: "a"}]});
+    ingestSwimlaneEvents(m, [{type: "lane", lane: "a", label: "Alpha", meta: {ref: "A2"}}]);
+    expect(m.laneLabels.a).toBe("Alpha");
+    expect(m.laneMeta.a).toEqual({ref: "A2"});
+    expect(m.rows).toHaveLength(0);
+  });
+
+  it("a call referencing a seeded lane does not add an implicit lane row for it", () => {
+    const m = createSwimlaneModel({lanes: [{lane: "a"}, {lane: "b"}]});
+    ingestSwimlaneEvents(m, [{type: "call", kind: "event", id: "e1", from: "a", to: "b", label: "x"}]);
+    expect(m.rows.map((r) => r.event.type)).toEqual(["call"]);
   });
 
   it("trims to maxRows and garbage-collects spans", () => {
@@ -163,5 +248,46 @@ describe("swimlane model", () => {
     const m = buildDemoModel({t0: 0});
     expect(describeSwimlaneTarget(m, {kind: "transition", id: "c6"}, 0)).toContain("402 declined");
     expect(describeSwimlaneTarget(m, {kind: "pending", id: "x1"}, 100_000)).toContain("OVERDUE");
+  });
+
+  it("describes a lane target as its label and current state", () => {
+    const m = buildDemoModel({t0: 0});
+    expect(describeSwimlaneTarget(m, {kind: "lane", id: "gateway"})).toBe("api-gateway · running");
+  });
+
+  it("uses a custom formatTs for the 'state' and 'activity' descriptions", () => {
+    const m = buildDemoModel({t0: 0});
+    const fmt = (ts: number) => `virtual-${ts}`;
+    const desc = describeSwimlaneTarget(m, {kind: "activity", id: "c3"}, 0, fmt);
+    expect(desc).toMatch(/started virtual-\d+/);
+  });
+
+  it("stepKeyOf groups rows by `step`, and treats each unstepped row as its own step", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [
+      {type: "state", lane: "a", state: "degraded", ts: 1, step: "s1"},
+      {type: "call", kind: "event", id: "e1", from: "a", to: "b", label: "x", ts: 1, step: "s1"},
+      {type: "call", kind: "event", id: "e2", from: "a", to: "b", label: "y", ts: 2},
+    ]);
+    // ingest order: lane "a" (implicit), the state row, lane "b" (implicit,
+    // first referenced by the stepped call), the stepped call, the unstepped call
+    const [laneA, stRow, laneB, callRow, unstepped] = m.rows;
+    expect(stepKeyOf(stRow)).toBe(stepKeyOf(callRow));
+    expect(stepKeyOf(laneA)).not.toBe(stepKeyOf(laneB));
+    expect(stepKeyOf(unstepped)).toBe(`row:${unstepped.id}`);
+    expect(stepRows(m, stepKeyOf(stRow))).toEqual([stRow, callRow]);
+    expect(stepRows(m, stepKeyOf(unstepped))).toEqual([unstepped]);
+  });
+
+  it("describes a step target as a summary of its rows", () => {
+    const m = createSwimlaneModel();
+    ingestSwimlaneEvents(m, [
+      {type: "state", lane: "a", state: "degraded", ts: 1000, step: "s1"},
+      {type: "call", kind: "event", id: "e1", from: "a", to: "b", label: "x", ts: 1000, step: "s1"},
+    ]);
+    const stepId = stepKeyOf(m.rows[m.rows.length - 1]);
+    const desc = describeSwimlaneTarget(m, {kind: "step", id: stepId}, 0);
+    expect(desc).toContain("2 events");
+    expect(desc).toContain("state, call");
   });
 });

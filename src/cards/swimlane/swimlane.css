@@ -12,6 +12,10 @@
   --swl-starting: oklch(0.67 0.16 60);
   --swl-degraded: oklch(0.65 0.19 45);
   --swl-running: oklch(0.6 0.15 150);
+  /* one-shot outcome states (in_progress / succeeded / failed) — see §5 of DESIGN.md */
+  --swl-in-progress: oklch(0.6 0.17 255);
+  --swl-succeeded: oklch(0.6 0.15 150);
+  --swl-failed: oklch(0.6 0.22 25);
 }
 .dark {
   --swl-sync: oklch(0.72 0.14 260);
@@ -22,6 +26,9 @@
   --swl-starting: oklch(0.75 0.15 65);
   --swl-degraded: oklch(0.72 0.17 45);
   --swl-running: oklch(0.75 0.15 150);
+  --swl-in-progress: oklch(0.72 0.15 255);
+  --swl-succeeded: oklch(0.75 0.15 150);
+  --swl-failed: oklch(0.72 0.2 25);
 }
 
 .pihanga-swimlane {
@@ -43,6 +50,13 @@
 .pihanga-swimlane .swl-ts { fill: var(--muted-foreground); font: 10px ui-monospace, monospace; }
 .pihanga-swimlane .swl-lbl { font-size: 11px; }
 .pihanga-swimlane .swl-lbl-muted { font-size: 10px; fill: var(--muted-foreground); }
+/* rows that share a `step` with the previous row: a tie mark instead of a
+   repeated timestamp, joining them visually into one block */
+.pihanga-swimlane .swl-ts-tie { stroke: var(--muted-foreground); stroke-width: 1; stroke-dasharray: 2 2; opacity: 0.5; }
+/* hovering (or clicking) a timestamp highlights every row of its step */
+.pihanga-swimlane .swl-row.swl-hl-step { background: color-mix(in srgb, var(--swl-hl) 12%, transparent); }
+.pihanga-swimlane .swl-row.swl-hl-step .swl-ts,
+.pihanga-swimlane .swl-row.swl-hl-step .swl-ts-tie { stroke: var(--swl-hl); fill: var(--swl-hl); opacity: 1; }
 
 /* lifelines by run state */
 .pihanga-swimlane .swl-ll { stroke-width: 1.5; }
@@ -51,12 +65,19 @@
 .pihanga-swimlane .swl-ll-starting { stroke: var(--swl-starting); stroke-dasharray: 4 3; }
 .pihanga-swimlane .swl-ll-degraded { stroke: var(--swl-degraded); stroke-width: 3; }
 .pihanga-swimlane .swl-ll-stopped { stroke: var(--border); stroke-dasharray: 1 4; }
+/* one-shot outcome states: lifeline stays plain, only the dot carries colour */
+.pihanga-swimlane .swl-ll-in_progress { stroke: color-mix(in srgb, var(--muted-foreground) 70%, transparent); }
+.pihanga-swimlane .swl-ll-succeeded { stroke: color-mix(in srgb, var(--muted-foreground) 70%, transparent); }
+.pihanga-swimlane .swl-ll-failed { stroke: color-mix(in srgb, var(--muted-foreground) 70%, transparent); }
 
 .pihanga-swimlane .swl-dot-created,
 .pihanga-swimlane .swl-dot-starting { fill: var(--swl-starting); }
 .pihanga-swimlane .swl-dot-running { fill: var(--swl-running); }
 .pihanga-swimlane .swl-dot-degraded { fill: var(--swl-degraded); }
 .pihanga-swimlane .swl-dot-stopped { fill: var(--border); }
+.pihanga-swimlane .swl-dot-in_progress { fill: var(--swl-in-progress); }
+.pihanga-swimlane .swl-dot-succeeded { fill: var(--swl-succeeded); }
+.pihanga-swimlane .swl-dot-failed { fill: var(--swl-failed); }
 .pihanga-swimlane .swl-lane-head { fill: var(--background); stroke: var(--muted-foreground); }
 
 /* activities */
@@ -94,6 +115,8 @@
 .pihanga-swimlane .swl-now-line { stroke: var(--swl-hl); stroke-width: 1.5; stroke-dasharray: 10 4; }
 .pihanga-swimlane text.swl-now-lbl { fill: var(--swl-hl); font-size: 11px; font-weight: 600; }
 .pihanga-swimlane text.swl-ok { fill: var(--swl-running); font-size: 12px; font-weight: 700; }
+/* an outstanding reply that arrived as an error still "arrived", but isn't a success */
+.pihanga-swimlane text.swl-ok.swl-ok-error { fill: var(--destructive); }
 .pihanga-swimlane .swl-arrived { animation: swl-arrive 1.6s ease-out; }
 @keyframes swl-arrive {
   0% { background: color-mix(in srgb, var(--swl-hl) 45%, transparent); }
@@ -102,6 +125,8 @@
 
 /* hit zones: invisible but receive the pointer */
 .pihanga-swimlane .swl-hit { fill: transparent; stroke: transparent; cursor: pointer; }
+/* lane header: subtle hover affordance on the name/dot click target */
+.pihanga-swimlane .swl-hit[data-kind="lane"]:hover { fill: color-mix(in srgb, var(--swl-hl) 10%, transparent); }
 .pihanga-swimlane.swl-debug-hits .swl-hit {
   fill: color-mix(in srgb, var(--destructive) 10%, transparent);
   stroke: color-mix(in srgb, var(--destructive) 20%, transparent);

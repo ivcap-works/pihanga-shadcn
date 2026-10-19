@@ -4,6 +4,7 @@ import {
   createOnDispatch,
   registerActions,
 } from "@pihanga2/core";
+import type React from "react";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Card identity
@@ -66,13 +67,23 @@ export const onSwimlaneRowsCleared = createOnAction<SwimlaneRowsClearedEvent>(
 // All timestamps are epoch milliseconds; `ts` is filled in on ingest if absent.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Run state of a service, drawn on its lifeline. */
+/**
+ * Run state of a service, drawn on its lifeline.
+ *
+ * `created` … `stopped` describe a long-running service's lifecycle.
+ * `in_progress` / `succeeded` / `failed` are first-class outcome states for
+ * one-shot work (e.g. a tool call or task) that does not fit that lifecycle —
+ * use these instead of borrowing `running` / `stopped` / `degraded`.
+ */
 export type SwimlaneRunState =
   | "created"
   | "starting"
   | "running"
   | "degraded"
-  | "stopped";
+  | "stopped"
+  | "in_progress"
+  | "succeeded"
+  | "failed";
 
 /**
  * How a message travels between lanes.
@@ -83,11 +94,49 @@ export type SwimlaneRunState =
  */
 export type SwimlaneCallKind = "sync" | "async" | "event";
 
+/** Row id: either an internal counter value, or a caller-supplied value (see `rowId`). */
+export type SwimlaneRowId = string | number;
+
 type SwimlaneEventBase = {
   /** Epoch ms. Defaults to `Date.now()` at ingest time. */
   ts?: number;
   /** Id of an `expect` event that this real event resolves. */
   fulfils?: string;
+  /**
+   * Use this as the resulting row's id instead of the model's internal
+   * counter. Lets a caller that rebuilds the whole model from scratch on
+   * every refresh (e.g. to replay a run, or after a rollback to an earlier
+   * point) keep row ids stable across rebuilds, instead of them being
+   * renumbered each time.
+   *
+   * Contract: must be unique among the model's current rows (an id freed by
+   * ring-buffer trimming may be reused). If it collides with an existing
+   * row, the card falls back to an internal id for that row rather than
+   * producing two rows with the same id — check `SwimlaneRow.id` if you
+   * need to confirm which id was actually used.
+   *
+   * Distinct from a `call`/`reply`/`done` event's own `id` (the call id,
+   * shared between its call and reply rows) — `rowId` identifies one row.
+   */
+  rowId?: SwimlaneRowId;
+  /**
+   * Groups events that belong to one logical step (for example several
+   * calls and a state change produced by a single engine tick). Rows are
+   * grouped only when adjacent in `rows` (ingest order): the card draws the
+   * timestamp for the first row of a run of same-`step` rows and replaces
+   * it with a connecting mark on the rest, joining them into one block.
+   * Comparison is `===`; omit it to draw every row on its own line as before.
+   */
+  step?: string | number;
+  /**
+   * Arbitrary caller data, opaque to the card. Carried onto the row (and,
+   * for `call`/`expect` events, the resulting span/pending message) and
+   * echoed back verbatim in `onHoverChanged` / `onItemClicked` for that
+   * target — so the caller does not need a side table to recover context
+   * (e.g. which domain object a row/span id stands for) on every hover or
+   * click. Not interpreted or serialised specially by the card.
+   */
+  meta?: unknown;
 };
 
 /** A service became known. Lanes referenced by calls are also added implicitly. */
@@ -103,6 +152,8 @@ export type SwimlaneStateEvent = SwimlaneEventBase & {
   type: "state";
   lane: string;
   state: SwimlaneRunState;
+  /** Draw the "→ state" text beside the dot. Default `true`. */
+  showLabel?: boolean;
 };
 
 /** A message between two lanes (or a lane and itself). */
@@ -186,7 +237,12 @@ export type SwimlaneRowEvent = Exclude<SwimlaneEvent, SwimlaneExpectEvent> & {
  * half from `post`.
  */
 export type SwimlaneRow = {
-  id: number;
+  /**
+   * The event's own `rowId` when it was set and did not collide with an
+   * existing row; an internally assigned number otherwise. See
+   * `SwimlaneEventBase.rowId`.
+   */
+  id: SwimlaneRowId;
   event: SwimlaneRowEvent;
   pre: SwimlaneLanesSnapshot;
   post: SwimlaneLanesSnapshot;
@@ -217,6 +273,8 @@ export type SwimlanePending = {
   label: string;
   since: number;
   timeoutMs?: number;
+  /** Copied from the originating `call` (implied reply) or `expect` event. */
+  meta?: unknown;
 };
 
 /** Lifecycle of a call, used for tooltips and hover payloads. */
@@ -232,6 +290,8 @@ export type SwimlaneSpan = {
   result?: string;
   /** Call whose processing caused this one (explicit `parentId` or inferred). */
   parent?: string;
+  /** Copied from the originating `call` event. */
+  meta?: unknown;
 };
 
 export type SwimlaneModel = {
@@ -239,6 +299,8 @@ export type SwimlaneModel = {
   laneOrder: string[];
   /** Optional display names. */
   laneLabels: Record<string, string>;
+  /** Caller `meta` from each lane's `lane` event(s), most recent wins. */
+  laneMeta: Record<string, unknown>;
   /** Current snapshot (== `post` of the last row). */
   current: SwimlaneLanesSnapshot;
   rows: SwimlaneRow[];
@@ -295,18 +357,37 @@ export type SwimlaneProps = {
    */
   now?: number;
 
+  /**
+   * Formats the timestamp column (`ts`, epoch ms). Defaults to `formatTs`
+   * from `swimlane.model` (local wall-clock `HH:MM:SS.mmm`). Override to
+   * show a different clock — e.g. a virtual time derived from `ts`, or both
+   * virtual and wall-clock time in one string.
+   */
+  formatTs?: (ts: number) => string;
+
+  /**
+   * Formats the "waiting …" duration (ms) shown on outstanding messages
+   * below the "now" line. Defaults to `${(ms / 1000).toFixed(1)}s`.
+   */
+  formatWait?: (ms: number) => string;
+
   className?: string;
+  /** Inline styles for the card's root element, alongside `className`. */
+  style?: React.CSSProperties;
 };
 
 /** What the pointer is over. */
-export type SwimlaneTargetKind = "transition" | "activity" | "state" | "pending";
+export type SwimlaneTargetKind = "transition" | "activity" | "state" | "pending" | "step" | "lane";
 
 export type SwimlaneTarget = {
   kind: SwimlaneTargetKind;
-  /** Call id (transition/activity/pending) or `state-<rowId>` (state). */
+  /**
+   * Call id (`transition`/`activity`/`pending`), `state-<rowId>` (`state`),
+   * the row's `step` value stringified (`step`), or the lane id (`lane`).
+   */
   id: string;
   lane?: string;
-  rowId?: number;
+  rowId?: SwimlaneRowId;
 };
 
 export type SwimlaneHoverChangedEvent = {
@@ -328,6 +409,15 @@ export type SwimlaneHoverChangedEvent = {
    * that sent the call and receives its reply. That activity is highlighted.
    */
   process?: string;
+  /** For `target.kind === "step"`: every row belonging to that step. */
+  steps?: SwimlaneRow[];
+  /**
+   * Caller `meta` for the target, if any was set on the originating event:
+   * the `call`'s `meta` for `transition`/`activity`/`pending`, the `state`
+   * event's `meta` for `state`, the `lane` event's `meta` for `lane`. Not
+   * set for `step` (see `steps`, which carries each row's own event/meta).
+   */
+  meta?: unknown;
   clientX?: number;
   clientY?: number;
 };
@@ -338,6 +428,10 @@ export type SwimlaneItemClickedEvent = {
   pending?: SwimlanePending;
   related?: string[];
   process?: string;
+  /** For `target.kind === "step"`: every row belonging to that step. */
+  steps?: SwimlaneRow[];
+  /** See `SwimlaneHoverChangedEvent.meta`. */
+  meta?: unknown;
 };
 
 export type SwimlaneEvents = {
