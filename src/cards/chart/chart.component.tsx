@@ -1,8 +1,10 @@
 import React from "react";
-import {type PiCardProps} from "@pihanga2/core";
+import {Card as PiCard, type PiCardProps} from "@pihanga2/core";
 import {
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   LineChart,
   Line,
   CartesianGrid,
@@ -26,6 +28,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {cn} from "@/lib/utils";
 import type {PiChartGraphProps} from "./chart.types";
 
 /** Cycle through the five shadcn chart palette CSS variables. */
@@ -43,9 +46,9 @@ export const ChartGraphComponent = (
   const {
     cardName,
     chartType,
-    data,
-    series,
-    xDataKey,
+    data = [],
+    series = [],
+    xDataKey = "",
     title,
     description,
     height = 250,
@@ -53,6 +56,8 @@ export const ChartGraphComponent = (
     showGrid = true,
     stacked = false,
     fillOpacity = 0.4,
+    barGap,
+    barRadius = 0,
     showXAxisLabel = true,
     showYAxis = false,
     showYAxisLabel = false,
@@ -65,6 +70,8 @@ export const ChartGraphComponent = (
     suppressAnimation = false,
     referenceLines,
     referenceAreas,
+    footerCard,
+    footerClassName,
     className,
   } = props;
 
@@ -112,7 +119,49 @@ export const ChartGraphComponent = (
   // ── Inner chart element ────────────────────────────────────────────────────
 
   const chartEl =
-    chartType === "area" ? (
+    chartType === "bar" ? (
+      <BarChart
+        data={data}
+        accessibilityLayer
+        barCategoryGap={barGap}
+      >
+        {showGrid && <CartesianGrid />}
+        <XAxis
+          dataKey={xDataKey}
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          unit={xAxisUnit}
+          hide={!showXAxisLabel}
+          {...(xAxisMin != null || xAxisMax != null
+            ? {domain: [xAxisMin ?? "auto", xAxisMax ?? "auto"]}
+            : {})}
+        />
+        <YAxis
+          hide={!(showYAxis || showYAxisLabel)}
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          width={yAxisUnit ? 48 : 40}
+          unit={yAxisUnit}
+          domain={[yAxisMin ?? "auto", yAxisMax ?? "auto"]}
+        />
+        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+        {showLegend && <ChartLegend content={<ChartLegendContent />} />}
+        {referenceAreaEls}
+        {series.map((s) => (
+          <Bar
+            key={s.dataKey}
+            dataKey={s.dataKey}
+            fill={`var(--color-${s.dataKey})`}
+            radius={[barRadius, barRadius, 0, 0]}
+            isAnimationActive={!suppressAnimation}
+            {...(stacked ? {stackId: "stacked"} : {})}
+          />
+        ))}
+        {referenceLineEls}
+      </BarChart>
+    ) : chartType === "area" ? (
       <AreaChart data={data} accessibilityLayer>
         {showGrid && <CartesianGrid />}
         <XAxis
@@ -200,10 +249,21 @@ export const ChartGraphComponent = (
   // ── ChartContainer wrapper ─────────────────────────────────────────────────
 
   const container = (
-    <ChartContainer config={chartConfig} style={{minHeight: `${height}px`}}>
+    <ChartContainer
+      config={chartConfig}
+      className="aspect-auto w-full min-w-0 max-w-full overflow-hidden"
+      initialDimension={{width: 640, height}}
+      style={{height: `${height}px`, minHeight: `${height}px`, aspectRatio: "auto"}}
+    >
       {chartEl}
     </ChartContainer>
   );
+
+  const footer = footerCard ? (
+    <div className={footerClassName}>
+      <PiCard cardName={footerCard} parentCard={cardName} />
+    </div>
+  ) : null;
 
   // ── Optional Card shell ────────────────────────────────────────────────────
   // Wrap in a shadcn Card only when a title or description is provided.
@@ -211,19 +271,23 @@ export const ChartGraphComponent = (
 
   if (title || description) {
     return (
-      <Card data-pihanga={cardName} className={className}>
+      <Card data-pihanga={cardName} className={cn("w-full min-w-0", className)}>
         <CardHeader>
           {title && <CardTitle>{title}</CardTitle>}
           {description && <CardDescription>{description}</CardDescription>}
         </CardHeader>
-        <CardContent>{container}</CardContent>
+        <CardContent>
+          {container}
+          {footer}
+        </CardContent>
       </Card>
     );
   }
 
   return (
-    <div data-pihanga={cardName} className={className}>
+    <div data-pihanga={cardName} className={cn("w-full min-w-0", className)}>
       {container}
+      {footer}
     </div>
   );
 };

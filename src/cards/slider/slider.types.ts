@@ -39,6 +39,9 @@ export const onPiSliderCommitted = onSliderCommitted;
 // Props & Events
 // ---------------------------------------------------------------------------
 
+/** A single selected value or an inclusive two-thumb range. */
+export type PiSliderValue = number | [number, number];
+
 export type PiSliderProps = {
   /**
    * Field name used to bind to FormContext when inside a pi/form card.
@@ -48,17 +51,18 @@ export type PiSliderProps = {
   name?: string;
 
   /**
-   * Controlled numeric value (single thumb).
+   * Controlled value. A number renders one thumb; a tuple renders two thumbs
+   * with the selected range highlighted between them.
    * Ignored when `name` is set and the component is inside a pi/form,
    * and also ignored when `selfManaged` is true (use `defaultValue` instead).
    */
-  value?: number;
+  value?: PiSliderValue;
 
   /**
    * Initial value used when `selfManaged` is true.
    * Falls back to `value` → `min` → 0 if not provided.
    */
-  defaultValue?: number;
+  defaultValue?: PiSliderValue;
 
   /**
    * When true the slider keeps its own internal value state.
@@ -79,6 +83,12 @@ export type PiSliderProps = {
 
   /** Stepping interval between selectable values. Defaults to 1. */
   step?: number;
+
+  /**
+   * Minimum permitted distance between two thumbs, measured in `step`
+   * increments. Only applies when `value` is a range.
+   */
+  minStepsBetweenThumbs?: number;
 
   /** When true, the slider is disabled and non-interactive. */
   disabled?: boolean;
@@ -158,15 +168,15 @@ export type PiSliderProps = {
 export type PiSliderChangedEvent = {
   /** Field name, mirrors the `name` prop if provided. */
   name?: string;
-  /** New numeric value after the change. */
-  value: number;
+  /** New scalar or range value after the change. */
+  value: PiSliderValue;
 };
 
 export type PiSliderCommittedEvent = {
   /** Field name, mirrors the `name` prop if provided. */
   name?: string;
-  /** Final settled value when the user released the thumb. */
-  value: number;
+  /** Final settled scalar or range value when the user released a thumb. */
+  value: PiSliderValue;
 };
 
 export type PiSliderEvents = {

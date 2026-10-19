@@ -1,6 +1,8 @@
 An interactive range slider built on the [Radix UI Slider](https://www.radix-ui.com/primitives/docs/components/slider) primitive.
 
-Use it to let users select a numeric value within a bounded range (e.g. volume, opacity, price).
+Use it to let users select a numeric value or an inclusive two-value range within fixed bounds
+(e.g. volume, opacity, price, or a time range). Pass a number for one thumb or a
+`[minimum, maximum]` tuple for two thumbs. `minStepsBetweenThumbs` optionally enforces separation.
 When placed inside a `pi/form` card with a `name` prop, the slider reads its value from form
 state and writes back via `form.handleChange`.  In standalone mode, handle changes with
 `onSliderChanged`.
@@ -45,5 +47,5 @@ tickStep = 0, majorTickStep = 0   →  nothing shown
 suppressTickLabels = true         →  tick marks only, no labels regardless of other settings
 ```
 
-Active ticks (at or below the current value) are highlighted with `bg-primary`; inactive ticks
-use `bg-primary/20`.  Both transition smoothly as the thumb moves.
+For scalar values, ticks at or below the value are active. For tuple values, ticks between the
+two values are active. Inactive ticks use `bg-primary/20` and transition smoothly as thumbs move.

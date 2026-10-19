@@ -1,17 +1,20 @@
 A chart card wrapping [shadcn/ui Charts](https://ui.shadcn.com/charts) (built on [Recharts](https://recharts.org)).
-Supports **area** and **line** chart types with optional multi-series, stacking, legend, and grid lines.
+Supports **area**, **line**, and **bar** chart types with optional multi-series, stacking, legend,
+and grid lines.
 
 ### Key props
 
 | Prop | Default | Purpose |
 |------|---------|---------|
-| `chartType` | — | `"area"` or `"line"` |
+| `chartType` | — | `"area"`, `"line"`, or `"bar"` |
 | `data` | — | Array of data-point objects |
 | `series` | — | Maps data keys → label + colour (see per-series styling below) |
 | `xDataKey` | — | Key used for x-axis tick labels |
 | `title` / `description` | — | When provided the chart is wrapped in a shadcn `<Card>` |
-| `stacked` | `false` | Stack area series (area only) |
+| `stacked` | `false` | Stack area or bar series |
 | `fillOpacity` | `0.4` | Default fill transparency for all area series |
+| `barGap` | Recharts default | Gap between bar categories (bar only) |
+| `barRadius` | `0` | Radius for the top corners of bars (bar only) |
 | `showLegend` / `showGrid` | `true` | Toggle legend and grid lines |
 
 Colours fall back to the shadcn chart CSS variables (`--chart-1` … `--chart-5`)

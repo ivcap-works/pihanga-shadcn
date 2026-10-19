@@ -3,7 +3,25 @@ import {type PiCardProps} from "@pihanga2/core";
 import {Slider as SliderUI} from "@/components/ui/slider";
 import {useFormContext} from "@/cards/form/form.context";
 import {cn} from "@/lib/utils";
-import type {PiSliderEvents, PiSliderProps} from "./slider.types";
+import type {
+  PiSliderEvents,
+  PiSliderProps,
+  PiSliderValue,
+} from "./slider.types";
+
+function toValues(value: PiSliderValue): number[] {
+  return Array.isArray(value) ? value : [value];
+}
+
+function fromValues(values: number[], fallback: number): PiSliderValue {
+  return values.length > 1
+    ? [values[0] ?? fallback, values[1] ?? fallback]
+    : (values[0] ?? fallback);
+}
+
+function formatValue(value: PiSliderValue): string {
+  return Array.isArray(value) ? `${value[0]} – ${value[1]}` : String(value);
+}
 
 export const SliderComponent = (
   props: PiCardProps<PiSliderProps, PiSliderEvents>,
@@ -16,6 +34,7 @@ export const SliderComponent = (
     min = 0,
     max = 100,
     step = 1,
+    minStepsBetweenThumbs,
     disabled,
     debounceMs = 0,
     suppressChangedEvents = false,
@@ -36,13 +55,13 @@ export const SliderComponent = (
   const useFormData = form.isInForm && Boolean(name);
 
   // Internal state used only when selfManaged=true and not bound to a form.
-  const [managedValue, setManagedValue] = useState<number>(
+  const [managedValue, setManagedValue] = useState<PiSliderValue>(
     defaultValue ?? propValue ?? min,
   );
 
   // The "canonical" value from props / form / self-managed state.
   const canonicalValue = useFormData
-    ? ((form.formData[name!] as number | undefined) ?? min)
+    ? ((form.formData[name!] as PiSliderValue | undefined) ?? min)
     : selfManaged
       ? managedValue
       : (propValue ?? min);
@@ -56,14 +75,14 @@ export const SliderComponent = (
   // user is actively dragging so we don't need an external value round-trip.
   const isDragging = useRef(false);
   const [interactiveValue, setInteractiveValue] =
-    useState<number>(canonicalValue);
+    useState<PiSliderValue>(canonicalValue);
 
   // While dragging the knob follows pointer; otherwise it reflects the canonical value.
   const displayValue = isDragging.current ? interactiveValue : canonicalValue;
 
   // Refs for debounce: timer handle + latest pending value.
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingValue = useRef<number>(canonicalValue);
+  const pendingValue = useRef<PiSliderValue>(canonicalValue);
 
   // Clean up any pending debounce timer on unmount.
   useEffect(() => {
@@ -72,7 +91,7 @@ export const SliderComponent = (
     };
   }, []);
 
-  function dispatchChanged(newValue: number) {
+  function dispatchChanged(newValue: PiSliderValue) {
     // Silently skip if the caller has opted out of continuous change events.
     if (suppressChangedEvents) return;
 
@@ -91,7 +110,7 @@ export const SliderComponent = (
   }
 
   function handleValueChange(newValues: number[]) {
-    const newValue = newValues[0] ?? min;
+    const newValue = fromValues(newValues, min);
 
     // Guard: only update interactive display when actively dragging.
     if (!isDragging.current) return;
@@ -117,7 +136,7 @@ export const SliderComponent = (
   }
 
   function handleValueCommit(newValues: number[]) {
-    const newValue = newValues[0] ?? min;
+    const newValue = fromValues(newValues, min);
 
     // Leave interactive mode — on next render displayValue reverts to canonicalValue,
     // snapping the knob back to whatever the external state currently says.
@@ -173,6 +192,10 @@ export const SliderComponent = (
       )
     : [];
 
+  const displayValues = toValues(displayValue);
+  const selectedMin = displayValues[0] ?? min;
+  const selectedMax = displayValues[1] ?? selectedMin;
+
   return (
     <div
       data-pihanga={cardName}
@@ -182,15 +205,16 @@ export const SliderComponent = (
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium leading-none">{label}</span>
           <span className="text-sm text-muted-foreground tabular-nums">
-            {displayValue}
+            {formatValue(displayValue)}
           </span>
         </div>
       )}
       <SliderUI
-        value={[displayValue]}
+        value={displayValues}
         min={min}
         max={max}
         step={step}
+        minStepsBetweenThumbs={minStepsBetweenThumbs}
         disabled={disabled}
         onPointerDown={handlePointerDown}
         onValueChange={handleValueChange}
@@ -205,7 +229,10 @@ export const SliderComponent = (
           {ticks.map((tick) => {
             const isMajor =
               showMajorTicks && (tick - min) % resolvedMajorStep === 0;
-            const isActive = tick <= displayValue;
+            const isActive =
+              displayValues.length > 1
+                ? tick >= selectedMin && tick <= selectedMax
+                : tick <= selectedMin;
             // Show label when:
             //  • suppressTickLabels is false, AND
             //  • tick is major  OR  there are no major ticks (label every minor tick)

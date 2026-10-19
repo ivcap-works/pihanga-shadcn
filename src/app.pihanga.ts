@@ -142,7 +142,9 @@ export function appPiInit(): void {
       },
       template: {
         area: [["list", "detail"]],
-        columns: ["260px", "1fr"],
+        // minmax(0, 1fr) lets the detail column shrink below the intrinsic
+        // width of responsive children such as charts.
+        columns: ["260px", "minmax(0, 1fr)"],
         gap: "16px",
       },
       // height:"100%" fills .main so the grid never overflows it — each column
@@ -150,7 +152,7 @@ export function appPiInit(): void {
       // minHeight:"0" lets CSS grid cells shrink below content height.
       height: "100%",
       overflow: "auto",
-      style: {item: {minHeight: "0"}},
+      style: {root: {minWidth: 0}, item: {minHeight: 0, minWidth: 0}},
     }),
   );
 }
