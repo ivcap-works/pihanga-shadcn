@@ -1,0 +1,86 @@
+name: Publish to npm
+
+# Publishes @pihanga2/shadcn and the extra card packages (graphin, chart,
+# markdown, codemirror) when a version tag is pushed.
+#
+# Each package is only published if its current version is not already on npm,
+# so re-running the workflow is safe.
+#
+# Requires the repository secret NPM_TOKEN (npm automation token with publish
+# rights to the @pihanga2 scope).
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  publish:
+    name: Build & Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      # The release tag must match the core package version (root package.json),
+      # e.g. tag v0.2.26 <-> "version": "0.2.26".
+      - name: Verify tag matches package version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_NAME}" != "v${PKG_VERSION}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version v${PKG_VERSION}"
+            exit 1
+          fi
+
+      - name: Run checks (lint, type-check, tests)
+        run: make check
+
+      - name: Build core and extra packages
+        run: |
+          make build-core
+          make build-extras
+
+      - name: Publish packages not yet on npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          publish_if_new() {
+            local dir="$1"
+            local name version
+            name="$(node -p "require('./${dir}/package.json').name")"
+            version="$(node -p "require('./${dir}/package.json').version")"
+
+            if npm view "${name}@${version}" version >/dev/null 2>&1; then
+              echo "Skipping ${name}@${version}: already on npm"
+              return 0
+            fi
+
+            echo "Publishing ${name}@${version} from ${dir}/"
+            (cd "${dir}" && npm publish --access public)
+          }
+
+          publish_if_new dist-lib
+          publish_if_new dist-lib-graphin
+          publish_if_new dist-lib-chart
+          publish_if_new dist-lib-markdown
+          publish_if_new dist-lib-codemirror

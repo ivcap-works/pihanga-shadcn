@@ -13,8 +13,8 @@ TAR_FILE=${ROOT_DIR}/${DOMAIN}-${GIT_SHORT}-$(shell echo ${GIT_BRANCH} | sed -e 
 
 .PHONY: help install dev build build-preview gen-playground gen-registry \
         build-core build-core-dry gen-card-schema publish \
-        build-extras build-extras-dry build-graphin build-chart build-markdown \
-        publish-graphin publish-chart publish-markdown publish-all \
+        build-extras build-extras-dry build-graphin build-chart build-markdown build-codemirror \
+        publish-graphin publish-chart publish-markdown publish-codemirror publish-all publish-extras \
         check lint lint-fix type-check \
         test test-run test-ui test-coverage \
         clean src-dist tar tar-echo
@@ -60,7 +60,7 @@ gen-card-schema: ## (Re)generate dist-lib/cards.schema.json from the just-built 
 publish: check build-core ## Build and publish @pihanga2/shadcn to npm
 	cd ${ROOT_DIR}/dist-lib && npm publish --access public
 
-build-extras: install ## Build all extra card packages (graphin, chart, markdown)
+build-extras: install ## Build all extra card packages (graphin, chart, markdown, codemirror)
 	node scripts/build-extras.mjs
 
 build-extras-dry: ## Preview all extra package builds without writing files
@@ -75,7 +75,10 @@ build-chart: install ## Build @pihanga2/chart into dist-lib-chart/
 build-markdown: install ## Build @pihanga2/markdown into dist-lib-markdown/
 	node scripts/build-extras.mjs --pkg markdown
 
-publish-all: publish publish-graphin publish-chart publish-markdown ## Build and publish all four packages to npm
+build-codemirror: install ## Build @pihanga2/codemirror into dist-lib-codemirror/
+	node scripts/build-extras.mjs --pkg codemirror
+
+publish-all: publish publish-extras ## Build and publish core and all extra packages to npm
 
 publish-graphin: build-graphin ## Build and publish @pihanga2/graphin to npm
 	cd ${ROOT_DIR}/dist-lib-graphin && npm publish --access public
@@ -85,6 +88,15 @@ publish-chart: build-chart ## Build and publish @pihanga2/chart to npm
 
 publish-markdown: build-markdown ## Build and publish @pihanga2/markdown to npm
 	cd ${ROOT_DIR}/dist-lib-markdown && npm publish --access public
+
+publish-codemirror: build-codemirror ## Build and publish @pihanga2/codemirror to npm
+	cd ${ROOT_DIR}/dist-lib-codemirror && npm publish --access public
+
+publish-extras: build-extras ## Build and publish all extra packages (graphin, chart, markdown, codemirror)
+	cd ${ROOT_DIR}/dist-lib-graphin && npm publish --access public
+	cd ${ROOT_DIR}/dist-lib-chart && npm publish --access public
+	cd ${ROOT_DIR}/dist-lib-markdown && npm publish --access public
+	cd ${ROOT_DIR}/dist-lib-codemirror && npm publish --access public
 
 ##@ Code Quality
 

@@ -472,10 +472,24 @@ will contain — without writing any files or touching npm:
 
 ```sh
 make build-core-dry      # preview @pihanga2/shadcn
-make build-extras-dry    # preview all three extra packages at once
+make build-extras-dry    # preview all four extra packages at once
 ```
 
 ### Step 5 — Build and publish
+
+**Automated (recommended):** pushing a version tag publishes all packages via
+`.github/workflows/publish.yml`:
+
+```sh
+git tag v0.2.26 && git push origin v0.2.26   # must match root package.json version
+```
+
+The workflow runs `make check`, builds `@pihanga2/shadcn` and all four extras
+(`graphin`, `chart`, `markdown`, `codemirror`), and publishes each package whose
+current version is not already on npm. It requires the `NPM_TOKEN` repository
+secret (an npm automation token with publish rights to the `@pihanga2` scope).
+
+The manual commands below remain available as a fallback.
 
 **Core package:**
 ```sh
@@ -491,19 +505,18 @@ This single command:
 6. Writes `dist-lib/README.md`
 7. Runs `cd dist-lib && npm publish --access public`
 
-**Extra packages (graphin / chart / markdown):**
+**Extra packages (graphin / chart / markdown / codemirror):**
 ```sh
 make publish-graphin     # build + publish @pihanga2/graphin
 make publish-chart       # build + publish @pihanga2/chart
 make publish-markdown    # build + publish @pihanga2/markdown
+make publish-codemirror  # build + publish @pihanga2/codemirror
+make publish-extras      # build + publish all four extras
 ```
 
-Or to publish all extras sequentially:
+Or publish all four extras in one step:
 ```sh
-make build-extras && \
-  cd dist-lib-graphin && npm publish --access public && cd .. && \
-  cd dist-lib-chart   && npm publish --access public && cd .. && \
-  cd dist-lib-markdown && npm publish --access public && cd ..
+make publish-extras
 ```
 
 The published packages are at the version declared in the root `package.json`

@@ -8,10 +8,13 @@ import type {StreamParser} from "@codemirror/language";
 
 export const CODE_MIRROR_CARD = "code-mirror";
 
-export const CodeMirrorCard = createCardDeclaration<
+export const CodeMirror = createCardDeclaration<
   CodeMirrorCardProps,
   CodeMirrorCardEvents
 >(CODE_MIRROR_CARD);
+
+/** @deprecated Use {@link CodeMirror} instead. */
+export const CodeMirrorCard = CodeMirror;
 
 export const CODE_MIRROR_ACTION = registerActions(CODE_MIRROR_CARD, [
   "changed",
@@ -33,7 +36,7 @@ const _streamParserRegistry = new Map<string, StreamParser<unknown>>();
  *
  * @example
  * import { python } from "@codemirror/legacy-modes/mode/python";
- * import { registerStreamParser } from "@pihanga2/shadcn/codeMirror";
+ * import { registerStreamParser } from "@pihanga2/codemirror/cards/codeMirror";
  * registerStreamParser("python", python);
  */
 export function registerStreamParser(
@@ -61,7 +64,7 @@ const _extensionsRegistry = new Map<string, Extension[]>();
  *
  * @example
  * import { oneDark } from "@codemirror/theme-one-dark";
- * import { registerExtensions } from "@pihanga2/shadcn/codeMirror";
+ * import { registerExtensions } from "@pihanga2/codemirror/cards/codeMirror";
  * registerExtensions("oneDark", [oneDark]);
  */
 export function registerExtensions(key: string, exts: Extension[]): void {
@@ -89,7 +92,7 @@ export type CodeMirrorCardProps = {
    * @example
    * import { python } from "@codemirror/legacy-modes/mode/python";
    * registerStreamParser("python", python);
-   * CodeMirrorCard({ streamLanguage: "python", value: "print('hello')" });
+   * CodeMirror({ streamLanguage: "python", value: "print('hello')" });
    */
   streamLanguage?: string;
 
@@ -100,25 +103,50 @@ export type CodeMirrorCardProps = {
    * @example
    * import { oneDark } from "@codemirror/theme-one-dark";
    * registerExtensions("oneDark", [oneDark]);
-   * CodeMirrorCard({ extensionsKey: "oneDark", ... });
+   * CodeMirror({ extensionsKey: "oneDark", ... });
+   *
+   * Note: `theme` looks up keys in this same registry, so a bundle registered
+   * here can also be used as a theme.
    */
   extensionsKey?: string;
 
   /**
-   * CodeMirror editor theme — "light" or "dark".
-   * For a custom Extension-based theme, register it via `registerExtensions()`
-   * and pass its key using the `extensions` prop instead.
+   * CodeMirror editor theme: "light", "dark", or the key of a theme bundle
+   * registered with `registerExtensions()` (e.g. "dracula").  Default: "light".
+   *
+   * @example
+   * import { draculaInit } from "@uiw/codemirror-theme-dracula";
+   * registerExtensions("dracula", [draculaInit()]);
+   * CodeMirror({ theme: "dracula", ... });
    */
-  theme?: "light" | "dark";
+  theme?: "light" | "dark" | (string & {});
 
   /** Show line numbers in the gutter. Default: true. */
   lineNumbers?: boolean;
+
+  /** Show the fold gutter (code folding). Default: true. */
+  foldGutter?: boolean;
+
+  /** Show a drop cursor while dragging text. Default: true. */
+  dropCursor?: boolean;
+
+  /** Allow multiple selection ranges. Default: true. */
+  allowMultipleSelections?: boolean;
+
+  /** Re-indent the current line as you type. Default: true. */
+  indentOnInput?: boolean;
 
   /**
    * CSS height of the editor.  Use "auto" to grow with content or a fixed
    * value such as "400px".  Default: "auto".
    */
   height?: string;
+
+  /** CSS minimum height of the editor, e.g. "120px". */
+  minHeight?: string;
+
+  /** CSS maximum height of the editor, e.g. "600px". Scrolls beyond this. */
+  maxHeight?: string;
 
   /** Additional CSS class applied to the outer wrapper div. */
   className?: string;

@@ -13,7 +13,7 @@
 // imported with Vite's `?raw` suffix and merged into the definition as the
 // `introduction` field (overriding any inline value in the example file).
 //
-// Last generated: 2026-10-16T06:05:32.734Z
+// Last generated: 2026-10-21T04:04:39.290Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
