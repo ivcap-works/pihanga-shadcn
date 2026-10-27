@@ -18,9 +18,15 @@ export const CodeMirrorComponent = (
     readOnly = false,
     streamLanguage,
     extensionsKey,
-    theme,
+    theme = "light",
     lineNumbers = true,
+    foldGutter = true,
+    dropCursor = true,
+    allowMultipleSelections = true,
+    indentOnInput = true,
     height = "auto",
+    minHeight,
+    maxHeight,
     className,
     cardName,
     _cls,
@@ -43,15 +49,41 @@ export const CodeMirrorComponent = (
     return ext;
   }, [streamLanguage, extensionsKey]);
 
+  /**
+   * "light" / "dark" are built in. Any other value must be a theme bundle
+   * registered with registerExtensions(); the bundle is applied as an
+   * extension and the built-in light theme is suppressed.
+   */
+  const themeProp = useMemo<
+    "light" | "dark" | "none" | Extension | Extension[]
+  >(() => {
+    if (theme === "dark") return "dark";
+    if (theme === "light") return "light";
+    const themeExt = resolveExtensions(theme);
+    if (themeExt) return themeExt;
+    console.warn(
+      `[shad/codeMirror] Unknown theme "${theme}". Register it with registerExtensions() or use "light" / "dark". Falling back to "light".`,
+    );
+    return "light";
+  }, [theme]);
+
   return (
     <div className={_cls("root", className)} data-pihanga={cardName}>
       <CodeMirror
         value={value}
         height={height}
+        minHeight={minHeight}
+        maxHeight={maxHeight}
         readOnly={readOnly}
-        theme={theme}
+        theme={themeProp}
         extensions={extensions}
-        basicSetup={{lineNumbers}}
+        basicSetup={{
+          lineNumbers,
+          foldGutter,
+          dropCursor,
+          allowMultipleSelections,
+          indentOnInput,
+        }}
         onChange={(val: string) => onChanged?.({value: val})}
       />
     </div>

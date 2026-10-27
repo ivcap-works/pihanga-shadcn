@@ -315,33 +315,43 @@ export type CodeMirrorCardProps = {
    * @example
    * import { python } from "@codemirror/legacy-modes/mode/python";
    * registerStreamParser("python", python);
-   * CodeMirrorCard({ streamLanguage: "python", value: "print('hello')" });
+   * CodeMirror({ streamLanguage: "python", value: "print('hello')" });
    */
   streamLanguage?: string;    // ✅ plain string — not StreamParser<unknown>
+  /** Key of an Extension[] bundle registered with `registerExtensions()`. */
   extensionsKey?: string;     // ✅ plain string — not Extension[]
+  /** "light" | "dark", or a key registered with `registerExtensions()`. */
+  theme?: "light" | "dark" | string; // ✅ plain string — not Extension
 };
 ```
 
 ```ts
 // At app initialisation (e.g. app.pihanga.ts or a dedicated setup file):
 import { python } from "@codemirror/legacy-modes/mode/python";
-import { registerStreamParser } from "@pihanga2/shadcn/codeMirror";
+import { registerStreamParser } from "@pihanga2/codemirror/cards/codeMirror";
 
 registerStreamParser("python", python);
 ```
 
 ```tsx
-// codeMirror.component.tsx — look up at render time:
-import { resolveStreamParser } from "./codeMirror.types";
+// codeMirror.component.tsx — resolve keys at render time (memoised):
+import { StreamLanguage } from "@codemirror/language";
+import { resolveStreamParser, resolveExtensions } from "./codeMirror.types";
 
-const parser = props.streamLanguage
-  ? resolveStreamParser(props.streamLanguage)
-  : undefined;
-const extensions = parser ? [StreamLanguage.define(parser)] : [];
+const extensions = useMemo(() => {
+  const ext = extensionsKey ? [...(resolveExtensions(extensionsKey) ?? [])] : [];
+  if (streamLanguage) {
+    const parser = resolveStreamParser(streamLanguage);
+    if (parser) ext.push(StreamLanguage.define(parser));
+  }
+  return ext;
+}, [streamLanguage, extensionsKey]);
 ```
 
 The same pattern applies to **`Extension[]`** or any other opaque type.
 Register a named bundle of extensions once; reference it by key in props.
+The `theme` prop uses the same extensions registry: a non-built-in value is looked
+up with `resolveExtensions(theme)` and applied as the editor theme.
 
 **Quick checklist:**
 

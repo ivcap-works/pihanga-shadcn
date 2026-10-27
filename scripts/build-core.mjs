@@ -80,6 +80,28 @@ if (!DRY_RUN) {
 }
 
 // ---------------------------------------------------------------------------
+// Step 1.5 — Extract the card catalogue (JSON Schema) → dist-lib/cards.schema.json
+// ---------------------------------------------------------------------------
+//
+// Published alongside the compiled cards so consumers (e.g. pihanga-remote's
+// Python code generator) can derive typed proxies without re-implementing
+// this extraction themselves. Runs on every build, so the catalogue can never
+// drift out of sync with the cards that were just compiled: add a new card
+// to scripts/core-cards.json, or change an existing card's Props/Events type,
+// and the next `make build-core` / `yarn build:core` picks it up automatically.
+
+console.log("\n📐  Extracting card catalogue (JSON Schema)…");
+if (!DRY_RUN) {
+  execSync("node scripts/schema/extract-card-schemas.mjs", {
+    cwd: ROOT,
+    stdio: "inherit",
+  });
+  console.log("    ✓  Written  →  dist-lib/cards.schema.json");
+} else {
+  console.log("    (dry-run — skipped)");
+}
+
+// ---------------------------------------------------------------------------
 // Step 2 — Aggregate dependencies from core card dependencies.json files
 // ---------------------------------------------------------------------------
 
@@ -158,6 +180,9 @@ exportsMap["./theme"] = {
   style: "./theme.css",
   default: "./theme.css",
 };
+// Machine-readable card catalogue (JSON Schema of props/events per card type),
+// written by scripts/schema/extract-card-schemas.mjs in Step 1.5 above.
+exportsMap["./cards.schema.json"] = "./cards.schema.json";
 
 // ---------------------------------------------------------------------------
 // Step 4 — Write dist-lib/package.json
@@ -276,6 +301,26 @@ Import only the cards your app uses — unused cards are eliminated by your bund
 import "${PKG_NAME}/cards/button";
 import "${PKG_NAME}/cards/dialog";
 import "${PKG_NAME}/cards/dataTable";
+\`\`\`
+
+---
+
+## Card catalogue (for code generators)
+
+Every build also writes \`dist-lib/cards.schema.json\` (\`${PKG_NAME}/cards.schema.json\`):
+a machine-readable catalogue of every card type in this package — a JSON
+Schema for its props, and for each event payload plus the event's action
+type. It's generated straight from the compiled cards and their \`.d.ts\`
+files, so it can never drift from what's actually in \`dist-lib/\`.
+
+Backends/other languages can use it to generate typed proxies instead of
+hand-maintaining bindings. See \`scripts/schema/extract-card-schemas.mjs\` for
+how it's produced, and the \`pihanga-remote\` project's Python code generator
+(\`pihanga_remote.codegen\`) for a consumer.
+
+\`\`\`ts
+import catalogue from "${PKG_NAME}/cards.schema.json";
+// catalogue.cards["shad/button"].props / .events...
 \`\`\`
 
 ---

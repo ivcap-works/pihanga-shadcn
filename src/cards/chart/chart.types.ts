@@ -1,4 +1,5 @@
 import {createCardDeclaration} from "@pihanga2/core";
+import type {PiCardRef} from "@pihanga2/core";
 import type {ChartConfig} from "@/components/ui/chart";
 
 export const PI_CHART_GRAPH_CARD = "shad/chart-graph";
@@ -183,9 +184,9 @@ export type PiChartReferenceLine = {
 
 export type PiChartGraphProps = {
   /**
-   * Whether to render an **area** chart (filled) or a **line** chart (stroke only).
+   * Whether to render an area, line, or bar chart.
    */
-  chartType: "area" | "line";
+  chartType: "area" | "line" | "bar";
 
   /**
    * Array of data points.  Each entry must contain:
@@ -203,7 +204,7 @@ export type PiChartGraphProps = {
   data: Array<Record<string, unknown>>;
 
   /**
-   * Series definitions.  Each entry describes one plotted line or area.
+   * Series definitions. Each entry describes one plotted line, area, or bar.
    * At least one series is required.
    */
   series: PiChartSeries[];
@@ -309,6 +310,18 @@ export type PiChartGraphProps = {
   fillOpacity?: number;
 
   /**
+   * Gap between bar categories as a percentage string or pixel value.
+   * Only applies to bar charts. Defaults to `"10%"` (the Recharts default).
+   */
+  barGap?: number | string;
+
+  /**
+   * Radius in pixels applied to the top corners of each bar.
+   * Only applies to bar charts. Defaults to `0`.
+   */
+  barRadius?: number;
+
+  /**
    * Suppress the recharts entry animation so the chart renders immediately
    * without the "draw-in" / "unfold" effect.
    * Defaults to `false` (animation enabled).
@@ -343,6 +356,15 @@ export type PiChartGraphProps = {
    * ```
    */
   referenceAreas?: PiChartReferenceArea[];
+
+  /**
+   * Optional Pihanga card rendered directly below the chart. Useful for
+   * controls that operate on the plotted data, such as a range slider.
+   */
+  footerCard?: PiCardRef;
+
+  /** Extra Tailwind / CSS classes applied to the footer card wrapper. */
+  footerClassName?: string;
 
   /** Extra Tailwind / CSS classes forwarded to the outermost element. */
   className?: string;

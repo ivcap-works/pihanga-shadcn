@@ -1,0 +1,721 @@
+import React, {memo, useEffect, useId, useLayoutEffect, useMemo, useRef, useState} from "react";
+import type {PiCardProps} from "@pihanga2/core";
+import clsx from "clsx";
+
+import {
+  DEF_GUTTER_WIDTH,
+  DEF_HEADER_HEIGHT,
+  DEF_LANE_WIDTH,
+  DEF_ROW_HEIGHT,
+  type SwimlaneEvents,
+  type SwimlaneGhostRow,
+  type SwimlaneLanesSnapshot,
+  type SwimlaneModel,
+  type SwimlaneProps,
+  type SwimlaneRow,
+  type SwimlaneRowId,
+  type SwimlaneTarget,
+  type SwimlaneTargetKind,
+} from "./swimlane.types";
+import {
+  describeSwimlaneTarget,
+  formatTs,
+  projectPending,
+  relatedCallIds,
+  rowTouches,
+  stepKeyOf,
+  stepRows,
+} from "./swimlane.model";
+
+import "./swimlane.css";
+
+/**
+ * Real-time swimlane (sequence) diagram.
+ *
+ * Every transition is its own small, fixed-height SVG in normal document flow,
+ * so the page (or nearest scroll container) scrolls — the SVGs never do.
+ * Each row draws its top half from the `pre` lane snapshot and its bottom half
+ * from `post`, which lets lifelines start, activities open/close and run
+ * states change in the middle of a row.
+ *
+ * Hover/click use one delegated listener on the rows container; hit zones are
+ * wide transparent shapes carrying `data-*` attributes.
+ */
+
+type Geo = {laneW: number; rowH: number; gutter: number; mid: number; mk: string};
+
+const laneX = (g: Geo, i: number) => g.gutter + i * g.laneW + g.laneW / 2;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Drawing helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+type Parts = {visuals: React.ReactNode[]; hits: React.ReactNode[]};
+
+function drawLanes(
+  p: Parts,
+  g: Geo,
+  laneOrder: string[],
+  pre: SwimlaneLanesSnapshot,
+  post: SwimlaneLanesSnapshot,
+  hl: string | null,
+  laneLabels: Record<string, string>,
+  /** Activity of the process that sends/receives the hovered transition. */
+  proc: string | null = null,
+  /** Per-lane extra class for the activity bar (`SwimlaneLaneEvent.activityClassName`). */
+  laneActivityClassName: Record<string, string> = {},
+  /** Per-lane inline style for the activity bar (`SwimlaneLaneEvent.activityStyle`). */
+  laneActivityStyle: Record<string, React.CSSProperties> = {},
+) {
+  laneOrder.forEach((l, i) => {
+    const x = laneX(g, i);
+    const halves: [SwimlaneLanesSnapshot, number, number][] = [
+      [pre, 0, g.mid],
+      [post, g.mid, g.rowH],
+    ];
+    halves.forEach(([snap, y1, y2], half) => {
+      const s = snap[l];
+      if (!s) return;
+      p.visuals.push(
+        <line key={`ll-${l}-${half}`} className={`swl-ll swl-ll-${s.state}`} x1={x} x2={x} y1={y1} y2={y2} />,
+      );
+      s.acts.forEach((a, k) => {
+        const ax = x - 5 + k * 5;
+        // fill + side borders only, so stacked half-row segments read as one
+        // bar; caps only where the activity starts / ends inside this row
+        const starts = half === 1 && !pre[l]?.acts.includes(a);
+        const ends = half === 0 && !post[l]?.acts.includes(a);
+        const d =
+          `M${ax},${y1} V${y2} M${ax + 10},${y1} V${y2}` +
+          (starts ? ` M${ax},${y1} H${ax + 10}` : "") +
+          (ends ? ` M${ax},${y2} H${ax + 10}` : "");
+        // `activityStyle` is applied to both the rect (normally filled, not
+        // stroked) and the path (normally stroked, not filled) — set `fill`
+        // for the bar's background and `stroke` for its border; the same
+        // object on both elements is harmless since each only renders with
+        // the properties it has a value for.
+        const actStyle = laneActivityStyle[l];
+        p.visuals.push(
+          <g
+            key={`a-${a}-${half}`}
+            className={clsx(
+              "swl-act",
+              laneActivityClassName[l],
+              hl === a ? "swl-hl" : proc === a && "swl-hl-proc",
+            )}
+          >
+            <rect x={ax} y={y1} width={10} height={y2 - y1} style={actStyle} />
+            <path d={d} style={actStyle} />
+          </g>,
+        );
+        p.hits.push(
+          <rect
+            key={`ha-${a}-${half}`}
+            className="swl-hit"
+            x={ax - 8}
+            y={y1}
+            width={26}
+            height={y2 - y1}
+            data-kind="activity"
+            data-id={a}
+            data-lane={l}
+          />,
+        );
+      });
+    });
+    if (!pre[l] && post[l]) {
+      p.visuals.push(
+        <rect key={`h-${l}`} className="swl-lane-head" x={x - 16} y={g.mid - 5} width={32} height={10} rx={2} />,
+        <text key={`ht-${l}`} className="swl-lbl-muted" x={x + 20} y={g.mid + 3}>
+          + {laneLabels[l] ?? l} joined
+        </text>,
+      );
+    }
+  });
+}
+
+function drawArrow(
+  p: Parts,
+  g: Geo,
+  idx: (l: string) => number,
+  a: {
+    from: string;
+    to: string;
+    cls: string;
+    marker: string;
+    label: string;
+    hitId: string;
+    kind: SwimlaneTargetKind;
+    rowId?: SwimlaneRowId;
+    hl: boolean;
+    /** Secondary highlight: a transition created/received by the hovered process. */
+    rel?: boolean;
+  },
+) {
+  const i1 = idx(a.from);
+  const i2 = idx(a.to);
+  if (i1 < 0 || i2 < 0) return;
+  const x1 = laneX(g, i1);
+  const x2 = laneX(g, i2);
+  const cls = clsx("swl-ar", a.cls, a.hl ? "swl-hl" : a.rel && "swl-hl-rel");
+  const markerEnd = `url(#${g.mk}-${a.marker})`;
+  const hitData = {"data-kind": a.kind, "data-id": a.hitId, "data-row": a.rowId};
+  if (a.from === a.to) {
+    const d = `M${x1 + 6},${g.mid - 9} h26 v16 h-20`;
+    p.visuals.push(
+      <path key="ar" className={cls} d={d} markerEnd={markerEnd} />,
+      <text key="lb" className="swl-lbl" x={x1 + 38} y={g.mid + 3}>
+        {a.label}
+      </text>,
+    );
+    p.hits.push(<path key="hit" className="swl-hit" d={d} strokeWidth={14} pointerEvents="stroke" {...hitData} />);
+    return;
+  }
+  const dir = Math.sign(x2 - x1);
+  const sx = x1 + dir * 6;
+  const ex = x2 - dir * 6;
+  p.visuals.push(
+    <line key="ar" className={cls} x1={sx} x2={ex} y1={g.mid} y2={g.mid} markerEnd={markerEnd} />,
+    <text key="lb" className="swl-lbl" x={Math.min(sx, ex) + 8} y={g.mid - 5}>
+      {a.label}
+    </text>,
+  );
+  // broad hit zone: a 16px thick invisible band over the thin line
+  p.hits.push(
+    <line
+      key="hit"
+      className="swl-hit"
+      x1={sx}
+      x2={ex}
+      y1={g.mid}
+      y2={g.mid}
+      strokeWidth={16}
+      pointerEvents="stroke"
+      {...hitData}
+    />,
+  );
+}
+
+const CALL_STYLE = {
+  sync: ["swl-ar-sync", "sync"],
+  async: ["swl-ar-async", "async"],
+  event: ["swl-ar-event", "event"],
+} as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rows
+// ─────────────────────────────────────────────────────────────────────────────
+
+type RowCommon = {
+  g: Geo;
+  laneOrder: string[];
+  laneLabels: Record<string, string>;
+  /** Per-lane extra class for the activity bar (`SwimlaneLaneEvent.activityClassName`). */
+  laneActivityClassName: Record<string, string>;
+  /** Per-lane inline style for the activity bar (`SwimlaneLaneEvent.activityStyle`). */
+  laneActivityStyle: Record<string, React.CSSProperties>;
+  width: number;
+  hl: string | null;
+  /** True when this row's transition belongs to a child of the highlighted call. */
+  rel?: boolean;
+  /** Call id of the process (activity) that sends/receives the hovered transition. */
+  proc?: string | null;
+  /** Formats the timestamp column. Defaults to local wall-clock time. */
+  fmtTs: (ts: number) => string;
+};
+
+const RealRow = memo(function RealRow({
+  row, g, laneOrder, laneLabels, laneActivityClassName, laneActivityStyle, width, hl, rel, proc, fmtTs, grouped, stepHl,
+}: RowCommon & {
+  row: SwimlaneRow;
+  /** Shares `step` with the previous row: draw a tie mark instead of a timestamp. */
+  grouped?: boolean;
+  /** This row's step is the hovered/clicked/highlighted one. */
+  stepHl?: boolean;
+}) {
+  const p: Parts = {visuals: [], hits: []};
+  const idx = (l: string) => laneOrder.indexOf(l);
+  drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels, proc, laneActivityClassName, laneActivityStyle);
+  const ev = row.event;
+  switch (ev.type) {
+    case "call": {
+      const [cls, marker] = CALL_STYLE[ev.kind];
+      drawArrow(p, g, idx, {
+        from: ev.from, to: ev.to, cls, marker, label: ev.label,
+        hitId: ev.id, kind: "transition", rowId: row.id, hl: hl === ev.id, rel,
+      });
+      break;
+    }
+    case "reply":
+      if (row.route) {
+        drawArrow(p, g, idx, {
+          from: row.route.to, to: row.route.from,
+          cls: ev.ok ? "swl-ar-reply" : "swl-ar-error", marker: ev.ok ? "reply" : "error",
+          label: ev.label, hitId: ev.id, kind: "transition", rowId: row.id, hl: hl === ev.id, rel,
+        });
+      }
+      break;
+    case "done":
+      if (row.route) {
+        p.visuals.push(
+          <text key="dn" className="swl-lbl-muted" x={laneX(g, idx(row.route.to)) + 14} y={g.mid + 3}>
+            ✓ processed {row.route.label}
+          </text>,
+        );
+      }
+      break;
+    case "state": {
+      const x = laneX(g, idx(ev.lane));
+      p.visuals.push(<circle key="st" cx={x} cy={g.mid} r={5} className={`swl-dot-${ev.state}`} />);
+      if (ev.showLabel ?? true) {
+        p.visuals.push(
+          <text key="stl" className="swl-lbl-muted" x={x + 10} y={g.mid + 3}>
+            → {ev.state}
+          </text>,
+        );
+      }
+      p.hits.push(
+        <circle
+          key="sth"
+          className="swl-hit"
+          cx={x}
+          cy={g.mid}
+          r={12}
+          data-kind="state"
+          data-id={`state-${row.id}`}
+          data-lane={ev.lane}
+          data-row={row.id}
+        />,
+      );
+      break;
+    }
+  }
+  return (
+    <svg
+      className={clsx("swl-row", row.fulfilled && "swl-arrived", grouped && "swl-grouped", stepHl && "swl-hl-step")}
+      width={width}
+      height={g.rowH}
+      data-row={row.id}
+    >
+      {grouped ? (
+        <line className="swl-ts-tie" x1={6} x2={6} y1={0} y2={g.rowH} />
+      ) : (
+        <text className="swl-ts" x={0} y={g.mid + 3}>
+          {fmtTs(ev.ts)}
+        </text>
+      )}
+      {row.fulfilled && (() => {
+        const isError = ev.type === "reply" && ev.ok === false;
+        return (
+          <text className={clsx("swl-ok", isError && "swl-ok-error")} x={g.gutter - 16} y={g.mid + 4}>
+            <title>{isError ? "replaced an outstanding message (error)" : "replaced an outstanding message"}</title>
+            {isError ? "✗" : "✓"}
+          </text>
+        );
+      })()}
+      {p.visuals}
+      <rect
+        className="swl-hit"
+        x={0}
+        y={0}
+        width={g.gutter - 2}
+        height={g.rowH}
+        data-kind="step"
+        data-id={stepKeyOf(row)}
+        data-row={row.id}
+      />
+      {p.hits}
+    </svg>
+  );
+});
+
+const DEF_FORMAT_WAIT = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
+
+const GhostRow = memo(function GhostRow({
+  row, g, laneOrder, laneLabels, laneActivityClassName, laneActivityStyle, width, hl, rel, proc, now,
+  formatWait = DEF_FORMAT_WAIT,
+}: RowCommon & {row: SwimlaneGhostRow; now: number; formatWait?: (ms: number) => string}) {
+  const p: Parts = {visuals: [], hits: []};
+  const pd = row.pending;
+  const waited = now - pd.since;
+  const overdue = pd.timeoutMs != null && waited > pd.timeoutMs;
+  drawLanes(p, g, laneOrder, row.pre, row.post, hl, laneLabels, proc, laneActivityClassName, laneActivityStyle);
+  drawArrow(p, g, (l) => laneOrder.indexOf(l), {
+    from: pd.from, to: pd.to, cls: clsx("swl-ar-ghost", overdue && "swl-overdue"), marker: "ghost",
+    label: `⌛ ${pd.label}`, hitId: pd.id, kind: "pending", hl: hl === pd.id, rel,
+  });
+  return (
+    <svg className="swl-row swl-ghost" width={width} height={g.rowH}>
+      <text className={clsx("swl-ts", overdue && "swl-overdue")} x={0} y={g.mid + 3}>
+        waiting {formatWait(waited)}
+      </text>
+      {p.visuals}
+      {p.hits}
+    </svg>
+  );
+});
+
+const NowRow = memo(function NowRow({
+  snap, count, g, laneOrder, laneLabels, laneActivityClassName, laneActivityStyle, width, proc,
+}: Omit<RowCommon, "hl" | "rel"> & {snap: SwimlaneLanesSnapshot; count: number}) {
+  const p: Parts = {visuals: [], hits: []};
+  drawLanes(p, g, laneOrder, snap, snap, null, laneLabels, proc, laneActivityClassName, laneActivityStyle);
+  return (
+    <svg className="swl-row swl-now" width={width} height={g.rowH}>
+      <text className="swl-now-lbl" x={0} y={g.mid + 3}>now</text>
+      {p.visuals}
+      <line className="swl-now-line" x1={g.gutter - 6} x2={width - 10} y1={g.mid} y2={g.mid} />
+      <text className="swl-now-lbl" x={width - 136} y={g.mid - 4}>▼ {count} outstanding</text>
+    </svg>
+  );
+});
+
+function PendingZone(
+  props: Omit<RowCommon, "hl" | "rel" | "proc"> & {
+    model: SwimlaneModel;
+    hid: string | null;
+    related: ReadonlySet<string>;
+    procId: string | null;
+    clock?: number;
+    formatWait?: (ms: number) => string;
+  },
+) {
+  const {model, hid, related, procId, clock, formatWait, ...common} = props;
+  const [tick, setNow] = useState(() => Date.now());
+  const now = clock ?? tick;
+  const any = model.pending.length > 0;
+  useEffect(() => {
+    // only the ghost rows tick (for the "waiting" timer); a `now` prop disables the ticker
+    if (!any || clock != null) return;
+    const iv = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(iv);
+  }, [any, clock]);
+  const {current, pending} = model;
+  const ghosts = useMemo(() => projectPending(current, pending), [current, pending]);
+  return (
+    <>
+      <NowRow
+        snap={model.current}
+        count={model.pending.length}
+        proc={procId && rowTouches({pre: model.current, post: model.current}, undefined, procId) ? procId : null}
+        {...common}
+      />
+      {ghosts.map((gr) => (
+        <GhostRow
+          key={gr.id}
+          row={gr}
+          now={now}
+          hl={hid && rowTouches(gr, gr.pending.id, hid) ? hid : null}
+          rel={related.has(gr.pending.id)}
+          proc={procId && rowTouches(gr, undefined, procId) ? procId : null}
+          formatWait={formatWait}
+          {...common}
+        />
+      ))}
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Header
+// ─────────────────────────────────────────────────────────────────────────────
+
+function Header({model, g, headH, width}: {model: SwimlaneModel; g: Geo; headH: number; width: number}) {
+  return (
+    <svg width={width} height={headH}>
+      {model.laneOrder.map((l, i) => {
+        const x = laneX(g, i);
+        const s = model.current[l];
+        const y = headH - 24;
+        return (
+          <g key={l}>
+            <text className="swl-lane-name" x={x + 4} y={y} transform={`rotate(-90 ${x + 4} ${y})`}>
+              {model.laneLabels[l] ?? l}
+            </text>
+            <circle cx={x} cy={headH - 12} r={5} className={`swl-dot-${s?.state}`}>
+              <title>{s?.state}</title>
+            </circle>
+            {s && s.acts.length > 0 && (
+              <text className="swl-lbl-muted" x={x + 9} y={headH - 8}>
+                {s.acts.length}
+              </text>
+            )}
+            <rect
+              className="swl-hit"
+              x={x - g.laneW / 2}
+              y={0}
+              width={g.laneW}
+              height={headH}
+              data-kind="lane"
+              data-id={l}
+              data-lane={l}
+            />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function Defs({mk}: {mk: string}) {
+  const m = (id: string, cls: string, open: boolean) => (
+    <marker
+      id={`${mk}-${id}`}
+      viewBox="0 0 10 10"
+      refX={9}
+      refY={5}
+      markerWidth={9}
+      markerHeight={9}
+      markerUnits="userSpaceOnUse"
+      orient="auto-start-reverse"
+    >
+      {open ? <path d="M1,1 L9,5 L1,9" className={cls} /> : <path d="M0,0 L10,5 L0,10 z" className={cls} />}
+    </marker>
+  );
+  return (
+    <svg width={0} height={0} style={{position: "absolute"}} aria-hidden="true">
+      <defs>
+        {m("sync", "swl-mk-sync", false)}
+        {m("async", "swl-mk-async", true)}
+        {m("event", "swl-mk-event", true)}
+        {m("reply", "swl-mk-reply", true)}
+        {m("error", "swl-mk-error", false)}
+        {m("ghost", "swl-mk-ghost", true)}
+      </defs>
+    </svg>
+  );
+}
+
+/**
+ * For a hovered transition (call / reply arrow, or outstanding reply): the
+ * call id of the caller-side activity that sent it / receives the reply.
+ */
+function processOf(m: Pick<SwimlaneModel, "spans">, t: SwimlaneTarget): string | null {
+  if (t.kind !== "transition" && t.kind !== "pending") return null;
+  return m.spans[t.id]?.parent ?? null;
+}
+
+function scrollParent(el: HTMLElement | null): HTMLElement | null {
+  for (let e = el?.parentElement; e; e = e.parentElement) {
+    const oy = getComputedStyle(e).overflowY;
+    if (oy === "auto" || oy === "scroll") return e;
+  }
+  return null; // → window
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Card
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const SwimlaneComponent = (props: PiCardProps<SwimlaneProps, SwimlaneEvents>): React.ReactNode => {
+  const {
+    cardName,
+    model,
+    showPending = true,
+    autoFollow = true,
+    showTooltip = true,
+    highlightId,
+    laneWidth = DEF_LANE_WIDTH,
+    rowHeight = DEF_ROW_HEIGHT,
+    headerHeight = DEF_HEADER_HEIGHT,
+    gutterWidth = DEF_GUTTER_WIDTH,
+    stickyTop = 0,
+    now: clock,
+    formatTs: fmtTs = formatTs,
+    formatWait,
+    className,
+    style,
+    onHoverChanged,
+    onItemClicked,
+  } = props;
+
+  const mk = "swl" + useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const g = useMemo<Geo>(
+    () => ({laneW: laneWidth, rowH: rowHeight, gutter: gutterWidth, mid: rowHeight / 2, mk}),
+    [laneWidth, rowHeight, gutterWidth, mk],
+  );
+  const width = gutterWidth + model.laneOrder.length * laneWidth + 140; // + room for labels
+  const common = {
+    g,
+    laneOrder: model.laneOrder,
+    laneLabels: model.laneLabels,
+    laneActivityClassName: model.laneActivityClassName,
+    laneActivityStyle: model.laneActivityStyle,
+    width,
+    fmtTs,
+  };
+
+  const rootRef = useRef<HTMLDivElement>(null);
+  const tipRef = useRef<HTMLDivElement>(null);
+  const modelRef = useRef(model);
+  modelRef.current = model;
+
+  // ── hover / click (event delegation) ─────────────────────────────────────
+  const [hovered, setHovered] = useState<SwimlaneTarget | null>(null);
+  const hoveredRef = useRef<SwimlaneTarget | null>(null);
+
+  const targetOf = (el: Element | null): SwimlaneTarget | null => {
+    const hit = (el as HTMLElement | null)?.closest?.(".swl-hit") as SVGElement | null;
+    if (!hit) return null;
+    const d = hit.dataset;
+    return {
+      kind: d.kind as SwimlaneTargetKind,
+      id: d.id!,
+      lane: d.lane,
+      // DOM dataset values are always strings; row ids may be numbers
+      // (internal) or caller-chosen strings/numbers (see `SwimlaneRowId`),
+      // so `rowId` is compared against `String(row.id)` rather than parsed.
+      rowId: d.row,
+    };
+  };
+  const same = (a: SwimlaneTarget | null, b: SwimlaneTarget | null) =>
+    a === b || (!!a && !!b && a.kind === b.kind && a.id === b.id);
+
+  const details = (t: SwimlaneTarget) => {
+    const m = modelRef.current;
+    if (t.kind === "step") return {steps: stepRows(m, t.id)};
+    if (t.kind === "lane") return {meta: m.laneMeta[t.id]};
+    if (t.kind === "state") {
+      const r = m.rows.find((x) => String(x.id) === t.rowId);
+      const meta = r && r.event.type === "state" ? r.event.meta : undefined;
+      return {related: undefined, process: undefined, meta};
+    }
+    const related = relatedCallIds(m, t.id);
+    const process = processOf(m, t) ?? undefined;
+    const pending = t.kind === "pending" ? m.pending.find((p) => p.id === t.id) : undefined;
+    const meta = pending ? pending.meta : m.spans[t.id]?.meta;
+    return t.kind === "pending"
+      ? {pending, span: m.spans[t.id], related, process, meta}
+      : {span: m.spans[t.id], related, process, meta};
+  };
+
+  const placeTip = (x: number, y: number) => {
+    const tip = tipRef.current;
+    if (tip) {
+      tip.style.left = `${x + 14}px`;
+      tip.style.top = `${y + 14}px`;
+    }
+  };
+
+  const changeHover = (next: SwimlaneTarget | null, e: React.PointerEvent) => {
+    const prev = hoveredRef.current;
+    if (same(prev, next)) return; // e.g. same activity continuing in the next row
+    hoveredRef.current = next;
+    setHovered(next);
+    const tip = tipRef.current;
+    if (tip) {
+      if (next && showTooltip) {
+        tip.textContent = describeSwimlaneTarget(modelRef.current, next, clock ?? Date.now(), fmtTs);
+        tip.style.display = "block";
+        placeTip(e.clientX, e.clientY);
+      } else {
+        tip.style.display = "none";
+      }
+    }
+    onHoverChanged({
+      target: next,
+      previous: prev,
+      ...(next ? details(next) : {}),
+      clientX: e.clientX,
+      clientY: e.clientY,
+    });
+  };
+
+  const onOver = (e: React.PointerEvent) => {
+    const t = targetOf(e.target as Element);
+    if (t) changeHover(t, e);
+  };
+  const onOut = (e: React.PointerEvent) => {
+    const t = targetOf(e.relatedTarget as Element | null);
+    if (!t || !same(t, hoveredRef.current)) changeHover(t, e);
+  };
+  const onMove = (e: React.PointerEvent) => {
+    if (hoveredRef.current && showTooltip) placeTip(e.clientX, e.clientY);
+  };
+  const onClick = (e: React.MouseEvent) => {
+    const t = targetOf(e.target as Element);
+    if (t) onItemClicked({target: t, ...details(t)});
+  };
+
+  // ── highlighting: only rows touching the chain get a new `hl` prop ───────
+  const hid =
+    hovered && hovered.kind !== "state" && hovered.kind !== "step" && hovered.kind !== "lane"
+      ? hovered.id
+      : highlightId ?? null;
+  // children of the highlighted call: transitions the process creates/receives
+  const {spans} = model;
+  const related = useMemo<ReadonlySet<string>>(
+    () => new Set(hid ? relatedCallIds({spans}, hid) : []),
+    [hid, spans],
+  );
+  // hovering a transition: also mark the process on the caller side that sent
+  // the call / receives the reply (the parent activity) — only that activity
+  const procId = hovered ? processOf(model, hovered) : null;
+  // hovering (or clicking) a timestamp: the whole step it belongs to
+  const stepId = hovered?.kind === "step" ? hovered.id : null;
+
+  // ── auto-follow (page or nearest scroll container) ───────────────────────
+  const follow = useRef(true);
+  useEffect(() => {
+    if (!autoFollow) return;
+    const sp = scrollParent(rootRef.current);
+    const target: HTMLElement | Window = sp ?? window;
+    const onScroll = () => {
+      follow.current = sp
+        ? sp.scrollTop + sp.clientHeight >= sp.scrollHeight - 40
+        : window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 40;
+    };
+    target.addEventListener("scroll", onScroll, {passive: true});
+    return () => target.removeEventListener("scroll", onScroll);
+  }, [autoFollow]);
+  useLayoutEffect(() => {
+    if (!autoFollow || !follow.current) return;
+    const sp = scrollParent(rootRef.current);
+    if (sp) sp.scrollTop = sp.scrollHeight;
+    else window.scrollTo(0, document.documentElement.scrollHeight);
+  }, [autoFollow, model.rows.length, model.pending.length]);
+
+  return (
+    <div
+      ref={rootRef}
+      className={clsx("pihanga-swimlane", className)}
+      style={style}
+      data-pihanga={cardName}
+      onPointerOver={onOver}
+      onPointerOut={onOut}
+      onPointerMove={onMove}
+      onClick={onClick}
+    >
+      <Defs mk={mk} />
+      <div className="swl-header" style={{top: stickyTop}}>
+        <Header model={model} g={g} headH={headerHeight} width={width} />
+      </div>
+      <div className="swl-rows">
+        {model.rows.map((r, i) => (
+          <RealRow
+            key={r.id}
+            row={r}
+            hl={hid && rowTouches(r, "id" in r.event ? r.event.id : undefined, hid) ? hid : null}
+            rel={"id" in r.event && r.event.type !== "done" && related.has(r.event.id)}
+            proc={procId && rowTouches(r, undefined, procId) ? procId : null}
+            grouped={r.event.step != null && r.event.step === model.rows[i - 1]?.event.step}
+            stepHl={stepId != null && stepKeyOf(r) === stepId}
+            {...common}
+          />
+        ))}
+        {showPending && (
+          <PendingZone
+            model={model}
+            hid={hid}
+            related={related}
+            procId={procId}
+            clock={clock}
+            formatWait={formatWait}
+            {...common}
+          />
+        )}
+      </div>
+      <div ref={tipRef} className="swl-tooltip" role="tooltip" />
+    </div>
+  );
+};

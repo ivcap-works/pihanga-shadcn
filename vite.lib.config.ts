@@ -18,7 +18,7 @@
  */
 
 import path from "path";
-import {readFileSync, existsSync} from "fs";
+import {readFileSync, readdirSync, existsSync} from "fs";
 import {fileURLToPath} from "url";
 import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
@@ -34,6 +34,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const {cards: CORE_CARDS} = JSON.parse(
   readFileSync(path.join(__dirname, "scripts/core-cards.json"), "utf-8"),
 ) as {cards: string[]};
+
+/**
+ * Card directories that are NOT in the core allowlist (e.g. codeMirror, graphin,
+ * chart, markdownViewer). These are published as separate packages, so their
+ * declarations must not leak into @pihanga2/shadcn (they import heavy deps such
+ * as @codemirror/* that core does not declare).
+ */
+const EXCLUDED_CARD_DIRS = readdirSync(path.join(__dirname, "src/cards"), {
+  withFileTypes: true,
+})
+  .filter((d) => d.isDirectory() && !CORE_CARDS.includes(d.name))
+  .map((d) => `src/cards/${d.name}/**`);
 
 // ---------------------------------------------------------------------------
 // Entry points — one per card
@@ -81,6 +93,7 @@ const external = [
   "clsx",
   "tailwind-merge",
   "sonner",
+  "vaul", // used by drawer card — in dependencies.json, not bundled
   "react-drag-drop-files", // used by fileDrop card — in dependencies.json, not bundled
   // ── Excluded-card deps (guard; should never appear in core source) ─────────
   "lodash",
@@ -111,6 +124,8 @@ export default defineConfig({
         "src/components/hooks",
       ],
       exclude: [
+        // Non-core card packages (graphin, chart, markdown, codemirror)
+        ...EXCLUDED_CARD_DIRS,
         "src/**/*.example.ts",
         "src/**/*.test.tsx",
         "src/playground/**",

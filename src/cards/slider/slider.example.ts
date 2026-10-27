@@ -58,6 +58,21 @@ export default definePlayground<PiSliderProps>({
       props: {value: 20, min: -20, max: 40, step: 1, label: "Temperature (°C)"},
     },
     {
+      id: "two-thumb-range",
+      title: "Two-thumb range",
+      description:
+        "Pass a [minimum, maximum] tuple to select an inclusive range with two thumbs.",
+      props: {
+        defaultValue: [2006, 2026],
+        min: 2000,
+        max: 2030,
+        step: 1,
+        minStepsBetweenThumbs: 1,
+        selfManaged: true,
+        label: "Time range",
+      },
+    },
+    {
       id: "self-managed",
       title: "Self-managed",
       description:
@@ -172,6 +187,11 @@ export default definePlayground<PiSliderProps>({
     {prop: "min", type: "number", label: "Min"},
     {prop: "max", type: "number", label: "Max"},
     {prop: "step", type: "number", label: "Step"},
+    {
+      prop: "minStepsBetweenThumbs",
+      type: "number",
+      label: "Minimum steps between thumbs",
+    },
     {prop: "debounceMs", type: "number", label: "Debounce ms"},
     {prop: "label", type: "text", label: "Label", placeholder: "e.g. Volume"},
     {prop: "selfManaged", type: "boolean", label: "Self-managed"},
@@ -243,6 +263,20 @@ registerCard("myApp/opacitySlider", Slider({
   selfManaged:  true,
   debounceMs:   200,   // max 5 events/sec during drag
   label:        "Opacity",
+}));
+\`\`\`
+
+**Two-thumb range** — events carry the same tuple shape:
+
+\`\`\`ts
+registerCard("myApp/timeRange", Slider({
+  name: "timeRange",
+  defaultValue: [2006, 2026],
+  min: 2000,
+  max: 2030,
+  minStepsBetweenThumbs: 1,
+  selfManaged: true,
+  label: "Time range",
 }));
 \`\`\`
 

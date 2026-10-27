@@ -240,6 +240,10 @@
       "type": "registry:component"
     },
     {
+      "name": "swimlane",
+      "type": "registry:component"
+    },
+    {
       "name": "switch",
       "type": "registry:component"
     },

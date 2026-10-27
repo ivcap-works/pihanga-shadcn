@@ -1,4 +1,4 @@
-import {CodeMirrorCard} from "./codeMirror.types";
+import {CodeMirror} from "./codeMirror.types";
 import {definePlayground} from "@/playground/definePlayground";
 import type {CodeMirrorCardProps} from "./codeMirror.types";
 
@@ -27,7 +27,7 @@ services:
 `;
 
 /** Basic read-only viewer with no language extension. */
-export const codeMirrorBasicExample = CodeMirrorCard({
+export const codeMirrorBasicExample = CodeMirror({
   value: PYTHON_SNIPPET,
   readOnly: true,
   height: "200px",
@@ -41,11 +41,11 @@ export const codeMirrorBasicExample = CodeMirrorCard({
  *
  * @example
  * import { python } from "@codemirror/legacy-modes/mode/python";
- * import { registerStreamParser } from "@pihanga2/shadcn/codeMirror";
+ * import { registerStreamParser } from "@pihanga2/codemirror/cards/codeMirror";
  * registerStreamParser("python", python);
- * CodeMirrorCard({ streamLanguage: "python", value: "..." });
+ * CodeMirror({ streamLanguage: "python", value: "..." });
  */
-export const codeMirrorPythonExample = CodeMirrorCard({
+export const codeMirrorPythonExample = CodeMirror({
   value: PYTHON_SNIPPET,
   readOnly: false,
   height: "300px",
@@ -60,7 +60,7 @@ export default definePlayground<CodeMirrorCardProps>({
   cardId: "code-mirror",
   title: "Code Mirror",
 
-  preview: (props) => CodeMirrorCard(props),
+  preview: (props) => CodeMirror(props),
 
   defaultProps: {
     value: PYTHON_SNIPPET,
@@ -119,17 +119,22 @@ export default definePlayground<CodeMirrorCardProps>({
       label: "Extensions key",
       placeholder: "e.g. oneDark",
     },
-    {prop: "theme", type: "token", label: "Theme", options: ["light", "dark"]},
+    {
+      prop: "theme",
+      type: "text",
+      label: "Theme",
+      placeholder: "light, dark, or a registered key",
+    },
   ],
 
   note: `
 \`\`\`ts
 import { registerCard } from "@pihanga2/core";
 import {
-  CodeMirrorCard,
+  CodeMirror,
   registerStreamParser,
   registerExtensions,
-} from "@pihanga2/shadcn/codeMirror";
+} from "@pihanga2/codemirror/cards/codeMirror";
 import { python } from "@codemirror/legacy-modes/mode/python";
 import { oneDark } from "@codemirror/theme-one-dark";
 
@@ -139,22 +144,22 @@ registerStreamParser("python", python);
 registerExtensions("oneDark", [oneDark]);
 
 // Plain editor — no language extension
-registerCard("myApp/editor", CodeMirrorCard({
+registerCard("myApp/editor", CodeMirror({
   value: "...",
   height: "400px",
 }));
 
 // With StreamLanguage highlighting
-registerCard("myApp/pythonEditor", CodeMirrorCard({
+registerCard("myApp/pythonEditor", CodeMirror({
   streamLanguage: "python",
   value: "def hello(): pass",
   height: "400px",
 }));
 
-// With a custom theme extension bundle
-registerCard("myApp/darkEditor", CodeMirrorCard({
+// With a registered theme (its key is passed as the theme prop)
+registerCard("myApp/darkEditor", CodeMirror({
   streamLanguage: "python",
-  extensionsKey: "oneDark",
+  theme: "oneDark",
   value: "def hello(): pass",
   height: "400px",
 }));

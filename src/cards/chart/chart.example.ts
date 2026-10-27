@@ -1,7 +1,9 @@
 /**
  * Playground definition for the `shad/chart-graph` card.
  */
+import {registerCard} from "@pihanga2/core";
 import {definePlayground} from "@/playground/definePlayground";
+import {Slider} from "@/cards/slider";
 import {Chart, type PiChartGraphProps} from "./index";
 
 // ---------------------------------------------------------------------------
@@ -15,6 +17,30 @@ const MONTHLY_DATA = [
   {month: "Apr", desktop: 273, mobile: 190},
   {month: "May", desktop: 209, mobile: 130},
   {month: "Jun", desktop: 214, mobile: 140},
+];
+
+const YEAR_DISTRIBUTION_DATA = [
+  {year: 2006, count: 1},
+  {year: 2007, count: 1},
+  {year: 2008, count: 1},
+  {year: 2009, count: 3},
+  {year: 2010, count: 8},
+  {year: 2011, count: 10},
+  {year: 2012, count: 10},
+  {year: 2013, count: 9},
+  {year: 2014, count: 11},
+  {year: 2015, count: 14},
+  {year: 2016, count: 12},
+  {year: 2017, count: 11},
+  {year: 2018, count: 13},
+  {year: 2019, count: 16},
+  {year: 2020, count: 15},
+  {year: 2021, count: 27},
+  {year: 2022, count: 31},
+  {year: 2023, count: 34},
+  {year: 2024, count: 49},
+  {year: 2025, count: 32},
+  {year: 2026, count: 16},
 ];
 
 const SINGLE_LINE_SERIES = [
@@ -89,11 +115,37 @@ const MULTI_AREA_SERIES = [
   },
 ];
 
+const TIME_RANGE_SLIDER_CARD = "playground/chart-time-range-slider";
+
+registerCard(
+  TIME_RANGE_SLIDER_CARD,
+  Slider({
+    defaultValue: [2006, 2026],
+    min: 2006,
+    max: 2026,
+    step: 1,
+    minStepsBetweenThumbs: 1,
+    selfManaged: true,
+    showTicks: true,
+    tickStep: 0,
+    majorTickStep: 20,
+    className: "w-full",
+  }),
+);
+
 export default definePlayground<PiChartGraphProps>({
   cardId: "shad/chart-graph",
   title: "Chart",
 
-  preview: (props) => Chart(props),
+  preview: (props) =>
+    props.chartType === "bar" && props.xDataKey === "year"
+      ? Chart({
+          ...props,
+          footerCard: TIME_RANGE_SLIDER_CARD,
+          footerClassName: "mt-2",
+          className: "w-full max-w-2xl",
+        })
+      : Chart(props),
 
   defaultProps: {
     chartType: "line",
@@ -140,6 +192,33 @@ export default definePlayground<PiChartGraphProps>({
         xDataKey: "month",
         title: "Desktop Visits",
         description: "Monthly desktop page views",
+      },
+    },
+    {
+      id: "time-range-histogram",
+      title: "Time range histogram",
+      description:
+        "A compact distribution chart with all chart furniture hidden, designed to sit above a two-thumb time-range slider.",
+      props: {
+        chartType: "bar",
+        data: YEAR_DISTRIBUTION_DATA,
+        series: [
+          {
+            dataKey: "count",
+            label: "Results",
+            color: "#93c5e8",
+          },
+        ],
+        xDataKey: "year",
+        height: 120,
+        showGrid: false,
+        showLegend: false,
+        showXAxisLabel: false,
+        showYAxis: false,
+        barGap: "8%",
+        barRadius: 1,
+        suppressAnimation: true,
+        className: "w-full",
       },
     },
     {
@@ -286,7 +365,7 @@ export default definePlayground<PiChartGraphProps>({
       prop: "chartType",
       type: "token",
       label: "Chart type",
-      options: ["line", "area"],
+      options: ["line", "area", "bar"],
     },
     {
       prop: "title",
@@ -320,8 +399,10 @@ export default definePlayground<PiChartGraphProps>({
       label: "X axis unit",
       placeholder: 'e.g. "s"',
     },
-    {prop: "stacked", type: "boolean", label: "Stacked (area)"},
+    {prop: "stacked", type: "boolean", label: "Stacked (area / bar)"},
     {prop: "fillOpacity", type: "number", label: "Fill opacity"},
+    {prop: "barGap", type: "text", label: "Bar gap"},
+    {prop: "barRadius", type: "number", label: "Bar radius"},
     {prop: "suppressAnimation", type: "boolean", label: "Suppress animation"},
     {prop: "height", type: "number", label: "Height (px)"},
   ],
@@ -365,6 +446,47 @@ registerCard("myApp/deviceChart", Chart({
   stacked: true,
   fillOpacity: 0.5,
   title: "Visits by Device",
+}));
+\`\`\`
+
+**Compact time-range histogram**
+
+Use this bare bar chart above a two-thumb \`Slider\` when building a faceted time-range filter:
+
+\`\`\`ts
+import {Chart} from "@/cards/chart";
+import {Slider} from "@/cards/slider";
+
+registerCard("search/timeHistogram", Chart({
+  chartType: "bar",
+  xDataKey: "year",
+  data: [
+    {year: 2006, count: 1},
+    {year: 2007, count: 1},
+    {year: 2008, count: 1},
+    // ...one bucket per year...
+    {year: 2024, count: 49},
+    {year: 2025, count: 32},
+    {year: 2026, count: 16},
+  ],
+  series: [{dataKey: "count", label: "Results", color: "#93c5e8"}],
+  height: 120,
+  showGrid: false,
+  showLegend: false,
+  showXAxisLabel: false,
+  showYAxis: false,
+  barGap: "8%",
+  barRadius: 1,
+  suppressAnimation: true,
+}));
+
+registerCard("search/timeRange", Slider({
+  defaultValue: [2006, 2026],
+  min: 2006,
+  max: 2026,
+  step: 1,
+  minStepsBetweenThumbs: 1,
+  selfManaged: true,
 }));
 \`\`\`
 

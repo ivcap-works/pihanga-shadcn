@@ -1,0 +1,148 @@
+/*
+ * shad/swimlane — card-local colour tokens (override in your own :root / .dark).
+ * Structural colours reuse the shadcn tokens (--foreground, --muted-foreground,
+ * --border, --popover, --destructive) so the card follows the app theme.
+ */
+:root {
+  --swl-sync: oklch(0.55 0.2 260);
+  --swl-async: oklch(0.55 0.22 295);
+  --swl-event: oklch(0.6 0.11 185);
+  --swl-act-fill: oklch(0.93 0.04 255);
+  --swl-hl: oklch(0.77 0.16 70);
+  --swl-starting: oklch(0.67 0.16 60);
+  --swl-degraded: oklch(0.65 0.19 45);
+  --swl-running: oklch(0.6 0.15 150);
+  /* one-shot outcome states (in_progress / succeeded / failed) — see §5 of DESIGN.md */
+  --swl-in-progress: oklch(0.6 0.17 255);
+  --swl-succeeded: oklch(0.6 0.15 150);
+  --swl-failed: oklch(0.6 0.22 25);
+}
+.dark {
+  --swl-sync: oklch(0.72 0.14 260);
+  --swl-async: oklch(0.74 0.14 295);
+  --swl-event: oklch(0.78 0.11 185);
+  --swl-act-fill: oklch(0.35 0.07 255);
+  --swl-hl: oklch(0.8 0.15 75);
+  --swl-starting: oklch(0.75 0.15 65);
+  --swl-degraded: oklch(0.72 0.17 45);
+  --swl-running: oklch(0.75 0.15 150);
+  --swl-in-progress: oklch(0.72 0.15 255);
+  --swl-succeeded: oklch(0.75 0.15 150);
+  --swl-failed: oklch(0.72 0.2 25);
+}
+
+.pihanga-swimlane {
+  width: max-content;
+  min-width: 100%;
+  color: var(--foreground);
+  font-size: 13px;
+}
+.pihanga-swimlane .swl-header {
+  position: sticky;
+  z-index: 2;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+}
+.pihanga-swimlane svg { display: block; overflow: visible; }
+.pihanga-swimlane svg text { fill: var(--foreground); }
+
+.pihanga-swimlane .swl-lane-name { font-size: 12px; font-weight: 600; }
+.pihanga-swimlane .swl-ts { fill: var(--muted-foreground); font: 10px ui-monospace, monospace; }
+.pihanga-swimlane .swl-lbl { font-size: 11px; }
+.pihanga-swimlane .swl-lbl-muted { font-size: 10px; fill: var(--muted-foreground); }
+/* rows that share a `step` with the previous row: a tie mark instead of a
+   repeated timestamp, joining them visually into one block */
+.pihanga-swimlane .swl-ts-tie { stroke: var(--muted-foreground); stroke-width: 1; stroke-dasharray: 2 2; opacity: 0.5; }
+/* hovering (or clicking) a timestamp highlights every row of its step */
+.pihanga-swimlane .swl-row.swl-hl-step { background: color-mix(in srgb, var(--swl-hl) 12%, transparent); }
+.pihanga-swimlane .swl-row.swl-hl-step .swl-ts,
+.pihanga-swimlane .swl-row.swl-hl-step .swl-ts-tie { stroke: var(--swl-hl); fill: var(--swl-hl); opacity: 1; }
+
+/* lifelines by run state */
+.pihanga-swimlane .swl-ll { stroke-width: 1.5; }
+.pihanga-swimlane .swl-ll-created,
+.pihanga-swimlane .swl-ll-running { stroke: color-mix(in srgb, var(--muted-foreground) 70%, transparent); }
+.pihanga-swimlane .swl-ll-starting { stroke: var(--swl-starting); stroke-dasharray: 4 3; }
+.pihanga-swimlane .swl-ll-degraded { stroke: var(--swl-degraded); stroke-width: 3; }
+.pihanga-swimlane .swl-ll-stopped { stroke: var(--border); stroke-dasharray: 1 4; }
+/* one-shot outcome states: lifeline stays plain, only the dot carries colour */
+.pihanga-swimlane .swl-ll-in_progress { stroke: color-mix(in srgb, var(--muted-foreground) 70%, transparent); }
+.pihanga-swimlane .swl-ll-succeeded { stroke: color-mix(in srgb, var(--muted-foreground) 70%, transparent); }
+.pihanga-swimlane .swl-ll-failed { stroke: color-mix(in srgb, var(--muted-foreground) 70%, transparent); }
+
+.pihanga-swimlane .swl-dot-created,
+.pihanga-swimlane .swl-dot-starting { fill: var(--swl-starting); }
+.pihanga-swimlane .swl-dot-running { fill: var(--swl-running); }
+.pihanga-swimlane .swl-dot-degraded { fill: var(--swl-degraded); }
+.pihanga-swimlane .swl-dot-stopped { fill: var(--border); }
+.pihanga-swimlane .swl-dot-in_progress { fill: var(--swl-in-progress); }
+.pihanga-swimlane .swl-dot-succeeded { fill: var(--swl-succeeded); }
+.pihanga-swimlane .swl-dot-failed { fill: var(--swl-failed); }
+.pihanga-swimlane .swl-lane-head { fill: var(--background); stroke: var(--muted-foreground); }
+
+/* activities */
+.pihanga-swimlane .swl-act rect { fill: var(--swl-act-fill); stroke: none; }
+.pihanga-swimlane .swl-act path { fill: none; stroke: var(--swl-sync); stroke-width: 1; }
+.pihanga-swimlane .swl-act.swl-hl rect { fill: var(--swl-hl); }
+.pihanga-swimlane .swl-act.swl-hl path { stroke: var(--swl-hl); }
+/* the caller-side process that sends / receives a hovered transition */
+.pihanga-swimlane .swl-act.swl-hl-proc rect { fill: color-mix(in srgb, var(--swl-hl) 45%, var(--swl-act-fill)); }
+.pihanga-swimlane .swl-act.swl-hl-proc path { stroke: var(--swl-hl); stroke-width: 2; }
+
+/* arrows */
+.pihanga-swimlane .swl-ar { fill: none; stroke-width: 1.5; }
+.pihanga-swimlane .swl-ar-sync { stroke: var(--swl-sync); }
+.pihanga-swimlane .swl-ar-async { stroke: var(--swl-async); }
+.pihanga-swimlane .swl-ar-event { stroke: var(--swl-event); stroke-dasharray: 2 3; }
+.pihanga-swimlane .swl-ar-reply { stroke: var(--muted-foreground); stroke-dasharray: 5 3; }
+.pihanga-swimlane .swl-ar-error { stroke: var(--destructive); stroke-dasharray: 5 3; }
+.pihanga-swimlane .swl-ar-ghost { stroke: var(--muted-foreground); stroke-dasharray: 7 4; }
+.pihanga-swimlane .swl-ar-ghost.swl-overdue { stroke: var(--destructive); }
+.pihanga-swimlane .swl-ar.swl-hl { stroke: var(--swl-hl); stroke-width: 3; }
+/* transitions created / received by the highlighted process */
+.pihanga-swimlane .swl-ar.swl-hl-rel { stroke: var(--swl-hl); stroke-width: 2; }
+
+.pihanga-swimlane .swl-mk-sync { fill: var(--swl-sync); }
+.pihanga-swimlane .swl-mk-async { fill: none; stroke: var(--swl-async); stroke-width: 1.5; }
+.pihanga-swimlane .swl-mk-event { fill: none; stroke: var(--swl-event); stroke-width: 1.5; }
+.pihanga-swimlane .swl-mk-reply,
+.pihanga-swimlane .swl-mk-ghost { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+.pihanga-swimlane .swl-mk-error { fill: var(--destructive); }
+
+/* outstanding zone */
+.pihanga-swimlane .swl-ghost { opacity: 0.55; }
+.pihanga-swimlane .swl-ts.swl-overdue { fill: var(--destructive); font-weight: 600; }
+.pihanga-swimlane .swl-now-line { stroke: var(--swl-hl); stroke-width: 1.5; stroke-dasharray: 10 4; }
+.pihanga-swimlane text.swl-now-lbl { fill: var(--swl-hl); font-size: 11px; font-weight: 600; }
+.pihanga-swimlane text.swl-ok { fill: var(--swl-running); font-size: 12px; font-weight: 700; }
+/* an outstanding reply that arrived as an error still "arrived", but isn't a success */
+.pihanga-swimlane text.swl-ok.swl-ok-error { fill: var(--destructive); }
+.pihanga-swimlane .swl-arrived { animation: swl-arrive 1.6s ease-out; }
+@keyframes swl-arrive {
+  0% { background: color-mix(in srgb, var(--swl-hl) 45%, transparent); }
+  100% { background: transparent; }
+}
+
+/* hit zones: invisible but receive the pointer */
+.pihanga-swimlane .swl-hit { fill: transparent; stroke: transparent; cursor: pointer; }
+/* lane header: subtle hover affordance on the name/dot click target */
+.pihanga-swimlane .swl-hit[data-kind="lane"]:hover { fill: color-mix(in srgb, var(--swl-hl) 10%, transparent); }
+.pihanga-swimlane.swl-debug-hits .swl-hit {
+  fill: color-mix(in srgb, var(--destructive) 10%, transparent);
+  stroke: color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+
+.pihanga-swimlane .swl-tooltip {
+  position: fixed;
+  z-index: 50;
+  display: none;
+  max-width: 340px;
+  pointer-events: none;
+  padding: 6px 8px;
+  border-radius: calc(var(--radius) - 2px);
+  border: 1px solid var(--border);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  font-size: 12px;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--foreground) 15%, transparent);
+}

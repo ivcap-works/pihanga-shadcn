@@ -560,7 +560,7 @@ Ship Tailwind source (standard shadcn convention). Consumer adds one line:
 - [ ] Add a `.npmignore` or `"files"` field in `package.json` to exclude non-published files.
 - [ ] Verify the package builds and types resolve correctly in a fresh consumer project before first
       publish (use `npm link` or `yalc`).
-- [ ] Set up a GitHub Actions workflow for automated publishing on tag push.
+- [x] Set up a GitHub Actions workflow for automated publishing on tag push (`.github/workflows/publish.yml`).
 
 ---
 

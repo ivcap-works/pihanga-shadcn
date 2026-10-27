@@ -1,7 +1,7 @@
 {
   "name": "pihanga-shadcn",
   "private": true,
-  "version": "0.2.22",
+  "version": "0.2.26",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,7 @@
     "gen-registry": "node scripts/gen-registry.mjs",
     "build:core": "node scripts/build-core.mjs",
     "build:core:dry": "node scripts/build-core.mjs --dry-run",
+    "gen-card-schema": "node scripts/schema/extract-card-schemas.mjs",
     "build:extras": "node scripts/build-extras.mjs",
     "build:extras:dry": "node scripts/build-extras.mjs --dry-run",
     "build:graphin": "node scripts/build-extras.mjs --pkg graphin",
@@ -93,6 +94,7 @@
     "globals": "^16.0.0",
     "jsdom": "^27.4.0",
     "tailwindcss": "^4.3.0",
+    "ts-json-schema-generator": "^2.9.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
     "vite": "^8.0.9",

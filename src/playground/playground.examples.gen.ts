@@ -13,7 +13,7 @@
 // imported with Vite's `?raw` suffix and merged into the definition as the
 // `introduction` field (overriding any inline value in the example file).
 //
-// Last generated: 2026-09-23T07:09:09.194Z
+// Last generated: 2026-10-21T04:04:39.290Z
 // ============================================================================
 
 import type {PlaygroundDef} from "./playground.types";
@@ -65,6 +65,7 @@ import sliderValueDef from "@/cards/sliderValue/sliderValue.example";
 import stackDef from "@/cards/stack/stack.example";
 import stepperDef from "@/cards/stepper/stepper.example";
 import suspenseDef from "@/cards/suspense/suspense.example";
+import swimlaneDef from "@/cards/swimlane/swimlane.example";
 import switchDef from "@/cards/switch/switch.example";
 import tabsDef from "@/cards/tabs/tabs.example";
 import textAreaDef from "@/cards/textArea/textArea.example";
@@ -121,6 +122,7 @@ import sliderValueReadme from "@/cards/sliderValue/README.md?raw";
 import stackReadme from "@/cards/stack/README.md?raw";
 import stepperReadme from "@/cards/stepper/README.md?raw";
 import suspenseReadme from "@/cards/suspense/README.md?raw";
+import swimlaneReadme from "@/cards/swimlane/README.md?raw";
 import switchReadme from "@/cards/switch/README.md?raw";
 import tabsReadme from "@/cards/tabs/README.md?raw";
 import textAreaReadme from "@/cards/textArea/README.md?raw";
@@ -190,6 +192,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundDef[] = [
   {...stackDef, introduction: stackReadme},
   {...stepperDef, introduction: stepperReadme},
   {...suspenseDef, introduction: suspenseReadme},
+  {...swimlaneDef, introduction: swimlaneReadme},
   {...switchDef, introduction: switchReadme},
   {...tabsDef, introduction: tabsReadme},
   {...textAreaDef, introduction: textAreaReadme},

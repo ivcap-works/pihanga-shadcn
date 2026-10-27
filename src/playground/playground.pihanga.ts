@@ -161,7 +161,7 @@ function buildFacetSection(
                     justifyContent: "center",
                     alignItems: "center",
                     className:
-                      "rounded-lg border bg-muted/20 p-4 min-h-16 overflow-auto",
+                      "w-full min-w-0 rounded-lg border bg-muted/20 p-4 min-h-16 overflow-x-hidden overflow-y-auto",
                     content: [def.preview({...def.defaultProps, ...f.props})],
                   }),
                 ]
@@ -296,7 +296,8 @@ function buildControlsSection(
         direction: "row",
         justifyContent: "center",
         alignItems: "center",
-        className: "rounded-lg border bg-muted/20 p-4 min-h-16 overflow-auto",
+        className:
+          "w-full min-w-0 rounded-lg border bg-muted/20 p-4 min-h-16 overflow-x-hidden overflow-y-auto",
         content: [def.preview(currentProps)],
       }),
     );
@@ -474,28 +475,14 @@ function buildDetailContent(
     ];
   }
 
-  // ── Unique card names scoped to the selected playground card ───────────────
-  // Each section card is registered with an explicit name that embeds cardId.
-  // Without this, different playground cards (e.g. Switch vs Slider) reuse the
-  // same position-based Pihanga name for the preview card.  Pihanga does update
-  // cardMappings on overwrite, but React never re-renders the container because
-  // the *name string* it receives as a prop never changes.  By scoping names to
-  // cardId the string changes when the user switches cards, so React properly
-  // unmounts the stale component and mounts the correct new one.
-  const safeId = cardId.replace(/[^a-zA-Z0-9_]/g, "-");
-  const p = `playground/detail/${safeId}`;
-
-  // Helper: register a PiCardDef under `name` and return that name; pass
-  // through strings that are already registered card references.
-  const reg = (name: string, card: PiCardRef): string => {
-    if (typeof card !== "string") registerCard(name, card);
-    return typeof card === "string" ? card : name;
-  };
-
-  const names: string[] = [];
+  // Keep these as inline card definitions. The core gives inline cards stable
+  // anonymous identities and updates their mappings when this memo is rebuilt.
+  // Registering them imperatively under fixed names here leaves React holding
+  // unchanged string refs, so the first render after an overwrite stays stale.
+  const cards: PiCardRef[] = [];
 
   // ── Title ──────────────────────────────────────────────────────────────────
-  names.push(reg(`${p}/title`, Typography({level: "h2", text: def.title})));
+  cards.push(Typography({level: "h2", text: def.title}));
 
   // ── Section nav bar ────────────────────────────────────────────────────────
   // Quick links to page sections so users can jump directly without scrolling.
@@ -506,45 +493,35 @@ function buildDetailContent(
   if (def.controls?.length) navParts.push("[Controls](#pg-controls)");
   if (def.note) navParts.push("[Real-app usage](#pg-usage)");
   if (navParts.length > 1) {
-    names.push(
-      reg(
-        `${p}/nav`,
-        MarkdownViewer({
-          source: navParts.join(" · "),
-          className: "text-sm",
-        }),
-      ),
+    cards.push(
+      MarkdownViewer({
+        source: navParts.join(" · "),
+        className: "text-sm",
+      }),
     );
   }
 
   // ── Introduction ───────────────────────────────────────────────────────────
   if (def.introduction) {
-    names.push(reg(`${p}/intro`, MarkdownViewer({source: def.introduction})));
+    cards.push(MarkdownViewer({source: def.introduction}));
   }
 
   // ── Facets as tabs ─────────────────────────────────────────────────────────
-  buildFacetSection(def, facetId, eventLog).forEach((card, i) =>
-    names.push(reg(`${p}/f${i}`, card)),
-  );
+  cards.push(...buildFacetSection(def, facetId, eventLog));
 
   // ── Interactive controls + live preview ────────────────────────────────────
   const liveProps = currentProps ?? def.defaultProps;
-  buildControlsSection(def, liveProps).forEach((card, i) =>
-    names.push(reg(`${p}/c${i}`, card)),
-  );
+  cards.push(...buildControlsSection(def, liveProps));
 
   // ── Real-app usage note ────────────────────────────────────────────────────
   if (def.note) {
-    names.push(
-      reg(
-        `${p}/note-h`,
-        Typography({level: "h4", text: "Real-app usage", id: "pg-usage"}),
-      ),
+    cards.push(
+      Typography({level: "h4", text: "Real-app usage", id: "pg-usage"}),
     );
-    names.push(reg(`${p}/note-md`, MarkdownViewer({source: def.note})));
+    cards.push(MarkdownViewer({source: def.note}));
   }
 
-  return names;
+  return cards;
 }
 
 // ============================================================================
@@ -815,7 +792,7 @@ export function playgroundPiInit(): void {
     Stack({
       direction: "column",
       spacing: 4,
-      className: "p-4 overflow-y-auto h-full",
+      className: "w-full min-w-0 p-4 overflow-x-hidden overflow-y-auto h-full",
       content: memo<
         [
           string | undefined,
